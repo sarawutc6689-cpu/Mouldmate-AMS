@@ -1,0 +1,641 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ระบบขอจองรถใช้งาน - แผนกยานยนต์</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #1a56db;
+            --secondary-color: #3f83f8;
+            --success-color: #0e9f6e;
+            --warning-color: #f59e0b;
+            --danger-color: #dc2626;
+            --light-color: #f3f4f6;
+            --dark-color: #111827;
+            --gray-color: #6b7280;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Kanit', sans-serif;
+        }
+
+        body {
+            background-color: #f9fafb;
+            color: var(--dark-color);
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .logo {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+
+        h1 {
+            font-size: 2rem;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .subtitle {
+            font-size: 1rem;
+            opacity: 0.9;
+        }
+
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            border: 1px solid #e5e7eb;
+        }
+
+        .card-title {
+            font-size: 1.5rem;
+            color: var(--primary-color);
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .card-title i {
+            font-size: 1.3rem;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: var(--dark-color);
+        }
+
+        .required::after {
+            content: " *";
+            color: var(--danger-color);
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: all 0.3s;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+        }
+
+        .employee-search-container {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        #employee-code {
+            flex: 1;
+        }
+
+        .btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: #1e40af;
+            transform: translateY(-2px);
+        }
+
+        .btn-success {
+            background-color: var(--success-color);
+            color: white;
+        }
+
+        .btn-success:hover {
+            background-color: #047857;
+            transform: translateY(-2px);
+        }
+
+        .btn-block {
+            width: 100%;
+        }
+
+        .employee-info {
+            background-color: var(--light-color);
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 20px;
+            display: none;
+        }
+
+        .employee-info.active {
+            display: block;
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 10px;
+        }
+
+        .info-item {
+            margin-bottom: 5px;
+        }
+
+        .info-label {
+            font-size: 0.9rem;
+            color: var(--gray-color);
+        }
+
+        .info-value {
+            font-weight: 500;
+            color: var(--dark-color);
+        }
+
+        .car-options {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 10px;
+        }
+
+        .car-option {
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 15px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .car-option:hover {
+            border-color: var(--primary-color);
+            transform: translateY(-3px);
+        }
+
+        .car-option.selected {
+            border-color: var(--primary-color);
+            background-color: rgba(59, 130, 246, 0.05);
+        }
+
+        .car-icon {
+            font-size: 2rem;
+            color: var(--primary-color);
+            margin-bottom: 10px;
+        }
+
+        .car-name {
+            font-weight: 500;
+            margin-bottom: 5px;
+        }
+
+        .date-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .loading.active {
+            display: block;
+        }
+
+        .spinner {
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            border-radius: 50%;
+            border-top: 4px solid var(--primary-color);
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .message {
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .message.success {
+            background-color: #d1fae5;
+            color: #065f46;
+            border: 1px solid #a7f3d0;
+            display: block;
+        }
+
+        .message.error {
+            background-color: #fee2e2;
+            color: #991b1b;
+            border: 1px solid #fecaca;
+            display: block;
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid #e5e7eb;
+            color: var(--gray-color);
+            font-size: 0.9rem;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 15px;
+            }
+            
+            .card {
+                padding: 20px;
+            }
+            
+            .date-container {
+                grid-template-columns: 1fr;
+                gap: 15px;
+            }
+            
+            .employee-search-container {
+                flex-direction: column;
+            }
+            
+            .car-options {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="logo">
+                <i class="fas fa-car"></i>
+            </div>
+            <h1>ระบบขอจองรถใช้งาน</h1>
+            <p class="subtitle">แผนกยานยนต์ - Vehicle Reservation System</p>
+        </header>
+
+        <div class="message" id="message"></div>
+
+        <div class="card">
+            <h2 class="card-title">
+                <i class="fas fa-user"></i>ข้อมูลพนักงาน
+            </h2>
+            
+            <div class="form-group">
+                <label for="employee-code" class="required">รหัสพนักงาน</label>
+                <div class="employee-search-container">
+                    <input type="text" id="employee-code" placeholder="ระบุรหัสพนักงาน เช่น 00123">
+                    <button class="btn btn-primary" id="search-btn">
+                        <i class="fas fa-search"></i> ค้นหา
+                    </button>
+                </div>
+            </div>
+            
+            <div class="employee-info" id="employee-info">
+                <div class="info-grid">
+                    <div class="info-item">
+                        <div class="info-label">ชื่อ-นามสกุล</div>
+                        <div class="info-value" id="employee-name">-</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">แผนก</div>
+                        <div class="info-value" id="employee-section">-</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">ฝ่าย</div>
+                        <div class="info-value" id="employee-department">-</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">ตำแหน่ง</div>
+                        <div class="info-value" id="employee-position">-</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2 class="card-title">
+                <i class="fas fa-car"></i>ข้อมูลการจองรถ
+            </h2>
+            
+            <form id="reservation-form">
+                <div class="form-group">
+                    <label for="contact" class="required">เบอร์โทรติดต่อ</label>
+                    <input type="tel" id="contact" placeholder="ระบุเบอร์โทรติดต่อ เช่น 081-234-5678" required>
+                </div>
+                
+                <div class="form-group">
+                    <label class="required">เลือกรถที่ต้องการจอง</label>
+                    <div class="car-options">
+                        <div class="car-option" data-value="นาวาร่า">
+                            <div class="car-icon">
+                                <i class="fas fa-truck-pickup"></i>
+                            </div>
+                            <div class="car-name">นาวาร่า</div>
+                            <div class="car-type">รถกระบะ</div>
+                        </div>
+                        <div class="car-option" data-value="x-lift No.1">
+                            <div class="car-icon">
+                                <i class="fas fa-car-side"></i>
+                            </div>
+                            <div class="car-name">x-lift No.1</div>
+                            <div class="car-type">รถยนต์</div>
+                        </div>
+                        <div class="car-option" data-value="x-lift No.2">
+                            <div class="car-icon">
+                                <i class="fas fa-car-side"></i>
+                            </div>
+                            <div class="car-name">x-lift No.2</div>
+                            <div class="car-type">รถยนต์</div>
+                        </div>
+                        <div class="car-option" data-value="x-lift No.3">
+                            <div class="car-icon">
+                                <i class="fas fa-car-side"></i>
+                            </div>
+                            <div class="car-name">x-lift No.3</div>
+                            <div class="car-type">รถยนต์</div>
+                        </div>
+                        <div class="car-option" data-value="x-lift No.4">
+                            <div class="car-icon">
+                                <i class="fas fa-car-side"></i>
+                            </div>
+                            <div class="car-name">x-lift No.4</div>
+                            <div class="car-type">รถยนต์</div>
+                        </div>
+                    </div>
+                    <input type="hidden" id="selected-car" required>
+                </div>
+                
+                <div class="form-group">
+                    <label class="required">ระยะเวลาการจอง</label>
+                    <div class="date-container">
+                        <div>
+                            <label for="rentStartdate">วันที่เริ่มจอง</label>
+                            <input type="date" id="rentStartdate" required>
+                        </div>
+                        <div>
+                            <label for="rentEnddate">วันที่สิ้นสุดการจอง</label>
+                            <input type="date" id="rentEnddate" required>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="reason" class="required">เหตุผลในการขอใช้รถ</label>
+                    <textarea id="reason" rows="4" placeholder="ระบุเหตุผลในการขอใช้รถ..." required></textarea>
+                </div>
+                
+                <div class="loading" id="loading">
+                    <div class="spinner"></div>
+                    <p>กำลังบันทึกข้อมูล...</p>
+                </div>
+                
+                <button type="submit" class="btn btn-success btn-block">
+                    <i class="fas fa-paper-plane"></i> ส่งคำขอจองรถ
+                </button>
+            </form>
+        </div>
+        
+        <footer>
+            <p>ระบบขอจองรถใช้งาน - แผนกยานยนต์ © 2023</p>
+            <p>Developed for Vehicle Department</p>
+        </footer>
+    </div>
+
+    <script>
+        // ข้อมูลพนักงานตัวอย่าง (ในกรณีที่ไม่สามารถเชื่อมต่อกับ Google Sheets ได้)
+        const sampleEmployees = [
+            { code: "001", name: "สมชาย ใจดี", section: "ยานยนต์", department: "ผลิต", position: "พนักงานขับรถ" },
+            { code: "002", name: "สุนิสา รักงาน", section: "ยานยนต์", department: "ผลิต", position: "หัวหน้าขับรถ" },
+            { code: "003", name: "ประวิทย์ ทำงานเก่ง", section: "ยานยนต์", department: "ซ่อมบำรุง", position: "ช่างซ่อมรถ" },
+            { code: "004", name: "นฤมล ตั้งใจ", section: "บริหาร", department: "ทรัพยากรบุคคล", position: "เจ้าหน้าที่ HR" },
+            { code: "005", name: "ธนวัฒน์ มีสกุล", section: "ยานยนต์", department: "ผลิต", position: "ผู้จัดการแผนก" }
+        ];
+
+        // กำหนดวันที่เริ่มต้นและสิ้นสุด
+        document.addEventListener('DOMContentLoaded', function() {
+            const today = new Date().toISOString().split('T')[0];
+            const tomorrow = new Date();
+            tomorrow.setDate(tomorrow.getDate() + 1);
+            const tomorrowStr = tomorrow.toISOString().split('T')[0];
+            
+            document.getElementById('rentStartdate').value = today;
+            document.getElementById('rentStartdate').min = today;
+            document.getElementById('rentEnddate').value = tomorrowStr;
+            document.getElementById('rentEnddate').min = tomorrowStr;
+            
+            // อัพเดทวันที่สิ้นสุดเมื่อวันที่เริ่มต้นเปลี่ยนแปลง
+            document.getElementById('rentStartdate').addEventListener('change', function() {
+                const startDate = new Date(this.value);
+                const endDateInput = document.getElementById('rentEnddate');
+                
+                if (endDateInput.value && new Date(endDateInput.value) < startDate) {
+                    startDate.setDate(startDate.getDate() + 1);
+                    endDateInput.value = startDate.toISOString().split('T')[0];
+                }
+                
+                endDateInput.min = this.value;
+            });
+            
+            // เลือกรถ
+            const carOptions = document.querySelectorAll('.car-option');
+            carOptions.forEach(option => {
+                option.addEventListener('click', function() {
+                    // ลบการเลือกทั้งหมด
+                    carOptions.forEach(opt => opt.classList.remove('selected'));
+                    
+                    // เลือกอันนี้
+                    this.classList.add('selected');
+                    document.getElementById('selected-car').value = this.getAttribute('data-value');
+                });
+            });
+            
+            // ค้นหาพนักงาน
+            document.getElementById('search-btn').addEventListener('click', searchEmployee);
+            
+            // ส่งฟอร์ม
+            document.getElementById('reservation-form').addEventListener('submit', submitReservation);
+        });
+
+        // ฟังก์ชันค้นหาพนักงาน
+        function searchEmployee() {
+            const employeeCode = document.getElementById('employee-code').value.trim();
+            const employeeInfo = document.getElementById('employee-info');
+            
+            if (!employeeCode) {
+                showMessage('กรุณาระบุรหัสพนักงาน', 'error');
+                return;
+            }
+            
+            // ในสถานการณ์จริงจะเชื่อมต่อกับ Google Sheets
+            // แต่ตอนนี้ใช้ข้อมูลตัวอย่าง
+            const employee = sampleEmployees.find(emp => emp.code === employeeCode);
+            
+            if (employee) {
+                document.getElementById('employee-name').textContent = employee.name;
+                document.getElementById('employee-section').textContent = employee.section;
+                document.getElementById('employee-department').textContent = employee.department;
+                document.getElementById('employee-position').textContent = employee.position;
+                
+                employeeInfo.classList.add('active');
+                showMessage(`พบข้อมูลพนักงาน: ${employee.name}`, 'success');
+            } else {
+                employeeInfo.classList.remove('active');
+                showMessage('ไม่พบข้อมูลพนักงาน กรุณาตรวจสอบรหัสพนักงานอีกครั้ง', 'error');
+            }
+        }
+
+        // ฟังก์ชันส่งข้อมูลจองรถ
+        function submitReservation(e) {
+            e.preventDefault();
+            
+            // ตรวจสอบข้อมูล
+            const employeeCode = document.getElementById('employee-code').value.trim();
+            const contact = document.getElementById('contact').value.trim();
+            const selectedCar = document.getElementById('selected-car').value;
+            const rentStartdate = document.getElementById('rentStartdate').value;
+            const rentEnddate = document.getElementById('rentEnddate').value;
+            const reason = document.getElementById('reason').value.trim();
+            
+            if (!employeeCode) {
+                showMessage('กรุณาค้นหาข้อมูลพนักงานก่อน', 'error');
+                return;
+            }
+            
+            if (!contact) {
+                showMessage('กรุณากรอกเบอร์โทรติดต่อ', 'error');
+                return;
+            }
+            
+            if (!selectedCar) {
+                showMessage('กรุณาเลือกรถที่ต้องการจอง', 'error');
+                return;
+            }
+            
+            // แสดง loading
+            document.getElementById('loading').classList.add('active');
+            
+            // ในสถานการณ์จริงจะส่งข้อมูลไปยัง Google Sheets
+            // แต่ตอนนี้จำลองการส่งข้อมูล
+            setTimeout(() => {
+                document.getElementById('loading').classList.remove('active');
+                
+                // ข้อมูลที่จะส่งไปยัง Google Sheets
+                const reservationData = {
+                    timestamp: new Date().toLocaleString('th-TH'),
+                    name: document.getElementById('employee-name').textContent,
+                    section: document.getElementById('employee-section').textContent,
+                    department: document.getElementById('employee-department').textContent,
+                    position: document.getElementById('employee-position').textContent,
+                    contact: contact,
+                    choose: selectedCar,
+                    rentStartdate: rentStartdate,
+                    rentEnddate: rentEnddate,
+                    reason: reason
+                };
+                
+                console.log('ข้อมูลการจองที่จะส่งไปยัง Google Sheets:', reservationData);
+                
+                // แสดงข้อความสำเร็จ
+                showMessage('บันทึกข้อมูลการจองรถเรียบร้อยแล้ว! รหัสการจอง: ' + generateReservationId(), 'success');
+                
+                // รีเซ็ตฟอร์ม (ยกเว้นข้อมูลพนักงาน)
+                document.getElementById('contact').value = '';
+                document.querySelectorAll('.car-option').forEach(opt => opt.classList.remove('selected'));
+                document.getElementById('selected-car').value = '';
+                
+                // ตั้งค่าวันที่ใหม่
+                const today = new Date().toISOString().split('T')[0];
+                const tomorrow = new Date();
+                tomorrow.setDate(tomorrow.getDate() + 1);
+                const tomorrowStr = tomorrow.toISOString().split('T')[0];
+                
+                document.getElementById('rentStartdate').value = today;
+                document.getElementById('rentEnddate').value = tomorrowStr;
+                document.getElementById('reason').value = '';
+                
+                // ซ่อนข้อมูลพนักงาน
+                document.getElementById('employee-info').classList.remove('active');
+                document.getElementById('employee-code').value = '';
+            }, 1500);
+        }
+
+        // ฟังก์ชันแสดงข้อความ
+        function showMessage(text, type) {
+            const messageEl = document.getElementById('message');
+            messageEl.textContent = text;
+            messageEl.className = `message ${type}`;
+            
+            // ซ่อนข้อความหลังจาก 5 วินาที
+            setTimeout(() => {
+                messageEl.className = 'message';
+            }, 5000);
+        }
+
+        // สร้างรหัสการจองแบบสุ่ม
+        function generateReservationId() {
+            const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+            let result = 'RES-';
+            for (let i = 0; i < 6; i++) {
+                result += chars.charAt(Math.floor(Math.random() * chars.length));
+            }
+            return result;
+        }
+    </script>
+</body>
+</html>
