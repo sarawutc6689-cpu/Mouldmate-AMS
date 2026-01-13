@@ -18,6 +18,7 @@
             --dark: #1e293b;
             --gray: #64748b;
             --border: #e2e8f0;
+            --repair: #f97316; /* สีสำหรับกำลังซ่อมแซม */
         }
 
         * {
@@ -186,6 +187,7 @@
             cursor: pointer;
             transition: all 0.3s;
             background: white;
+            position: relative;
         }
 
         .car-option:hover {
@@ -198,9 +200,18 @@
             background: rgba(30, 58, 138, 0.05);
         }
 
+        .car-option.unavailable {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .car-option.unavailable:hover {
+            transform: none;
+            box-shadow: none;
+        }
+
         .car-icon {
             font-size: 32px;
-            color: var(--primary);
             margin-bottom: 10px;
         }
 
@@ -211,8 +222,26 @@
 
         .car-status {
             font-size: 14px;
-            color: var(--success);
             font-weight: 600;
+            padding: 3px 8px;
+            border-radius: 12px;
+            display: inline-block;
+            margin-top: 5px;
+        }
+
+        .status-available {
+            background-color: rgba(16, 185, 129, 0.15);
+            color: var(--success);
+        }
+
+        .status-repair {
+            background-color: rgba(249, 115, 22, 0.15);
+            color: var(--repair);
+        }
+
+        .status-unavailable {
+            background-color: rgba(239, 68, 68, 0.15);
+            color: var(--danger);
         }
 
         .date-container {
@@ -406,6 +435,44 @@
         .auto-complete-name {
             color: var(--dark);
         }
+        
+        /* สไตล์สำหรับสถานะในรายการรถ */
+        .car-status-badge {
+            font-size: 12px;
+            font-weight: 600;
+            padding: 3px 8px;
+            border-radius: 10px;
+            margin-left: auto;
+        }
+        
+        .car-item {
+            display: flex;
+            align-items: center;
+            background: #f8fafc;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+        }
+        
+        .car-item-icon {
+            font-size: 24px;
+            color: var(--primary);
+            margin-right: 15px;
+        }
+        
+        .car-item-info {
+            flex: 1;
+        }
+        
+        .car-item-name {
+            font-weight: 600;
+            color: var(--dark);
+        }
+        
+        .car-item-type {
+            font-size: 14px;
+            color: var(--gray);
+        }
     </style>
 </head>
 <body>
@@ -476,22 +543,8 @@
 
                     <div class="form-group">
                         <label for="carSelect" class="required">เลือกรถที่ต้องการจอง</label>
-                        <div class="car-options">
-                            <div class="car-option" data-value="นาวาร่า">
-                                <div class="car-icon"><i class="fas fa-truck-pickup"></i></div>
-                                <div class="car-name">นาวาร่า</div>
-                                <div class="car-status">พร้อมให้บริการ</div>
-                            </div>
-                            <div class="car-option" data-value="x-lift No.1">
-                                <div class="car-icon"><i class="fas fa-truck"></i></div>
-                                <div class="car-name">x-lift No.1</div>
-                                <div class="car-status">พร้อมให้บริการ</div>
-                            </div>
-                            <div class="car-option" data-value="x-lift No.2">
-                                <div class="car-icon"><i class="fas fa-truck"></i></div>
-                                <div class="car-name">x-lift No.2</div>
-                                <div class="car-status">พร้อมให้บริการ</div>
-                            </div>
+                        <div class="car-options" id="carOptionsContainer">
+                            <!-- ตัวเลือกรถจะถูกสร้างด้วย JavaScript -->
                         </div>
                         <input type="hidden" id="carSelect" value="">
                         <div class="error-message" id="carSelectError">กรุณาเลือกรถที่ต้องการจอง</div>
@@ -579,6 +632,10 @@
                         <span id="summaryCar">-</span>
                     </div>
                     <div class="summary-item">
+                        <span>สถานะรถ:</span>
+                        <span id="summaryCarStatus">-</span>
+                    </div>
+                    <div class="summary-item">
                         <span>วันที่เริ่มจอง:</span>
                         <span id="summaryStartDate">-</span>
                     </div>
@@ -594,36 +651,8 @@
 
                 <div style="margin-top: 30px;">
                     <h3 class="section-title"><i class="fas fa-car"></i>รายการรถทั้งหมด</h3>
-                    <div class="car-list">
-                        <div style="display: flex; align-items: center; background: #f8fafc; padding: 15px; border-radius: 10px; margin-bottom: 15px;">
-                            <div style="font-size: 24px; color: var(--primary); margin-right: 15px;">
-                                <i class="fas fa-truck-pickup"></i>
-                            </div>
-                            <div>
-                                <div style="font-weight: 600; color: var(--dark);">นาวาร่า</div>
-                                <div style="font-size: 14px; color: var(--gray);">รถกระบะ พร้อมใช้งาน</div>
-                            </div>
-                        </div>
-                        
-                        <div style="display: flex; align-items: center; background: #f8fafc; padding: 15px; border-radius: 10px; margin-bottom: 15px;">
-                            <div style="font-size: 24px; color: var(--primary); margin-right: 15px;">
-                                <i class="fas fa-truck"></i>
-                            </div>
-                            <div>
-                                <div style="font-weight: 600; color: var(--dark);">x-lift No.1</div>
-                                <div style="font-size: 14px; color: var(--gray);">รถบรรทุกขนาดเล็ก</div>
-                            </div>
-                        </div>
-                        
-                        <div style="display: flex; align-items: center; background: #f8fafc; padding: 15px; border-radius: 10px; margin-bottom: 15px;">
-                            <div style="font-size: 24px; color: var(--primary); margin-right: 15px;">
-                                <i class="fas fa-truck"></i>
-                            </div>
-                            <div>
-                                <div style="font-weight: 600; color: var(--dark);">x-lift No.2</div>
-                                <div style="font-size: 14px; color: var(--gray);">รถบรรทุกขนาดเล็ก</div>
-                            </div>
-                        </div>
+                    <div class="car-list" id="carListContainer">
+                        <!-- รายการรถจะถูกสร้างด้วย JavaScript -->
                     </div>
                 </div>
 
@@ -637,6 +666,26 @@
                         <li>กรุณานำรถคืนตามเวลาที่กำหนด</li>
                         <li>หากมีปัญหาด่วนติดต่อแผนกยานยนต์ </li>
                     </ul>
+                </div>
+                
+                <div style="margin-top: 20px; padding: 15px; background: #f0f9ff; border-radius: 10px; border-left: 4px solid var(--primary);">
+                    <h4 style="color: var(--dark); margin-bottom: 10px; display: flex; align-items: center; gap: 10px;">
+                        <i class="fas fa-info-circle"></i> สถานะรถ
+                    </h4>
+                    <div style="display: flex; gap: 15px; flex-wrap: wrap;">
+                        <div style="display: flex; align-items: center;">
+                            <div style="width: 12px; height: 12px; background-color: var(--success); border-radius: 50%; margin-right: 8px;"></div>
+                            <span style="font-size: 14px;">พร้อมใช้งาน</span>
+                        </div>
+                        <div style="display: flex; align-items: center;">
+                            <div style="width: 12px; height: 12px; background-color: var(--repair); border-radius: 50%; margin-right: 8px;"></div>
+                            <span style="font-size: 14px;">กำลังซ่อมแซม</span>
+                        </div>
+                        <div style="display: flex; align-items: center;">
+                            <div style="width: 12px; height: 12px; background-color: var(--danger); border-radius: 50%; margin-right: 8px;"></div>
+                            <span style="font-size: 14px;">ไม่พร้อมใช้งาน</span>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -655,6 +704,105 @@
     
     // ตัวแปรเก็บข้อมูลพนักงาน
     let employees = [];
+    
+    // ข้อมูลรถทั้งหมดพร้อมสถานะ
+    const cars = [
+        { id: 1, name: "นาวาร่า", type: "รถกระบะ", icon: "fas fa-truck-pickup", status: "available", statusText: "พร้อมใช้งาน" },
+        { id: 2, name: "รถกระบะขาว", type: "รถกระบะ", icon: "fas fa-truck-pickup", status: "available", statusText: "พร้อมใช้งาน" },
+        { id: 3, name: "x-lift No.1", type: "รถกระเช้า", icon: "fas fa-truck", status: "available", statusText: "พร้อมใช้งาน" },
+        { id: 4, name: "x-lift No.2", type: "รถกระเช้า", icon: "fas fa-truck", status: "repair", statusText: "กำลังซ่อมแซม" },
+        { id: 5, name: "x-lift No.3", type: "รถกระเช้า", icon: "fas fa-truck", status: "available", statusText: "พร้อมใช้งาน" },
+        { id: 6, name: "x-lift No.4", type: "รถกระเช้า", icon: "fas fa-truck", status: "unavailable", statusText: "ไม่พร้อมใช้งาน" },
+        { id: 7, name: "Fork-lift No.1", type: "รถยก", icon: "fas fa-truck", status: "available", statusText: "พร้อมใช้งาน" },
+        { id: 8, name: "Fork-lift No.2", type: "รถยก", icon: "fas fa-truck", status: "repair", statusText: "กำลังซ่อมแซม" },
+        { id: 9, name: "Fork-lift No.3", type: "รถยก", icon: "fas fa-truck", status: "available", statusText: "พร้อมใช้งาน" },
+        { id: 10, name: "Fork-lift No.4", type: "รถยก", icon: "fas fa-truck", status: "available", statusText: "พร้อมใช้งาน" },
+        { id: 11, name: "Fork-lift No.5", type: "รถยก", icon: "fas fa-truck", status: "unavailable", statusText: "ไม่พร้อมใช้งาน" },
+        { id: 12, name: "Fork-lift No.6", type: "รถยก", icon: "fas fa-truck", status: "available", statusText: "พร้อมใช้งาน" },
+        { id: 13, name: "Fork-lift No.7", type: "รถยก", icon: "fas fa-truck", status: "repair", statusText: "กำลังซ่อมแซม" },
+        { id: 14, name: "Fork-lift No.8", type: "รถยก", icon: "fas fa-truck", status: "available", statusText: "พร้อมใช้งาน" }
+    ];
+
+    // ฟังก์ชันสร้างตัวเลือกรถ
+    function renderCarOptions() {
+        const container = document.getElementById('carOptionsContainer');
+        container.innerHTML = '';
+        
+        // กรองรถที่พร้อมใช้งานเท่านั้นสำหรับตัวเลือก
+        const availableCars = cars.filter(car => car.status === "available");
+        
+        availableCars.forEach(car => {
+            const option = document.createElement('div');
+            option.className = 'car-option';
+            option.setAttribute('data-value', car.name);
+            option.setAttribute('data-status', car.status);
+            
+            // กำหนดสีไอคอนตามสถานะ
+            let iconColor = "var(--primary)"; // สีปกติ
+            
+            option.innerHTML = `
+                <div class="car-icon" style="color: ${iconColor};">
+                    <i class="${car.icon}"></i>
+                </div>
+                <div class="car-name">${car.name}</div>
+                <div class="car-status status-${car.status}">${car.statusText}</div>
+            `;
+            
+            option.addEventListener('click', function() {
+                // ลบการเลือกทั้งหมด
+                document.querySelectorAll('.car-option').forEach(opt => opt.classList.remove('selected'));
+                
+                // เลือกรถปัจจุบัน
+                this.classList.add('selected');
+                
+                // ตั้งค่าใน input ที่ซ่อนอยู่
+                const carValue = this.getAttribute('data-value');
+                const carStatus = this.getAttribute('data-status');
+                document.getElementById('carSelect').value = carValue;
+                document.getElementById('carSelectError').style.display = "none";
+                
+                // อัปเดตข้อมูลสรุป
+                updateSummary();
+                
+                // อัปเดตสถานะรถในสรุป
+                const carData = cars.find(c => c.name === carValue);
+                if (carData) {
+                    document.getElementById('summaryCarStatus').textContent = carData.statusText;
+                }
+            });
+            
+            container.appendChild(option);
+        });
+    }
+
+    // ฟังก์ชันสร้างรายการรถทั้งหมด
+    function renderCarList() {
+        const container = document.getElementById('carListContainer');
+        container.innerHTML = '';
+        
+        cars.forEach(car => {
+            const item = document.createElement('div');
+            item.className = 'car-item';
+            
+            // กำหนดสีไอคอนตามสถานะ
+            let iconColor = "var(--primary)";
+            if (car.status === "repair") iconColor = "var(--repair)";
+            if (car.status === "unavailable") iconColor = "var(--danger)";
+            
+            item.innerHTML = `
+                <div class="car-item-icon" style="color: ${iconColor};">
+                    <i class="${car.icon}"></i>
+                </div>
+                <div class="car-item-info">
+                    <div class="car-item-name">${car.name}</div>
+                    <div class="car-item-type">${car.type}</div>
+                </div>
+                <div class="car-status-badge status-${car.status}">${car.statusText}</div>
+            `;
+            
+            container.appendChild(item);
+        });
+    }
 
     // ฟังก์ชันดึงข้อมูลพนักงานจาก Google Sheets
     async function fetchEmployees() {
@@ -833,6 +981,7 @@
         document.getElementById('summarySection').textContent = "-";
         document.getElementById('summaryContact').textContent = "-";
         document.getElementById('summaryCar').textContent = "-";
+        document.getElementById('summaryCarStatus').textContent = "-";
         document.getElementById('summaryStartDate').textContent = "-";
         document.getElementById('summaryEndDate').textContent = "-";
         document.getElementById('summaryReason').textContent = "-";
@@ -864,6 +1013,12 @@
         const selectedCar = document.getElementById('carSelect').value;
         if (selectedCar) {
             document.getElementById('summaryCar').textContent = selectedCar;
+            
+            // อัปเดตสถานะรถ
+            const carData = cars.find(c => c.name === selectedCar);
+            if (carData) {
+                document.getElementById('summaryCarStatus').textContent = carData.statusText;
+            }
         }
         
         // อัปเดตวันที่
@@ -939,6 +1094,14 @@
         if (!carSelect) {
             carSelectError.style.display = "block";
             isValid = false;
+        } else {
+            // ตรวจสอบสถานะรถ
+            const selectedCarData = cars.find(car => car.name === carSelect);
+            if (selectedCarData && selectedCarData.status !== "available") {
+                carSelectError.textContent = "รถที่เลือกไม่พร้อมใช้งานในขณะนี้";
+                carSelectError.style.display = "block";
+                isValid = false;
+            }
         }
         
         // ตรวจสอบวันที่เริ่ม
@@ -1021,6 +1184,10 @@
             });
         }
         
+        // สร้างตัวเลือกรถและรายการรถ
+        renderCarOptions();
+        renderCarList();
+        
         // ตั้งค่าวันที่เริ่มต้น (วันนี้) และวันที่สิ้นสุด (3 วันจากนี้)
         const today = new Date().toISOString().split('T')[0];
         const threeDaysLater = new Date();
@@ -1047,26 +1214,6 @@
             if (!e.target.closest('#employeeId') && !e.target.closest('.auto-complete')) {
                 document.getElementById('employeeAutoComplete').style.display = 'none';
             }
-        });
-        
-        // จัดการเหตุการณ์เลือกรถ
-        const carOptions = document.querySelectorAll('.car-option');
-        carOptions.forEach(option => {
-            option.addEventListener('click', function() {
-                // ลบการเลือกทั้งหมด
-                carOptions.forEach(opt => opt.classList.remove('selected'));
-                
-                // เลือกรถปัจจุบัน
-                this.classList.add('selected');
-                
-                // ตั้งค่าใน input ที่ซ่อนอยู่
-                const carValue = this.getAttribute('data-value');
-                document.getElementById('carSelect').value = carValue;
-                document.getElementById('carSelectError').style.display = "none";
-                
-                // อัปเดตข้อมูลสรุป
-                updateSummary();
-            });
         });
         
         // จัดการเหตุการณ์เมื่อฟอร์มถูกส่ง
@@ -1120,6 +1267,7 @@
                             <p><strong>รหัสพนักงาน:</strong> ${formData.code}</p>
                             <p><strong>ชื่อผู้ขอจอง:</strong> ${formData.name}</p>
                             <p><strong>รถที่จอง:</strong> ${formData.choose}</p>
+                            <p><strong>สถานะรถ:</strong> พร้อมใช้งาน</p>
                             <p><strong>วันที่เริ่มจอง:</strong> ${new Date(formData.rentStartdate).toLocaleDateString('th-TH')}</p>
                             <p><strong>วันที่สิ้นสุด:</strong> ${new Date(formData.rentEnddate).toLocaleDateString('th-TH')}</p>
                             <p><strong>หมายเหตุ:</strong> ข้อมูลถูกบันทึกลงระบบเรียบร้อยแล้ว</p>
@@ -1150,7 +1298,7 @@
             clearEmployeeInfo();
             
             // ล้างการเลือกรถ
-            carOptions.forEach(opt => opt.classList.remove('selected'));
+            document.querySelectorAll('.car-option').forEach(opt => opt.classList.remove('selected'));
             document.getElementById('carSelect').value = '';
             
             // รีเซ็ตวันที่
@@ -1180,7 +1328,7 @@
                     clearEmployeeInfo();
                     
                     // ล้างการเลือกรถ
-                    carOptions.forEach(opt => opt.classList.remove('selected'));
+                    document.querySelectorAll('.car-option').forEach(opt => opt.classList.remove('selected'));
                     document.getElementById('carSelect').value = '';
                     
                     // รีเซ็ตวันที่
