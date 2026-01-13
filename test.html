@@ -515,9 +515,10 @@
                             <div class="info-value" id="employeeName">-</div>
                         </div>
                         <div class="info-item">
-                            <div class="info-label">ตำแหน่ง</div>
-                            <div class="info-value" id="employeePosition">-</div>
+                            <div class="info-label">ฝ่าย</div>
+                            <div class="info-value" id="employeeSection">-</div>
                         </div>
+                        
                     </div>
                     <div class="employee-row">
                         <div class="info-item">
@@ -525,8 +526,8 @@
                             <div class="info-value" id="employeeDepartment">-</div>
                         </div>
                         <div class="info-item">
-                            <div class="info-label">ฝ่าย</div>
-                            <div class="info-value" id="employeeSection">-</div>
+                            <div class="info-label">ตำแหน่ง</div>
+                            <div class="info-value" id="employeePosition">-</div>
                         </div>
                     </div>
                 </div>
@@ -612,16 +613,16 @@
                         <span id="summaryCode">-</span>
                     </div>
                     <div class="summary-item">
-                        <span>ตำแหน่ง:</span>
-                        <span id="summaryPosition">-</span>
+                        <span>ฝ่าย:</span>
+                        <span id="summarySection">-</span>
                     </div>
                     <div class="summary-item">
                         <span>แผนก:</span>
                         <span id="summaryDepartment">-</span>
                     </div>
-                    <div class="summary-item">
-                        <span>ฝ่าย:</span>
-                        <span id="summarySection">-</span>
+                   <div class="summary-item">
+                        <span>ตำแหน่ง:</span>
+                        <span id="summaryPosition">-</span>
                     </div>
                     <div class="summary-item">
                         <span>เบอร์โทรติดต่อ:</span>
@@ -817,9 +818,9 @@
             employees = data.map(row => ({
                 code: row[0] || '',        // คอลัมน์ A: รหัสพนักงาน
                 name: row[1] || '',        // คอลัมน์ B: ชื่อพนักงาน
-                section: row[4] || '',    // คอลัมน์ C: ตำแหน่ง
+                section: row[2] || '',    // คอลัมน์ C: ตำแหน่ง
                 department: row[3] || '',  // คอลัมน์ D: ฝ่าย/แผนก
-                position: row[2] || ''      // คอลัมน์ E: ส่วนงาน
+                position: row[4] || ''      // คอลัมน์ E: ส่วนงาน
             }));
             
             console.log('ดึงข้อมูลพนักงานสำเร็จ:', employees.length, 'รายการ');
