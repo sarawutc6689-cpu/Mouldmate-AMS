@@ -310,14 +310,14 @@
             border-bottom: none;
         }
 
-        .loading {
+        .ing {
             display: none;
             text-align: center;
             padding: 20px;
             color: var(--primary);
         }
 
-        .loading i {
+        .ing i {
             font-size: 24px;
             margin-bottom: 10px;
             animation: spin 1s linear infinite;
@@ -528,7 +528,7 @@
                         <div class="error-message" id="reasonError">กรุณากรอกเหตุผลในการขอใช้รถ</div>
                     </div>
 
-                    <div class="loading" id="formLoading">
+                    <div class="ing" id="forming">
                         <i class="fas fa-spinner"></i>
                         <p>กำลังส่งข้อมูล กรุณารอสักครู่...</p>
                     </div>
@@ -650,49 +650,28 @@
     <script>
         // ตัวแปรเก็บข้อมูลพนักงานจาก Google Sheets
         let employees = [];
-        let employeeDataLoaded = false;
+        let employeeDataed = false;
 
         // ฟังก์ชันดึงข้อมูลพนักงานจาก Google Sheets
-        async function loadEmployeesFromGoogleSheets() {
-            try {
-                // ใช้ Google Sheets API v4 เพื่อดึงข้อมูล
-                // ในตัวอย่างนี้จะใช้ JSON ที่สร้างจาก Google Sheets
-                // URL ของ Google Sheets ในรูปแบบ JSON
-                const sheetId = '1TyjwFwA3kg8jcDGoX_YD9lXQVHJfoxff68iuCo8vCHg';
-                const sheetName = 'Sheet1'; // เปลี่ยนเป็นชื่อ sheet ของคุณ
-                const apiKey = ''; // ใส่ API key ถ้าต้องการ (ควรใช้ backend แทนเพื่อความปลอดภัย)
-                
-                // สำหรับการทดสอบ จะใช้ข้อมูลตัวอย่างก่อน
-                // ในระบบจริงควรใช้ backend เพื่อดึงข้อมูลจาก Google Sheets
-                
-                // ข้อมูลตัวอย่างจาก Google Sheets ที่คุณให้มา
-                const sampleEmployees = [
-                    { code: "1001", name: "สมชาย ใจดี", section: "ส่วนยานยนต์", department: "แผนกยานยนต์", position: "วิศวกรยานยนต์" },
-                    { code: "1002", name: "สุนิดา แสนดี", section: "ส่วนบำรุงรักษา", department: "แผนกยานยนต์", position: "ช่างซ่อมบำรุง" },
-                    { code: "1003", name: "ประยุทธ์ เก่งมาก", section: "ส่วนโลจิสติกส์", department: "แผนกยานยนต์", position: "ผู้จัดการฝ่าย" },
-                    { code: "1004", name: "เกศราภรณ์ มีนา", section: "ส่วนบริหาร", department: "แผนกยานยนต์", position: "เจ้าหน้าที่บริหาร" },
-                    { code: "1005", name: "วิศวะ ภูมิใจ", section: "ส่วนยานยนต์", department: "แผนกยานยนต์", position: "วิศวกรอาวุโส" },
-                    { code: "1006", name: "นันทนา สวยงาม", section: "ส่วนบำรุงรักษา", department: "แผนกยานยนต์", position: "ช่างเทคนิค" },
-                    { code: "1007", name: "อนุชา แข็งแรง", section: "ส่วนโลจิสติกส์", department: "แผนกยานยนต์", position: "ผู้ช่วยจัดการ" }
-                ];
-                
-                employees = sampleEmployees;
-                employeeDataLoaded = true;
-                
-                console.log('โหลดข้อมูลพนักงานสำเร็จ:', employees.length, 'รายการ');
-                
-            } catch (error) {
-                console.error('เกิดข้อผิดพลาดในการโหลดข้อมูลพนักงาน:', error);
-                // หากไม่สามารถโหลดข้อมูลได้ ให้ใช้ข้อมูลตัวอย่าง
-                employees = [
-                    { code: "1001", name: "สมชาย ใจดี", section: "ส่วนยานยนต์", department: "แผนกยานยนต์", position: "วิศวกรยานยนต์" },
-                    { code: "1002", name: "สุนิดา แสนดี", section: "ส่วนบำรุงรักษา", department: "แผนกยานยนต์", position: "ช่างซ่อมบำรุง" },
-                    { code: "1003", name: "ประยุทธ์ เก่งมาก", section: "ส่วนโลจิสติกส์", department: "แผนกยานยนต์", position: "ผู้จัดการฝ่าย" },
-                    { code: "1004", name: "เกศราภรณ์ มีนา", section: "ส่วนบริหาร", department: "แผนกยานยนต์", position: "เจ้าหน้าที่บริหาร" }
-                ];
-                employeeDataLoaded = true;
-            }
-        }
+       <script>
+async function loadEmployeesFromGoogleSheets() {
+    try {
+        const url = 'https://script.google.com/macros/s/AKfycbzpDImaQKanLlZ3V9ogPII0a5FEemTzJcoFIcOogOiP4myLXaAgDNzEvomPp0N2frzImg/exec';
+        const res = await fetch(url);
+        employees = await res.json();
+        employeeDataLoaded = true;
+        console.log('โหลดข้อมูลพนักงานจาก Sheet สำเร็จ', employees);
+    } catch (err) {
+        console.error('โหลดข้อมูลพนักงานไม่สำเร็จ', err);
+        Swal.fire({
+            icon: 'error',
+            title: 'ไม่สามารถโหลดข้อมูลพนักงาน',
+            text: 'กรุณาติดต่อผู้ดูแลระบบ'
+        });
+    }
+}
+</script>
+
 
         // ฟังก์ชันค้นหาพนักงานด้วยรหัสพนักงานหรือชื่อ
         function searchEmployee() {
