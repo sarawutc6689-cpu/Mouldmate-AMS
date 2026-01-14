@@ -667,6 +667,18 @@
             color: var(--primary);
             font-weight: 600;
         }
+        
+        .duration-warning {
+            color: var(--warning) !important;
+        }
+        
+        .duration-danger {
+            color: var(--danger) !important;
+        }
+        
+        .duration-success {
+            color: var(--success) !important;
+        }
 
         /* สไตล์สำหรับแถบจัดการสถานะรถ */
         .admin-bar {
@@ -909,6 +921,7 @@
                     <div class="input-with-icon">
                         <i class="fas fa-user-tag"></i>
                         <select id="role">
+                            <option value="user">ผู้ใช้ทั่วไป (จองรถ)</option>
                             <option value="admin">ผู้ดูแลระบบ (จัดการสถานะรถ)</option>
                         </select>
                     </div>
@@ -917,7 +930,8 @@
                     <i class="fas fa-sign-in-alt"></i> เข้าสู่ระบบ
                 </button>
                 <div style="text-align: center; margin-top: 20px; color: var(--gray); font-size: 14px;">
-                    <p><strong>หมายเหตุ :</strong> หากมีปัญหากาารใช้งาน ติดต่อฝ่ายเทคโนโลยีสารสนเทศ</p>
+                    <p><strong>ผู้ใช้ทั่วไป:</strong> user / password123</p>
+                    <p><strong>ผู้ดูแลระบบ:</strong> admin / admin123</p>
                 </div>
             </div>
         </div>
@@ -931,8 +945,8 @@
                     <i class="fas fa-car"></i>
                 </div>
                 <div class="header-title">
-                    <h1>ระบบขอจองรถของบริษัทใช้งาน</h1>
-                    <p class="subtitle">แผนกบริการยานยนต์ - Vehicle Department</p>
+                    <h1>ระบบขอจองรถใช้งานบริษัท</h1>
+                    <p class="subtitle">แผนกยานยนต์ - Vehicle Department</p>
                 </div>
             </div>
             
@@ -956,7 +970,7 @@
             <h3><i class="fas fa-tools"></i> การจัดการสถานะรถ</h3>
             <div class="status-controls">
                 <button class="btn btn-primary" id="refreshStatusBtn">
-                    <i class="fas fa-sync-alt"></i> อัพเดทสถานะ
+                    <i class="fas fa-sync-alt"></i> รีเฟรชสถานะ
                 </button>
             </div>
         </div>
@@ -1034,6 +1048,9 @@
                                     <input type="date" id="rentStartdate">
                                 </div>
                                 <div class="error-message" id="rentStartdateError">กรุณาเลือกวันที่เริ่มจอง</div>
+                                <div style="margin-top: 5px; font-size: 12px; color: var(--gray);">
+                                    <i class="fas fa-info-circle"></i> ไม่สามารถเลือกวันที่ย้อนหลังได้
+                                </div>
                             </div>
                             <div>
                                 <label for="rentEnddate">วันที่สิ้นสุดการจอง</label>
@@ -1042,6 +1059,9 @@
                                     <input type="date" id="rentEnddate">
                                 </div>
                                 <div class="error-message" id="rentEnddateError">กรุณาเลือกวันที่สิ้นสุดการจอง</div>
+                                <div style="margin-top: 5px; font-size: 12px; color: var(--gray);">
+                                    <i class="fas fa-info-circle"></i> สูงสุด 3 วันนับจากวันที่เริ่มจอง
+                                </div>
                             </div>
                         </div>
                         
@@ -1174,6 +1194,7 @@
                     <ul style="padding-left: 20px; color: var(--dark); font-size: 14px;">
                         <li>กรุณาตรวจสอบข้อมูลก่อนส่งคำขอจอง</li>
                         <li>การจองรถต้องทำล่วงหน้าอย่างน้อย 1 วันทำการ</li>
+                        <li>สามารถจองรถได้สูงสุด 3 วันต่อครั้ง</li>
                         <li>กรุณานำรถคืนตามเวลาที่กำหนด</li>
                         <li>หากมีปัญหาด่วนติดต่อแผนกยานยนต์ </li>
                     </ul>
@@ -1482,6 +1503,7 @@
         
         if (!startDate || !endDate || !startTime || !endTime) {
             document.getElementById('durationDisplay').textContent = "ระยะเวลาการจอง: -";
+            document.getElementById('durationDisplay').className = "duration-display";
             return;
         }
         
@@ -1492,6 +1514,7 @@
         // ตรวจสอบว่าเวลาสิ้นสุดไม่เร็วกว่าเวลาเริ่มต้น
         if (endDateTime <= startDateTime) {
             document.getElementById('durationDisplay').textContent = "ระยะเวลาการจอง: วันที่/เวลาไม่ถูกต้อง";
+            document.getElementById('durationDisplay').className = "duration-display duration-danger";
             return;
         }
         
@@ -1522,6 +1545,24 @@
         
         if (diffDays === 0 && remainingHours === 0 && diffMinutes === 0) {
             durationText += "น้อยกว่า 1 นาที";
+        }
+        
+        // ตรวจสอบว่าไม่เกิน 3 วัน (72 ชั่วโมง)
+        const maxDurationHours = 3 * 24; // 72 ชั่วโมง
+        
+        // ตรวจสอบว่าไม่เกิน 3 วันตามปฏิทิน
+        const startDateObj = new Date(startDate);
+        const endDateObj = new Date(endDate);
+        const diffDaysCalendar = Math.floor((endDateObj - startDateObj) / (1000 * 60 * 60 * 24));
+        
+        if (diffHours > maxDurationHours || diffDaysCalendar > 2) {
+            durationText += " (เกินกำหนด 3 วัน!)";
+            document.getElementById('durationDisplay').className = "duration-display duration-danger";
+        } 
+        else if (diffHours > 24 || diffDaysCalendar > 0) {
+            document.getElementById('durationDisplay').className = "duration-display duration-warning";
+        } else {
+            document.getElementById('durationDisplay').className = "duration-display duration-success";
         }
         
         document.getElementById('durationDisplay').textContent = durationText;
@@ -1880,6 +1921,18 @@
             rentStartdateError.style.display = "block";
             document.getElementById('rentStartdate').classList.add('input-error');
             isValid = false;
+        } else {
+            // ตรวจสอบว่าไม่เลือกวันที่ย้อนหลัง
+            const startDate = new Date(rentStartdate);
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            
+            if (startDate < today) {
+                rentStartdateError.textContent = "ไม่สามารถเลือกวันที่ย้อนหลังได้";
+                rentStartdateError.style.display = "block";
+                document.getElementById('rentStartdate').classList.add('input-error');
+                isValid = false;
+            }
         }
         
         // ตรวจสอบวันที่สิ้นสุด
@@ -1909,19 +1962,6 @@
             isValid = false;
         }
         
-        // ตรวจสอบวันที่สิ้นสุดต้องไม่เร็วกว่าวันที่เริ่ม
-        if (rentStartdate && rentEnddate) {
-            const startDate = new Date(rentStartdate);
-            const endDate = new Date(rentEnddate);
-            
-            if (endDate < startDate) {
-                rentEnddateError.textContent = "วันที่สิ้นสุดต้องไม่เร็วกว่าวันที่เริ่ม";
-                rentEnddateError.style.display = "block";
-                document.getElementById('rentEnddate').classList.add('input-error');
-                isValid = false;
-            }
-        }
-        
         // ตรวจสอบวันที่และเวลา
         if (rentStartdate && rentEnddate && startTime && endTime) {
             const startDateTime = new Date(`${rentStartdate}T${startTime}`);
@@ -1934,11 +1974,41 @@
                 isValid = false;
             }
             
-            // ตรวจสอบว่าการจองต้องไม่เกิน 30 วัน
-            const maxDuration = 30 * 24 * 60 * 60 * 1000; // 30 วันในมิลลิวินาที
-            if ((endDateTime - startDateTime) > maxDuration) {
-                rentEnddateError.textContent = "ระยะเวลาการจองต้องไม่เกิน 30 วัน";
+            // ตรวจสอบว่าการจองต้องไม่เกิน 3 วัน (72 ชั่วโมง)
+            const maxDurationHours = 3 * 24 * 60 * 60 * 1000; // 3 วันในมิลลิวินาที (72 ชั่วโมง)
+            const durationMs = endDateTime - startDateTime;
+            
+            if (durationMs > maxDurationHours) {
+                const durationHours = Math.floor(durationMs / (1000 * 60 * 60));
+                const durationDays = Math.floor(durationHours / 24);
+                rentEnddateError.textContent = `ระยะเวลาการจอง ${durationDays} วัน ${durationHours % 24} ชั่วโมง เกินกว่า 3 วันที่กำหนด`;
                 rentEnddateError.style.display = "block";
+                document.getElementById('rentEnddate').classList.add('input-error');
+                isValid = false;
+            }
+            
+            // ตรวจสอบว่าการจองต้องไม่เกิน 3 วันตามปฏิทิน
+            const startDateObj = new Date(rentStartdate);
+            const endDateObj = new Date(rentEnddate);
+            const diffDaysCalendar = Math.floor((endDateObj - startDateObj) / (1000 * 60 * 60 * 24));
+            
+            if (diffDaysCalendar > 2) { // อนุญาตให้จองได้สูงสุด 3 วัน (วันเริ่มต้น + 2 วันถัดไป)
+                rentEnddateError.textContent = `ระยะเวลาการจอง ${diffDaysCalendar + 1} วัน เกินกว่า 3 วันที่กำหนด`;
+                rentEnddateError.style.display = "block";
+                document.getElementById('rentEnddate').classList.add('input-error');
+                isValid = false;
+            }
+        }
+        
+        // ตรวจสอบวันที่สิ้นสุดต้องไม่เร็วกว่าวันที่เริ่ม
+        if (rentStartdate && rentEnddate) {
+            const startDate = new Date(rentStartdate);
+            const endDate = new Date(rentEnddate);
+            
+            if (endDate < startDate) {
+                rentEnddateError.textContent = "วันที่สิ้นสุดต้องไม่เร็วกว่าวันที่เริ่ม";
+                rentEnddateError.style.display = "block";
+                document.getElementById('rentEnddate').classList.add('input-error');
                 isValid = false;
             }
         }
@@ -1959,7 +2029,8 @@
     function login(username, password, role) {
         // ตรวจสอบข้อมูลล็อกอิน (ในที่นี้ใช้ข้อมูลแบบง่ายๆ)
         const validUsers = {
-            'admin': { password: '104810', role: 'admin' }
+            'user': { password: 'password123', role: 'user' },
+            'admin': { password: 'admin123', role: 'admin' }
         };
         
         if (validUsers[username] && validUsers[username].password === password) {
@@ -2231,11 +2302,76 @@
         document.getElementById('startTime').value = "08:00";
         document.getElementById('endTime').value = "17:00";
         
+        // จำกัดวันที่ในปฏิทิน - ตั้งค่าวันที่เริ่มต้นขั้นต่ำเป็นวันนี้
+        const todayInput = new Date().toISOString().split('T')[0];
+        document.getElementById('rentStartdate').min = todayInput;
+        document.getElementById('rentEnddate').min = todayInput;
+        
         // คำนวณระยะเวลาการจองเริ่มต้น
         calculateDuration();
         
         // อัปเดตข้อมูลสรุปเมื่อโหลดหน้า
         updateSummary();
+        
+        // จำกัดวันที่สิ้นสุดการจองไม่เกิน 3 วันจากวันที่เริ่มต้น
+        document.getElementById('rentStartdate').addEventListener('change', function() {
+            const startDateInput = document.getElementById('rentStartdate');
+            const endDateInput = document.getElementById('rentEnddate');
+            
+            if (startDateInput.value) {
+                const startDate = new Date(startDateInput.value);
+                const maxDate = new Date(startDate);
+                maxDate.setDate(maxDate.getDate() + 2); // เพิ่ม 2 วัน (รวมเป็น 3 วัน)
+                
+                // แปลงวันที่เป็นรูปแบบ YYYY-MM-DD
+                const maxDateStr = maxDate.toISOString().split('T')[0];
+                
+                // ตั้งค่าคุณสมบัติ min และ max ของ input
+                endDateInput.min = startDateInput.value;
+                endDateInput.max = maxDateStr;
+                
+                // ถ้าวันที่สิ้นสุดเกินกว่าที่กำหนด ให้เปลี่ยนเป็นวันที่สูงสุดที่อนุญาต
+                if (endDateInput.value && new Date(endDateInput.value) > maxDate) {
+                    endDateInput.value = maxDateStr;
+                }
+                
+                // คำนวณระยะเวลาใหม่
+                calculateDuration();
+                updateSummary();
+            }
+        });
+
+        document.getElementById('rentEnddate').addEventListener('change', function() {
+            const startDateInput = document.getElementById('rentStartdate');
+            const endDateInput = document.getElementById('rentEnddate');
+            
+            if (startDateInput.value && endDateInput.value) {
+                const startDate = new Date(startDateInput.value);
+                const endDate = new Date(endDateInput.value);
+                const diffDays = Math.floor((endDate - startDate) / (1000 * 60 * 60 * 24));
+                
+                if (diffDays > 2) {
+                    // ถ้าเลือกเกิน 3 วัน ให้ปรับเป็นวันที่สูงสุดที่อนุญาต
+                    const maxDate = new Date(startDate);
+                    maxDate.setDate(maxDate.getDate() + 2);
+                    const maxDateStr = maxDate.toISOString().split('T')[0];
+                    endDateInput.value = maxDateStr;
+                    
+                    // แจ้งเตือนผู้ใช้
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'จำกัดระยะเวลาการจอง',
+                        text: 'สามารถจองรถได้สูงสุด 3 วันเท่านั้น ระบบได้ปรับวันที่สิ้นสุดให้เหมาะสมแล้ว',
+                        confirmButtonColor: '#1e3a8a',
+                        timer: 3000,
+                        showConfirmButton: false
+                    });
+                }
+                
+                calculateDuration();
+                updateSummary();
+            }
+        });
         
         // จัดการเหตุการณ์ค้นหาพนักงาน
         document.getElementById('searchBtn').addEventListener('click', searchEmployee);
@@ -2283,7 +2419,7 @@
                 Swal.fire({
                     icon: 'error',
                     title: 'ข้อมูลไม่ครบถ้วน',
-                    text: 'กรุณากรอกข้อมูลให้ครบทุกช่องที่กำหนด',
+                    text: 'กรุณากรอกข้อมูลให้ครบทุกช่องที่กำหนด และตรวจสอบระยะเวลาการจองไม่เกิน 3 วัน',
                     confirmButtonColor: '#1e3a8a'
                 });
                 return;
@@ -2390,6 +2526,16 @@
             document.getElementById('startTime').value = "08:00";
             document.getElementById('endTime').value = "17:00";
             
+            // ตั้งค่าวันที่เริ่มต้นขั้นต่ำเป็นวันนี้
+            document.getElementById('rentStartdate').min = today;
+            document.getElementById('rentEnddate').min = today;
+            
+            // ตั้งค่าวันที่สิ้นสุดสูงสุด
+            const maxDate = new Date(today);
+            maxDate.setDate(maxDate.getDate() + 2);
+            const maxDateStr = maxDate.toISOString().split('T')[0];
+            document.getElementById('rentEnddate').max = maxDateStr;
+            
             // คำนวณระยะเวลาใหม่
             calculateDuration();
             
@@ -2424,6 +2570,16 @@
                     document.getElementById('rentEnddate').value = threeDaysLaterStr;
                     document.getElementById('startTime').value = "08:00";
                     document.getElementById('endTime').value = "17:00";
+                    
+                    // ตั้งค่าวันที่เริ่มต้นขั้นต่ำเป็นวันนี้
+                    document.getElementById('rentStartdate').min = today;
+                    document.getElementById('rentEnddate').min = today;
+                    
+                    // ตั้งค่าวันที่สิ้นสุดสูงสุด
+                    const maxDate = new Date(today);
+                    maxDate.setDate(maxDate.getDate() + 2);
+                    const maxDateStr = maxDate.toISOString().split('T')[0];
+                    document.getElementById('rentEnddate').max = maxDateStr;
                     
                     // ล้าง Auto-complete
                     document.getElementById('employeeAutoComplete').style.display = 'none';
