@@ -514,6 +514,189 @@
             color: var(--primary);
             font-weight: 600;
         }
+        .admin-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+            margin-bottom: 20px;
+        }
+
+        .admin-controls {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .btn-admin {
+            padding: 12px 24px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s;
+        }
+
+        .btn-admin:hover {
+            background: var(--primary-light);
+            transform: translateY(-2px);
+        }
+
+        .login-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            display: none;
+        }
+
+        .login-box {
+            background: white;
+            padding: 40px;
+            border-radius: 16px;
+            width: 90%;
+            max-width: 400px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+        }
+
+        .login-title {
+            text-align: center;
+            color: var(--primary);
+            margin-bottom: 30px;
+            font-size: 24px;
+        }
+
+        .login-input {
+            width: 100%;
+            padding: 14px;
+            margin-bottom: 20px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-size: 16px;
+        }
+
+        .btn-login {
+            width: 100%;
+            padding: 14px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-login:hover {
+            background: var(--primary-light);
+        }
+
+        .car-management-container {
+            display: none;
+            margin-top: 20px;
+        }
+
+        .car-management-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .car-management-card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            border: 2px solid var(--border);
+        }
+
+        .car-management-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .car-management-name {
+            font-weight: 600;
+            font-size: 18px;
+            color: var(--dark);
+        }
+
+        .status-select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-size: 14px;
+            margin-top: 10px;
+        }
+
+        .status-select:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        .status-update-btn {
+            width: 100%;
+            padding: 10px;
+            margin-top: 10px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .status-update-btn:hover {
+            background: var(--primary-light);
+        }
+
+        .status-display {
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            text-align: center;
+        }
+
+        .admin-only {
+            display: none;
+        }
+
+        .logout-btn {
+            background: var(--danger);
+        }
+
+        .logout-btn:hover {
+            background: #dc2626;
+        }
+
+        .current-user {
+            color: var(--primary);
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        
     </style>
 </head>
 <body>
@@ -529,6 +712,52 @@
                 </div>
             </div>
         </header>
+
+       <div class="login-container" id="loginContainer">
+        <div class="login-box">
+            <h2 class="login-title"><i class="fas fa-lock"></i> เข้าสู่ระบบผู้ดูแล</h2>
+            <div class="form-group">
+                <input type="text" id="adminUsername" class="login-input" placeholder="ชื่อผู้ใช้">
+            </div>
+            <div class="form-group">
+                <input type="password" id="adminPassword" class="login-input" placeholder="รหัสผ่าน">
+            </div>
+            <button class="btn-login" id="loginBtn">เข้าสู่ระบบ</button>
+            <div style="margin-top: 20px; text-align: center; font-size: 14px; color: var(--gray);">
+                <p>ผู้ดูแลระบบเท่านั้น</p>
+                <p style="font-size: 12px; margin-top: 5px;">(admin/password)</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- แก้ไข Header เพื่อเพิ่มปุ่มจัดการ -->
+        <div class="admin-header" id="adminHeader">
+            <div class="logo-container">
+                <div class="logo">
+                    <i class="fas fa-car"></i>
+                </div>
+                <div>
+                    <h1>ระบบขอจองรถใช้งานบริษัท</h1>
+                    <p class="subtitle">แผนกยานยนต์ - Vehicle Department</p>
+                </div>
+            </div>
+            
+            <div class="admin-controls">
+                <div class="current-user" id="currentUser" style="display: none;">
+                    <i class="fas fa-user"></i> <span id="usernameDisplay"></span>
+                </div>
+                <button class="btn-admin" id="manageCarsBtn" style="display: none;">
+                    <i class="fas fa-cog"></i> จัดการสถานะรถ
+                </button>
+                <button class="btn-admin" id="adminLoginBtn">
+                    <i class="fas fa-sign-in-alt"></i> เข้าสู่ระบบผู้ดูแล
+                </button>
+                <button class="btn-admin logout-btn" id="logoutBtn" style="display: none;">
+                    <i class="fas fa-sign-out-alt"></i> ออกจากระบบ
+                </button>
+            </div>
+        </div>
 
         <div class="main-content">
             <!-- ฟอร์มจองรถ -->
@@ -748,24 +977,30 @@
                     </ul>
                 </div>
                 
-                <div style="margin-top: 20px; padding: 15px; background: #f0f9ff; border-radius: 10px; border-left: 4px solid var(--primary);">
-                    <h4 style="color: var(--dark); margin-bottom: 10px; display: flex; align-items: center; gap: 10px;">
-                        <i class="fas fa-info-circle"></i> สถานะรถ
-                    </h4>
-                    <div style="display: flex; gap: 15px; flex-wrap: wrap;">
-                        <div style="display: flex; align-items: center;">
-                            <div style="width: 12px; height: 12px; background-color: var(--success); border-radius: 50%; margin-right: 8px;"></div>
-                            <span style="font-size: 14px;">พร้อมใช้งาน</span>
-                        </div>
-                        <div style="display: flex; align-items: center;">
-                            <div style="width: 12px; height: 12px; background-color: var(--repair); border-radius: 50%; margin-right: 8px;"></div>
-                            <span style="font-size: 14px;">กำลังซ่อมแซม</span>
-                        </div>
-                        <div style="display: flex; align-items: center;">
-                            <div style="width: 12px; height: 12px; background-color: var(--danger); border-radius: 50%; margin-right: 8px;"></div>
-                            <span style="font-size: 14px;">ไม่พร้อมใช้งาน</span>
-                        </div>
-                    </div>
+               <div class="car-management-container" id="carManagementContainer">
+            <div class="form-container">
+                <h2 class="section-title"><i class="fas fa-tools"></i> จัดการสถานะรถทั้งหมด</h2>
+                <div style="background: #f0f9ff; padding: 20px; border-radius: 10px; margin-bottom: 20px;">
+                    <h4 style="color: var(--primary); margin-bottom: 10px;">คำแนะนำการใช้งาน</h4>
+                    <ul style="padding-left: 20px; color: var(--dark);">
+                        <li>เปลี่ยนสถานะรถตามสภาพจริง</li>
+                        <li><span class="status-available" style="display: inline-block; padding: 2px 8px;">พร้อมใช้งาน</span> - รถพร้อมให้บริการ</li>
+                        <li><span class="status-repair" style="display: inline-block; padding: 2px 8px;">กำลังซ่อมแซม</span> - รถอยู่ระหว่างซ่อมบำรุง</li>
+                        <li><span class="status-unavailable" style="display: inline-block; padding: 2px 8px;">ไม่พร้อมใช้งาน</span> - รถไม่สามารถให้บริการได้ชั่วคราว</li>
+                    </ul>
+                </div>
+                
+                <div class="car-management-grid" id="carManagementGrid">
+                    <!-- รายการรถสำหรับจัดการจะถูกสร้างด้วย JavaScript -->
+                </div>
+                
+                <div class="button-group" style="margin-top: 30px;">
+                    <button class="btn btn-primary" id="saveAllStatusBtn">
+                        <i class="fas fa-save"></i> บันทึกการเปลี่ยนแปลงทั้งหมด
+                    </button>
+                    <button class="btn btn-secondary" id="backToMainBtn">
+                        <i class="fas fa-arrow-left"></i> กลับไปหน้าหลัก
+                    </button>
                 </div>
             </div>
         </div>
@@ -777,891 +1012,319 @@
         </div>
     </div>
 
-<script>
-    // URL ของ Google Apps Script ที่เผยแพร่แล้ว
-    const EMPLOYEE_API_URL = "https://script.google.com/macros/s/AKfycbx7i0gYm7gVBRc3mbmgGYRugMVYThIX34_WnbbfNlPhg0ZMFwZNv72a6ptR6yostUn_aQ/exec";
-    const RESERVATION_API_URL = "https://script.google.com/macros/s/AKfycbyCGLy7405qIxhfKUDhxDSL8JLx5rn5nxvC0s_l7qUN1XEBIfvZB6v0XcWKErYlEuyU/exec";
-    
-    // ตัวแปรเก็บข้อมูลพนักงาน
-    let employees = [];
-    
-    // ข้อมูลรถทั้งหมดพร้อมสถานะ
-    const cars = [
-        { id: 1, name: "นาวาร่า", type: "รถกระบะ", icon: "fas fa-truck-pickup", status: "available", statusText: "พร้อมใช้งาน" },
-        { id: 2, name: "รถกระบะขาว", type: "รถกระบะ", icon: "fas fa-truck-pickup", status: "available", statusText: "พร้อมใช้งาน" },
-        { id: 3, name: "x-lift No.1", type: "รถกระเช้า", icon: "fas fa-truck", status: "available", statusText: "พร้อมใช้งาน" },
-        { id: 4, name: "x-lift No.2", type: "รถกระเช้า", icon: "fas fa-truck", status: "repair", statusText: "กำลังซ่อมแซม" },
-        { id: 5, name: "x-lift No.3", type: "รถกระเช้า", icon: "fas fa-truck", status: "available", statusText: "พร้อมใช้งาน" },
-        { id: 6, name: "x-lift No.4", type: "รถกระเช้า", icon: "fas fa-truck", status: "unavailable", statusText: "ไม่พร้อมใช้งาน" },
-        { id: 7, name: "Fork-lift No.1", type: "รถยก", icon: "fas fa-truck", status: "available", statusText: "พร้อมใช้งาน" },
-        { id: 8, name: "Fork-lift No.2", type: "รถยก", icon: "fas fa-truck", status: "repair", statusText: "กำลังซ่อมแซม" },
-        { id: 9, name: "Fork-lift No.3", type: "รถยก", icon: "fas fa-truck", status: "available", statusText: "พร้อมใช้งาน" },
-        { id: 10, name: "Fork-lift No.4", type: "รถยก", icon: "fas fa-truck", status: "available", statusText: "พร้อมใช้งาน" },
-        { id: 11, name: "Fork-lift No.5", type: "รถยก", icon: "fas fa-truck", status: "unavailable", statusText: "ไม่พร้อมใช้งาน" },
-        { id: 12, name: "Fork-lift No.6", type: "รถยก", icon: "fas fa-truck", status: "available", statusText: "พร้อมใช้งาน" },
-        { id: 13, name: "Fork-lift No.7", type: "รถยก", icon: "fas fa-truck", status: "repair", statusText: "กำลังซ่อมแซม" },
-        { id: 14, name: "Fork-lift No.8", type: "รถยก", icon: "fas fa-truck", status: "available", statusText: "พร้อมใช้งาน" }
-    ];
+    <script>
+        // ข้อมูลผู้ดูแลระบบ (ในระบบจริงควรเก็บในฐานข้อมูลที่ปลอดภัย)
+        const ADMIN_ACCOUNTS = [
+            { username: "admin", password: "password", name: "ผู้ดูแลระบบ" },
+            { username: "vehicle", password: "vehicle123", name: "แผนกยานยนต์" },
+            { username: "sarawut", password: "admin123", name: "Sarawut.C" }
+        ];
 
-    // ฟังก์ชันสร้างตัวเลือกรถ
-    function renderCarOptions() {
-        const container = document.getElementById('carOptionsContainer');
-        container.innerHTML = '';
-        
-        // กรองรถที่พร้อมใช้งานเท่านั้นสำหรับตัวเลือก
-        const availableCars = cars.filter(car => car.status === "available");
-        
-        availableCars.forEach(car => {
-            const option = document.createElement('div');
-            option.className = 'car-option';
-            option.setAttribute('data-value', car.name);
-            option.setAttribute('data-status', car.status);
-            
-            // กำหนดสีไอคอนตามสถานะ
-            let iconColor = "var(--primary)"; // สีปกติ
-            
-            option.innerHTML = `
-                <div class="car-icon" style="color: ${iconColor};">
-                    <i class="${car.icon}"></i>
-                </div>
-                <div class="car-name">${car.name}</div>
-                <div class="car-status status-${car.status}">${car.statusText}</div>
-            `;
-            
-            option.addEventListener('click', function() {
-                // ลบการเลือกทั้งหมด
-                document.querySelectorAll('.car-option').forEach(opt => opt.classList.remove('selected'));
-                
-                // เลือกรถปัจจุบัน
-                this.classList.add('selected');
-                
-                // ตั้งค่าใน input ที่ซ่อนอยู่
-                const carValue = this.getAttribute('data-value');
-                const carStatus = this.getAttribute('data-status');
-                document.getElementById('carSelect').value = carValue;
-                document.getElementById('carSelectError').style.display = "none";
-                
-                // อัปเดตข้อมูลสรุป
-                updateSummary();
-                
-                // อัปเดตสถานะรถในสรุป
-                const carData = cars.find(c => c.name === carValue);
-                if (carData) {
-                    document.getElementById('summaryCarStatus').textContent = carData.statusText;
-                }
-            });
-            
-            container.appendChild(option);
-        });
-    }
+        // ข้อมูลรถทั้งหมด (ใช้ตัวแปร global เดิม)
+        let cars = [
+            { id: 1, name: "นาวาร่า", type: "รถกระบะ", icon: "fas fa-truck-pickup", status: "available", statusText: "พร้อมใช้งาน" },
+            { id: 2, name: "รถกระบะขาว", type: "รถกระบะ", icon: "fas fa-truck-pickup", status: "available", statusText: "พร้อมใช้งาน" },
+            { id: 3, name: "x-lift No.1", type: "รถกระเช้า", icon: "fas fa-truck", status: "available", statusText: "พร้อมใช้งาน" },
+            { id: 4, name: "x-lift No.2", type: "รถกระเช้า", icon: "fas fa-truck", status: "repair", statusText: "กำลังซ่อมแซม" },
+            { id: 5, name: "x-lift No.3", type: "รถกระเช้า", icon: "fas fa-truck", status: "available", statusText: "พร้อมใช้งาน" },
+            { id: 6, name: "x-lift No.4", type: "รถกระเช้า", icon: "fas fa-truck", status: "unavailable", statusText: "ไม่พร้อมใช้งาน" },
+            { id: 7, name: "Fork-lift No.1", type: "รถยก", icon: "fas fa-truck", status: "available", statusText: "พร้อมใช้งาน" },
+            { id: 8, name: "Fork-lift No.2", type: "รถยก", icon: "fas fa-truck", status: "repair", statusText: "กำลังซ่อมแซม" },
+            { id: 9, name: "Fork-lift No.3", type: "รถยก", icon: "fas fa-truck", status: "available", statusText: "พร้อมใช้งาน" },
+            { id: 10, name: "Fork-lift No.4", type: "รถยก", icon: "fas fa-truck", status: "available", statusText: "พร้อมใช้งาน" },
+            { id: 11, name: "Fork-lift No.5", type: "รถยก", icon: "fas fa-truck", status: "unavailable", statusText: "ไม่พร้อมใช้งาน" },
+            { id: 12, name: "Fork-lift No.6", type: "รถยก", icon: "fas fa-truck", status: "available", statusText: "พร้อมใช้งาน" },
+            { id: 13, name: "Fork-lift No.7", type: "รถยก", icon: "fas fa-truck", status: "repair", statusText: "กำลังซ่อมแซม" },
+            { id: 14, name: "Fork-lift No.8", type: "รถยก", icon: "fas fa-truck", status: "available", statusText: "พร้อมใช้งาน" }
+        ];
 
-    // ฟังก์ชันสร้างรายการรถทั้งหมด
-    function renderCarList() {
-        const container = document.getElementById('carListContainer');
-        container.innerHTML = '';
-        
-        cars.forEach(car => {
-            const item = document.createElement('div');
-            item.className = 'car-item';
-            
-            // กำหนดสีไอคอนตามสถานะ
-            let iconColor = "var(--primary)";
-            if (car.status === "repair") iconColor = "var(--repair)";
-            if (car.status === "unavailable") iconColor = "var(--danger)";
-            
-            item.innerHTML = `
-                <div class="car-item-icon" style="color: ${iconColor};">
-                    <i class="${car.icon}"></i>
-                </div>
-                <div class="car-item-info">
-                    <div class="car-item-name">${car.name}</div>
-                    <div class="car-item-type">${car.type}</div>
-                </div>
-                <div class="car-status-badge status-${car.status}">${car.statusText}</div>
-            `;
-            
-            container.appendChild(item);
-        });
-    }
+        // ตัวแปรเก็บข้อมูลผู้ใช้ที่ล็อกอิน
+        let currentUser = null;
 
-    // ฟังก์ชันคำนวณระยะเวลาการจอง
-    function calculateDuration() {
-        const startDate = document.getElementById('rentStartdate').value;
-        const endDate = document.getElementById('rentEnddate').value;
-        const startTime = document.getElementById('startTime').value;
-        const endTime = document.getElementById('endTime').value;
-        
-        if (!startDate || !endDate || !startTime || !endTime) {
-            document.getElementById('durationDisplay').textContent = "ระยะเวลาการจอง: -";
-            return;
-        }
-        
-        // สร้างวันที่และเวลาเต็มรูปแบบ
-        const startDateTime = new Date(`${startDate}T${startTime}`);
-        const endDateTime = new Date(`${endDate}T${endTime}`);
-        
-        // ตรวจสอบว่าเวลาสิ้นสุดไม่เร็วกว่าเวลาเริ่มต้น
-        if (endDateTime <= startDateTime) {
-            document.getElementById('durationDisplay').textContent = "ระยะเวลาการจอง: วันที่/เวลาไม่ถูกต้อง";
-            return;
-        }
-        
-        // คำนวณความแตกต่างเป็นมิลลิวินาที
-        const diffMs = endDateTime - startDateTime;
-        
-        // แปลงเป็นชั่วโมงและนาที
-        const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
-        const diffMinutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
-        
-        // แปลงเป็นวัน ชั่วโมง นาที
-        const diffDays = Math.floor(diffHours / 24);
-        const remainingHours = diffHours % 24;
-        
-        let durationText = "ระยะเวลาการจอง: ";
-        
-        if (diffDays > 0) {
-            durationText += `${diffDays} วัน `;
-        }
-        
-        if (remainingHours > 0) {
-            durationText += `${remainingHours} ชั่วโมง `;
-        }
-        
-        if (diffMinutes > 0) {
-            durationText += `${diffMinutes} นาที`;
-        }
-        
-        if (diffDays === 0 && remainingHours === 0 && diffMinutes === 0) {
-            durationText += "น้อยกว่า 1 นาที";
-        }
-        
-        document.getElementById('durationDisplay').textContent = durationText;
-    }
-
-    // ฟังก์ชันดึงข้อมูลพนักงานจาก Google Sheets
-    async function fetchEmployees() {
-        try {
-            const response = await fetch(EMPLOYEE_API_URL);
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
+        // ฟังก์ชันเช็คสถานะการล็อกอินจาก localStorage
+        function checkLoginStatus() {
+            const savedUser = localStorage.getItem('car_reservation_admin');
+            if (savedUser) {
+                currentUser = JSON.parse(savedUser);
+                updateUIForLoggedInUser();
             }
-            const data = await response.json();
+        }
+
+        // ฟังก์ชันล็อกอิน
+        function login(username, password) {
+            const user = ADMIN_ACCOUNTS.find(acc => 
+                acc.username === username && acc.password === password
+            );
             
-            // จัดรูปแบบข้อมูลพนักงาน
-            employees = data.map(row => ({
-                code: row[0] || '',        // คอลัมน์ A: รหัสพนักงาน
-                name: row[1] || '',        // คอลัมน์ B: ชื่อพนักงาน
-                position: row[4] || '',    // คอลัมน์ C: ตำแหน่ง
-                department: row[3] || '',  // คอลัมน์ D: ฝ่าย/แผนก
-                section: row[2] || ''      // คอลัมน์ E: ส่วนงาน
-            }));
-            
-            console.log('ดึงข้อมูลพนักงานสำเร็จ:', employees.length, 'รายการ');
-            return true;
-        } catch (error) {
-            console.error('เกิดข้อผิดพลาดในการดึงข้อมูลพนักงาน:', error);
+            return user;
+        }
+
+        // ฟังก์ชันล็อกเอาท์
+        function logout() {
+            currentUser = null;
+            localStorage.removeItem('car_reservation_admin');
+            updateUIForLoggedOutUser();
             Swal.fire({
-                icon: 'error',
-                title: 'ไม่สามารถดึงข้อมูลพนักงานได้',
-                text: 'กรุณาลองใหม่อีกครั้งหรือติดต่อผู้ดูแลระบบ',
-                confirmButtonColor: '#1e3a8a'
-            });
-            return false;
-        }
-    }
-
-    // ฟังก์ชันบันทึกข้อมูลการจองลง Google Sheets
-    async function saveReservation(formData) {
-        try {
-            // เตรียมข้อมูลสำหรับส่ง
-            const payload = {
-                timestamp: new Date().toLocaleString('th-TH'),
-                code: formData.code,
-                name: formData.name,
-                position: formData.position,
-                department: formData.department,
-                section: formData.section,
-                contact: formData.contact,
-                car: formData.choose,
-                startDate: formData.rentStartdate,
-                startTime: formData.startTime,
-                endDate: formData.rentEnddate,
-                endTime: formData.endTime,
-                reason: formData.reason,
-                duration: formData.duration,
-                status: 'รออนุมัติ'
-            };
-            
-            // ส่งข้อมูลผ่าน Google Apps Script
-            const response = await fetch(RESERVATION_API_URL, {
-                method: 'POST',
-                mode: 'no-cors', // เนื่องจาก Google Apps Script ใช้ no-cors
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(payload)
-            });
-            
-            // เนื่องจากใช้ no-cors เราจะแสดงข้อความสำเร็จทันที
-            return true;
-            
-        } catch (error) {
-            console.error('เกิดข้อผิดพลาดในการบันทึกข้อมูล:', error);
-            return false;
-        }
-    }
-
-    // ฟังก์ชันค้นหาพนักงานด้วยรหัสพนักงานหรือชื่อ
-    function searchEmployee() {
-        const searchValue = document.getElementById('employeeId').value.trim();
-        const employeeIdError = document.getElementById('employeeIdError');
-        
-        if (!searchValue) {
-            employeeIdError.textContent = "กรุณากรอกรหัสพนักงานหรือชื่อพนักงาน";
-            employeeIdError.style.display = "block";
-            document.getElementById('employeeId').classList.add('input-error');
-            return;
-        }
-        
-        // ค้นหาข้อมูลพนักงานโดยใช้รหัสหรือชื่อ
-        const employee = employees.find(emp => 
-            emp.code === searchValue || 
-            emp.name.toLowerCase().includes(searchValue.toLowerCase())
-        );
-        
-        if (!employee) {
-            employeeIdError.textContent = "ไม่พบข้อมูลพนักงานรหัสหรือชื่อนี้";
-            employeeIdError.style.display = "block";
-            document.getElementById('employeeId').classList.add('input-error');
-            document.getElementById('employeeInfo').style.display = "none";
-            clearEmployeeInfo();
-            return;
-        }
-        
-        // แสดงข้อมูลพนักงาน
-        document.getElementById('employeeName').textContent = employee.name;
-        document.getElementById('employeePosition').textContent = employee.position;
-        document.getElementById('employeeDepartment').textContent = employee.department;
-        document.getElementById('employeeSection').textContent = employee.section;
-        
-        // เติมรหัสพนักงานในช่องค้นหา
-        document.getElementById('employeeId').value = employee.code;
-        
-        document.getElementById('employeeInfo').style.display = "block";
-        document.getElementById('employeeIdError').style.display = "none";
-        document.getElementById('employeeId').classList.remove('input-error');
-        
-        // อัปเดตข้อมูลสรุป
-        updateSummary();
-    }
-
-    // ฟังก์ชันแสดงคำแนะนำ Auto-complete
-    function showAutoComplete(searchValue) {
-        const autoCompleteContainer = document.getElementById('employeeAutoComplete');
-        
-        if (!searchValue || searchValue.length < 1) {
-            autoCompleteContainer.style.display = 'none';
-            return;
-        }
-        
-        // กรองพนักงานตามรหัสหรือชื่อ
-        const filteredEmployees = employees.filter(emp => 
-            emp.code.includes(searchValue) || 
-            emp.name.toLowerCase().includes(searchValue.toLowerCase())
-        ).slice(0, 5); // แสดงเฉพาะ 5 รายการแรก
-        
-        if (filteredEmployees.length === 0) {
-            autoCompleteContainer.style.display = 'none';
-            return;
-        }
-        
-        // สร้างรายการ Auto-complete
-        autoCompleteContainer.innerHTML = '';
-        filteredEmployees.forEach(emp => {
-            const item = document.createElement('div');
-            item.className = 'auto-complete-item';
-            item.innerHTML = `
-                <span class="auto-complete-code">${emp.code}</span>
-                <span class="auto-complete-name">${emp.name}</span>
-            `;
-            
-            item.addEventListener('click', () => {
-                document.getElementById('employeeId').value = emp.code;
-                autoCompleteContainer.style.display = 'none';
-                searchEmployee();
-            });
-            
-            autoCompleteContainer.appendChild(item);
-        });
-        
-        autoCompleteContainer.style.display = 'block';
-    }
-
-    // ล้างข้อมูลพนักงาน
-    function clearEmployeeInfo() {
-        document.getElementById('employeeName').textContent = "-";
-        document.getElementById('employeePosition').textContent = "-";
-        document.getElementById('employeeDepartment').textContent = "-";
-        document.getElementById('employeeSection').textContent = "-";
-        document.getElementById('contact').value = "";
-        
-        // ล้างข้อมูลสรุป
-        resetSummary();
-    }
-
-    // รีเซ็ตข้อมูลสรุป
-    function resetSummary() {
-        document.getElementById('summaryName').textContent = "-";
-        document.getElementById('summaryCode').textContent = "-";
-        document.getElementById('summaryPosition').textContent = "-";
-        document.getElementById('summaryDepartment').textContent = "-";
-        document.getElementById('summarySection').textContent = "-";
-        document.getElementById('summaryContact').textContent = "-";
-        document.getElementById('summaryCar').textContent = "-";
-        document.getElementById('summaryCarStatus').textContent = "-";
-        document.getElementById('summaryStartDate').textContent = "-";
-        document.getElementById('summaryStartTime').textContent = "-";
-        document.getElementById('summaryEndDate').textContent = "-";
-        document.getElementById('summaryEndTime').textContent = "-";
-        document.getElementById('summaryDuration').textContent = "-";
-        document.getElementById('summaryReason').textContent = "-";
-    }
-
-    // อัปเดตข้อมูลสรุป
-    function updateSummary() {
-        const searchValue = document.getElementById('employeeId').value.trim();
-        const employee = employees.find(emp => 
-            emp.code === searchValue || 
-            emp.name.toLowerCase().includes(searchValue.toLowerCase())
-        );
-        
-        if (employee) {
-            document.getElementById('summaryName').textContent = employee.name;
-            document.getElementById('summaryCode').textContent = employee.code;
-            document.getElementById('summaryPosition').textContent = employee.position;
-            document.getElementById('summaryDepartment').textContent = employee.department;
-            document.getElementById('summarySection').textContent = employee.section;
-        }
-        
-        // อัปเดตข้อมูลเบอร์โทร
-        const contact = document.getElementById('contact').value;
-        if (contact) {
-            document.getElementById('summaryContact').textContent = contact;
-        }
-        
-        // อัปเดตข้อมูลรถ
-        const selectedCar = document.getElementById('carSelect').value;
-        if (selectedCar) {
-            document.getElementById('summaryCar').textContent = selectedCar;
-            
-            // อัปเดตสถานะรถ
-            const carData = cars.find(c => c.name === selectedCar);
-            if (carData) {
-                document.getElementById('summaryCarStatus').textContent = carData.statusText;
-            }
-        }
-        
-        // อัปเดตวันที่และเวลา
-        const startDate = document.getElementById('rentStartdate').value;
-        const endDate = document.getElementById('rentEnddate').value;
-        const startTime = document.getElementById('startTime').value;
-        const endTime = document.getElementById('endTime').value;
-        
-        if (startDate) {
-            const formattedStartDate = new Date(startDate).toLocaleDateString('th-TH', {
-                year: 'numeric',
-                month: 'long',
-                day: 'numeric'
-            });
-            document.getElementById('summaryStartDate').textContent = formattedStartDate;
-        }
-        
-        if (endDate) {
-            const formattedEndDate = new Date(endDate).toLocaleDateString('th-TH', {
-                year: 'numeric',
-                month: 'long',
-                day: 'numeric'
-            });
-            document.getElementById('summaryEndDate').textContent = formattedEndDate;
-        }
-        
-        if (startTime) {
-            document.getElementById('summaryStartTime').textContent = startTime;
-        }
-        
-        if (endTime) {
-            document.getElementById('summaryEndTime').textContent = endTime;
-        }
-        
-        // คำนวณและอัปเดตระยะเวลา
-        if (startDate && endDate && startTime && endTime) {
-            const startDateTime = new Date(`${startDate}T${startTime}`);
-            const endDateTime = new Date(`${endDate}T${endTime}`);
-            
-            if (endDateTime > startDateTime) {
-                const diffMs = endDateTime - startDateTime;
-                const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
-                const diffMinutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
-                const diffDays = Math.floor(diffHours / 24);
-                const remainingHours = diffHours % 24;
-                
-                let durationText = "";
-                
-                if (diffDays > 0) {
-                    durationText += `${diffDays} วัน `;
-                }
-                
-                if (remainingHours > 0) {
-                    durationText += `${remainingHours} ชั่วโมง `;
-                }
-                
-                if (diffMinutes > 0) {
-                    durationText += `${diffMinutes} นาที`;
-                }
-                
-                document.getElementById('summaryDuration').textContent = durationText || "น้อยกว่า 1 นาที";
-            }
-        }
-        
-        // อัปเดตเหตุผล
-        const reason = document.getElementById('reason').value;
-        if (reason) {
-            document.getElementById('summaryReason').textContent = reason;
-        }
-    }
-
-    // ตรวจสอบฟอร์มก่อนส่ง
-    function validateForm() {
-        let isValid = true;
-        
-        // ตรวจสอบรหัสพนักงาน
-        const employeeId = document.getElementById('employeeId').value.trim();
-        const employeeIdError = document.getElementById('employeeIdError');
-        if (!employeeId) {
-            employeeIdError.textContent = "กรุณากรอกรหัสพนักงาน";
-            employeeIdError.style.display = "block";
-            document.getElementById('employeeId').classList.add('input-error');
-            isValid = false;
-        } else {
-            // ตรวจสอบว่ามีพนักงานนี้จริงหรือไม่
-            const employee = employees.find(emp => emp.code === employeeId);
-            if (!employee) {
-                employeeIdError.textContent = "ไม่พบข้อมูลพนักงานรหัสนี้";
-                employeeIdError.style.display = "block";
-                document.getElementById('employeeId').classList.add('input-error');
-                isValid = false;
-            }
-        }
-        
-        // ตรวจสอบเบอร์โทร
-        const contact = document.getElementById('contact').value.trim();
-        const contactError = document.getElementById('contactError');
-        if (!contact) {
-            contactError.textContent = "กรุณากรอกเบอร์โทรติดต่อ";
-            contactError.style.display = "block";
-            document.getElementById('contact').classList.add('input-error');
-            isValid = false;
-        } else if (!/^[0-9\-+]{10,}$/.test(contact)) {
-            contactError.textContent = "กรุณากรอกเบอร์โทรติดต่อให้ถูกต้อง";
-            contactError.style.display = "block";
-            document.getElementById('contact').classList.add('input-error');
-            isValid = false;
-        }
-        
-        // ตรวจสอบเลือกรถ
-        const carSelect = document.getElementById('carSelect').value;
-        const carSelectError = document.getElementById('carSelectError');
-        if (!carSelect) {
-            carSelectError.style.display = "block";
-            isValid = false;
-        } else {
-            // ตรวจสอบสถานะรถ
-            const selectedCarData = cars.find(car => car.name === carSelect);
-            if (selectedCarData && selectedCarData.status !== "available") {
-                carSelectError.textContent = "รถที่เลือกไม่พร้อมใช้งานในขณะนี้";
-                carSelectError.style.display = "block";
-                isValid = false;
-            }
-        }
-        
-        // ตรวจสอบวันที่เริ่ม
-        const rentStartdate = document.getElementById('rentStartdate').value;
-        const rentStartdateError = document.getElementById('rentStartdateError');
-        if (!rentStartdate) {
-            rentStartdateError.style.display = "block";
-            document.getElementById('rentStartdate').classList.add('input-error');
-            isValid = false;
-        }
-        
-        // ตรวจสอบวันที่สิ้นสุด
-        const rentEnddate = document.getElementById('rentEnddate').value;
-        const rentEnddateError = document.getElementById('rentEnddateError');
-        if (!rentEnddate) {
-            rentEnddateError.style.display = "block";
-            document.getElementById('rentEnddate').classList.add('input-error');
-            isValid = false;
-        }
-        
-        // ตรวจสอบเวลาเริ่มต้น
-        const startTime = document.getElementById('startTime').value;
-        const startTimeError = document.getElementById('startTimeError');
-        if (!startTime) {
-            startTimeError.style.display = "block";
-            document.getElementById('startTime').classList.add('input-error');
-            isValid = false;
-        }
-        
-        // ตรวจสอบเวลาสิ้นสุด
-        const endTime = document.getElementById('endTime').value;
-        const endTimeError = document.getElementById('endTimeError');
-        if (!endTime) {
-            endTimeError.style.display = "block";
-            document.getElementById('endTime').classList.add('input-error');
-            isValid = false;
-        }
-        
-        // ตรวจสอบวันที่สิ้นสุดต้องไม่เร็วกว่าวันที่เริ่ม
-        if (rentStartdate && rentEnddate) {
-            const startDate = new Date(rentStartdate);
-            const endDate = new Date(rentEnddate);
-            
-            if (endDate < startDate) {
-                rentEnddateError.textContent = "วันที่สิ้นสุดต้องไม่เร็วกว่าวันที่เริ่ม";
-                rentEnddateError.style.display = "block";
-                document.getElementById('rentEnddate').classList.add('input-error');
-                isValid = false;
-            }
-        }
-        
-        // ตรวจสอบวันที่และเวลา
-        if (rentStartdate && rentEnddate && startTime && endTime) {
-            const startDateTime = new Date(`${rentStartdate}T${startTime}`);
-            const endDateTime = new Date(`${rentEnddate}T${endTime}`);
-            
-            if (endDateTime <= startDateTime) {
-                endTimeError.textContent = "วันที่/เวลาสิ้นสุดต้องไม่เร็วกว่าวันที่/เวลาเริ่มต้น";
-                endTimeError.style.display = "block";
-                document.getElementById('endTime').classList.add('input-error');
-                isValid = false;
-            }
-            
-            // ตรวจสอบว่าการจองต้องไม่เกิน 30 วัน
-            const maxDuration = 30 * 24 * 60 * 60 * 1000; // 30 วันในมิลลิวินาที
-            if ((endDateTime - startDateTime) > maxDuration) {
-                rentEnddateError.textContent = "ระยะเวลาการจองต้องไม่เกิน 30 วัน";
-                rentEnddateError.style.display = "block";
-                isValid = false;
-            }
-        }
-        
-        // ตรวจสอบเหตุผล
-        const reason = document.getElementById('reason').value.trim();
-        const reasonError = document.getElementById('reasonError');
-        if (!reason) {
-            reasonError.style.display = "block";
-            document.getElementById('reason').classList.add('input-error');
-            isValid = false;
-        }
-        
-        return isValid;
-    }
-
-    // จัดการเหตุการณ์เมื่อหน้าเว็บโหลดเสร็จ
-    document.addEventListener('DOMContentLoaded', async function() {
-        // แสดงการโหลดข้อมูลพนักงาน
-        const loadingSwal = Swal.fire({
-            title: 'กำลังดึงข้อมูลพนักงาน...',
-            text: 'กรุณารอสักครู่',
-            allowOutsideClick: false,
-            showConfirmButton: false,
-            willOpen: () => {
-                Swal.showLoading();
-            }
-        });
-        
-        // ดึงข้อมูลพนักงานจาก Google Sheets
-        const fetchSuccess = await fetchEmployees();
-        
-        // ปิดการแจ้งเตือนการโหลด
-        await loadingSwal.close();
-        
-        if (!fetchSuccess) {
-            // ถ้าไม่สามารถดึงข้อมูลได้ ให้ใช้ข้อมูลตัวอย่าง
-            employees = [
-                { code: "EMP001", name: "สมชาย ใจดี", position: "วิศวกร", department: "แผนกยานยนต์", section: "ซ่อมบำรุง" },
-                { code: "EMP002", name: "สุนิตา รักงาน", position: "หัวหน้าแผนก", department: "แผนกยานยนต์", section: "บริหาร" },
-                { code: "EMP003", name: "ประยุทธ ทำงานเก่ง", position: "ช่างซ่อม", department: "แผนกยานยนต์", section: "ซ่อมบำรุง" },
-                { code: "EMP004", name: "กนกวรรณ มั่นคง", position: "เจ้าหน้าที่", department: "แผนกบุคคล", section: "สำนักงาน" },
-                { code: "EMP005", name: "ธีรพงษ์ สร้างสรรค์", position: "วิศวกร", department: "แผนกยานยนต์", section: "วิจัยและพัฒนา" }
-            ];
-            
-            Swal.fire({
-                icon: 'info',
-                title: 'ใช้ข้อมูลตัวอย่าง',
-                text: 'กำลังใช้งานข้อมูลพนักงานตัวอย่างเนื่องจากไม่สามารถเชื่อมต่อกับฐานข้อมูลได้',
+                icon: 'success',
+                title: 'ออกจากระบบสำเร็จ',
+                text: 'คุณได้ออกจากระบบผู้ดูแลเรียบร้อยแล้ว',
                 confirmButtonColor: '#1e3a8a'
             });
         }
-        
-        // สร้างตัวเลือกรถและรายการรถ
-        renderCarOptions();
-        renderCarList();
-        
-        // ตั้งค่าวันที่เริ่มต้น (วันนี้) และวันที่สิ้นสุด (3 วันจากนี้)
-        const today = new Date().toISOString().split('T')[0];
-        const threeDaysLater = new Date();
-        threeDaysLater.setDate(threeDaysLater.getDate() + 3);
-        const threeDaysLaterStr = threeDaysLater.toISOString().split('T')[0];
-        
-        // ตั้งค่าเวลาเริ่มต้นและสิ้นสุด (เริ่ม 08:00 สิ้นสุด 17:00)
-        document.getElementById('rentStartdate').value = today;
-        document.getElementById('rentEnddate').value = threeDaysLaterStr;
-        document.getElementById('startTime').value = "08:00";
-        document.getElementById('endTime').value = "17:00";
-        
-        // คำนวณระยะเวลาการจองเริ่มต้น
-        calculateDuration();
-        
-        // อัปเดตข้อมูลสรุปเมื่อโหลดหน้า
-        updateSummary();
-        
-        // จัดการเหตุการณ์ค้นหาพนักงาน
-        document.getElementById('searchBtn').addEventListener('click', searchEmployee);
-        
-        // จัดการเหตุการณ์ Auto-complete
-        document.getElementById('employeeId').addEventListener('input', function() {
-            const searchValue = this.value.trim();
-            showAutoComplete(searchValue);
-        });
-        
-        // ปิด Auto-complete เมื่อคลิกที่อื่น
-        document.addEventListener('click', function(e) {
-            if (!e.target.closest('#employeeId') && !e.target.closest('.auto-complete')) {
-                document.getElementById('employeeAutoComplete').style.display = 'none';
-            }
-        });
-        
-        // อัปเดตระยะเวลาการจองเมื่อมีการเปลี่ยนแปลงวันที่หรือเวลา
-        document.getElementById('rentStartdate').addEventListener('change', function() {
-            calculateDuration();
-            updateSummary();
-        });
-        
-        document.getElementById('rentEnddate').addEventListener('change', function() {
-            calculateDuration();
-            updateSummary();
-        });
-        
-        document.getElementById('startTime').addEventListener('change', function() {
-            calculateDuration();
-            updateSummary();
-        });
-        
-        document.getElementById('endTime').addEventListener('change', function() {
-            calculateDuration();
-            updateSummary();
-        });
-        
-        // จัดการเหตุการณ์เมื่อฟอร์มถูกส่ง
-        document.getElementById('reservationForm').addEventListener('submit', async function(e) {
-            e.preventDefault();
+
+        // อัปเดต UI สำหรับผู้ใช้ที่ล็อกอินแล้ว
+        function updateUIForLoggedInUser() {
+            document.getElementById('adminLoginBtn').style.display = 'none';
+            document.getElementById('logoutBtn').style.display = 'flex';
+            document.getElementById('manageCarsBtn').style.display = 'flex';
+            document.getElementById('currentUser').style.display = 'block';
+            document.getElementById('usernameDisplay').textContent = currentUser.name;
+        }
+
+        // อัปเดต UI สำหรับผู้ใช้ที่ไม่ได้ล็อกอิน
+        function updateUIForLoggedOutUser() {
+            document.getElementById('adminLoginBtn').style.display = 'flex';
+            document.getElementById('logoutBtn').style.display = 'none';
+            document.getElementById('manageCarsBtn').style.display = 'none';
+            document.getElementById('currentUser').style.display = 'none';
+            document.getElementById('carManagementContainer').style.display = 'none';
+            document.querySelector('.main-content').style.display = 'grid';
+        }
+
+        // สร้างฟอร์มจัดการสถานะรถ
+        function renderCarManagement() {
+            const container = document.getElementById('carManagementGrid');
+            container.innerHTML = '';
             
-            // ตรวจสอบข้อมูลในฟอร์ม
-            if (!validateForm()) {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'ข้อมูลไม่ครบถ้วน',
-                    text: 'กรุณากรอกข้อมูลให้ครบทุกช่องที่กำหนด',
-                    confirmButtonColor: '#1e3a8a'
-                });
-                return;
-            }
-            
-            // แสดงการโหลด
-            document.getElementById('formLoading').style.display = "block";
-            
-            // เตรียมข้อมูลสำหรับส่ง
-            const employeeId = document.getElementById('employeeId').value.trim();
-            const employee = employees.find(emp => emp.code === employeeId);
-            
-            // คำนวณระยะเวลา
-            const startDate = document.getElementById('rentStartdate').value;
-            const endDate = document.getElementById('rentEnddate').value;
-            const startTime = document.getElementById('startTime').value;
-            const endTime = document.getElementById('endTime').value;
-            
-            const startDateTime = new Date(`${startDate}T${startTime}`);
-            const endDateTime = new Date(`${endDate}T${endTime}`);
-            const diffMs = endDateTime - startDateTime;
-            const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
-            const diffMinutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
-            const diffDays = Math.floor(diffHours / 24);
-            const remainingHours = diffHours % 24;
-            
-            let durationText = "";
-            if (diffDays > 0) durationText += `${diffDays} วัน `;
-            if (remainingHours > 0) durationText += `${remainingHours} ชั่วโมง `;
-            if (diffMinutes > 0) durationText += `${diffMinutes} นาที`;
-            if (diffDays === 0 && remainingHours === 0 && diffMinutes === 0) durationText = "น้อยกว่า 1 นาที";
-            
-            const formData = {
-                timestamp: new Date().toISOString(),
-                code: employeeId,
-                name: employee ? employee.name : '',
-                section: employee ? employee.section : '',
-                department: employee ? employee.department : '',
-                position: employee ? employee.position : '',
-                contact: document.getElementById('contact').value.trim(),
-                choose: document.getElementById('carSelect').value,
-                rentStartdate: startDate,
-                startTime: startTime,
-                rentEnddate: endDate,
-                endTime: endTime,
-                duration: durationText,
-                reason: document.getElementById('reason').value.trim()
-            };
-            
-            // บันทึกข้อมูลลง Google Sheets
-            const saveSuccess = await saveReservation(formData);
-            
-            // ปิดการโหลด
-            document.getElementById('formLoading').style.display = "none";
-            
-            if (saveSuccess) {
-                Swal.fire({
-                    icon: 'success',
-                    title: 'ส่งคำขอจองสำเร็จ!',
-                    html: `
-                        <div style="text-align: left;">
-                            <p><strong>รหัสพนักงาน:</strong> ${formData.code}</p>
-                            <p><strong>ชื่อผู้ขอจอง:</strong> ${formData.name}</p>
-                            <p><strong>รถที่จอง:</strong> ${formData.choose}</p>
-                            <p><strong>สถานะรถ:</strong> พร้อมใช้งาน</p>
-                            <p><strong>วันที่เริ่มจอง:</strong> ${new Date(formData.rentStartdate).toLocaleDateString('th-TH')} เวลา ${formData.startTime}</p>
-                            <p><strong>วันที่สิ้นสุด:</strong> ${new Date(formData.rentEnddate).toLocaleDateString('th-TH')} เวลา ${formData.endTime}</p>
-                            <p><strong>ระยะเวลาการจอง:</strong> ${formData.duration}</p>
-                            <p><strong>หมายเหตุ:</strong> ข้อมูลถูกบันทึกลงระบบเรียบร้อยแล้ว</p>
+            cars.forEach(car => {
+                const card = document.createElement('div');
+                card.className = 'car-management-card';
+                card.id = `car-management-${car.id}`;
+                
+                // กำหนดสีสถานะ
+                let statusColor = 'var(--success)';
+                if (car.status === "repair") statusColor = 'var(--repair)';
+                if (car.status === "unavailable") statusColor = 'var(--danger)';
+                
+                card.innerHTML = `
+                    <div class="car-management-header">
+                        <div class="car-management-name">${car.name}</div>
+                        <div class="status-display" style="background-color: ${statusColor}20; color: ${statusColor};">
+                            ${car.statusText}
                         </div>
-                    `,
-                    confirmButtonColor: '#1e3a8a'
-                });
-            } else {
-                Swal.fire({
-                    icon: 'warning',
-                    title: 'บันทึกข้อมูลไม่สมบูรณ์',
-                    html: `
-                        <div style="text-align: left;">
-                            <p>ระบบบันทึกข้อมูลไม่สำเร็จ แต่อาจส่งคำขอจองได้แล้ว</p>
-                            <p><strong>รหัสพนักงาน:</strong> ${formData.code}</p>
-                            <p><strong>ชื่อผู้ขอจอง:</strong> ${formData.name}</p>
-                            <p><strong>รถที่จอง:</strong> ${formData.choose}</p>
-                            <p><strong>วันที่เริ่มจอง:</strong> ${new Date(formData.rentStartdate).toLocaleDateString('th-TH')} เวลา ${formData.startTime}</p>
-                            <p>กรุณาติดต่อแผนกยานยนต์เพื่อยืนยันการจอง</p>
+                    </div>
+                    <div>
+                        <div style="color: var(--gray); margin-bottom: 10px;">
+                            <i class="${car.icon}"></i> ${car.type}
                         </div>
-                    `,
-                    confirmButtonColor: '#1e3a8a'
+                        <select class="status-select" data-car-id="${car.id}">
+                            <option value="available" ${car.status === 'available' ? 'selected' : ''}>พร้อมใช้งาน</option>
+                            <option value="repair" ${car.status === 'repair' ? 'selected' : ''}>กำลังซ่อมแซม</option>
+                            <option value="unavailable" ${car.status === 'unavailable' ? 'selected' : ''}>ไม่พร้อมใช้งาน</option>
+                        </select>
+                        <button class="status-update-btn" data-car-id="${car.id}">
+                            <i class="fas fa-sync-alt"></i> อัปเดตสถานะ
+                        </button>
+                    </div>
+                `;
+                
+                container.appendChild(card);
+            });
+            
+            // เพิ่ม Event Listener สำหรับปุ่มอัปเดตแต่ละรถ
+            document.querySelectorAll('.status-update-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const carId = parseInt(this.getAttribute('data-car-id'));
+                    const selectElement = document.querySelector(`select[data-car-id="${carId}"]`);
+                    updateCarStatus(carId, selectElement.value);
                 });
-            }
+            });
+        }
+
+        // อัปเดตสถานะรถ
+        function updateCarStatus(carId, newStatus) {
+            const carIndex = cars.findIndex(car => car.id === carId);
+            if (carIndex === -1) return;
             
-            // รีเซ็ตฟอร์ม
-            document.getElementById('reservationForm').reset();
-            document.getElementById('employeeInfo').style.display = "none";
-            clearEmployeeInfo();
+            // อัปเดตข้อมูลใน array
+            cars[carIndex].status = newStatus;
             
-            // ล้างการเลือกรถ
-            document.querySelectorAll('.car-option').forEach(opt => opt.classList.remove('selected'));
-            document.getElementById('carSelect').value = '';
+            // อัปเดตข้อความสถานะ
+            let statusText = "พร้อมใช้งาน";
+            if (newStatus === "repair") statusText = "กำลังซ่อมแซม";
+            if (newStatus === "unavailable") statusText = "ไม่พร้อมใช้งาน";
             
-            // รีเซ็ตวันที่และเวลา
-            document.getElementById('rentStartdate').value = today;
-            document.getElementById('rentEnddate').value = threeDaysLaterStr;
-            document.getElementById('startTime').value = "08:00";
-            document.getElementById('endTime').value = "17:00";
+            cars[carIndex].statusText = statusText;
             
-            // คำนวณระยะเวลาใหม่
-            calculateDuration();
+            // อัปเดตการแสดงผลในหน้าจัดการ
+            const statusElement = document.querySelector(`#car-management-${carId} .status-display`);
+            let statusColor = 'var(--success)';
+            if (newStatus === "repair") statusColor = 'var(--repair)';
+            if (newStatus === "unavailable") statusColor = 'var(--danger)';
             
-            // อัปเดตข้อมูลสรุป
-            updateSummary();
+            statusElement.style.backgroundColor = `${statusColor}20`;
+            statusElement.style.color = statusColor;
+            statusElement.textContent = statusText;
             
-        });
-        
-        // จัดการเหตุการณ์รีเซ็ตฟอร์ม
-        document.getElementById('resetBtn').addEventListener('click', function() {
+            // อัปเดตใน localStorage (จำลองฐานข้อมูล)
+            saveCarsToStorage();
+            
+            // อัปเดตในหน้าจองรถ
+            updateCarOptions();
+            updateCarList();
+            
             Swal.fire({
-                title: 'ยืนยันการล้างข้อมูล?',
-                text: 'ข้อมูลทั้งหมดในฟอร์มจะถูกล้าง',
-                icon: 'warning',
-                showCancelButton: true,
+                icon: 'success',
+                title: 'อัปเดตสถานะสำเร็จ',
+                text: `อัปเดตสถานะ ${cars[carIndex].name} เป็น "${statusText}"`,
                 confirmButtonColor: '#1e3a8a',
-                cancelButtonColor: '#64748b',
-                confirmButtonText: 'ล้างข้อมูล',
-                cancelButtonText: 'ยกเลิก'
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    document.getElementById('reservationForm').reset();
-                    document.getElementById('employeeInfo').style.display = "none";
-                    clearEmployeeInfo();
-                    
-                    // ล้างการเลือกรถ
-                    document.querySelectorAll('.car-option').forEach(opt => opt.classList.remove('selected'));
-                    document.getElementById('carSelect').value = '';
-                    
-                    // รีเซ็ตวันที่และเวลา
-                    document.getElementById('rentStartdate').value = today;
-                    document.getElementById('rentEnddate').value = threeDaysLaterStr;
-                    document.getElementById('startTime').value = "08:00";
-                    document.getElementById('endTime').value = "17:00";
-                    
-                    // ล้าง Auto-complete
-                    document.getElementById('employeeAutoComplete').style.display = 'none';
-                    
-                    // ล้างข้อความผิดพลาด
-                    document.querySelectorAll('.error-message').forEach(error => {
-                        error.style.display = 'none';
+                timer: 2000,
+                showConfirmButton: false
+            });
+        }
+
+        // บันทึกข้อมูลรถลง localStorage
+        function saveCarsToStorage() {
+            localStorage.setItem('car_reservation_data', JSON.stringify(cars));
+        }
+
+        // โหลดข้อมูลรถจาก localStorage
+        function loadCarsFromStorage() {
+            const savedCars = localStorage.getItem('car_reservation_data');
+            if (savedCars) {
+                cars = JSON.parse(savedCars);
+            }
+        }
+
+        // อัปเดตตัวเลือกรถในหน้าจอง
+        function updateCarOptions() {
+            renderCarOptions();
+        }
+
+        // อัปเดตรายการรถในหน้าจอง
+        function updateCarList() {
+            renderCarList();
+        }
+
+        // เมื่อ DOM โหลดเสร็จ
+        document.addEventListener('DOMContentLoaded', function() {
+            // โหลดข้อมูลรถจาก localStorage
+            loadCarsFromStorage();
+            
+            // ตรวจสอบสถานะการล็อกอิน
+            checkLoginStatus();
+            
+            // จัดการเหตุการณ์ปุ่มเข้าสู่ระบบผู้ดูแล
+            document.getElementById('adminLoginBtn').addEventListener('click', function() {
+                document.getElementById('loginContainer').style.display = 'flex';
+            });
+            
+            // จัดการเหตุการณ์ปุ่มล็อกอิน
+            document.getElementById('loginBtn').addEventListener('click', function() {
+                const username = document.getElementById('adminUsername').value.trim();
+                const password = document.getElementById('adminPassword').value.trim();
+                
+                if (!username || !password) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'ข้อมูลไม่ครบถ้วน',
+                        text: 'กรุณากรอกชื่อผู้ใช้และรหัสผ่าน',
+                        confirmButtonColor: '#1e3a8a'
                     });
+                    return;
+                }
+                
+                const user = login(username, password);
+                
+                if (user) {
+                    currentUser = user;
+                    localStorage.setItem('car_reservation_admin', JSON.stringify(user));
                     
-                    document.querySelectorAll('.input-error').forEach(input => {
-                        input.classList.remove('input-error');
-                    });
-                    
-                    // คำนวณระยะเวลาใหม่
-                    calculateDuration();
-                    
-                    // รีเซ็ตข้อมูลสรุป
-                    resetSummary();
+                    document.getElementById('loginContainer').style.display = 'none';
+                    updateUIForLoggedInUser();
                     
                     Swal.fire({
                         icon: 'success',
-                        title: 'ล้างข้อมูลสำเร็จ',
-                        text: 'ข้อมูลในฟอร์มถูกล้างเรียบร้อยแล้ว',
+                        title: 'เข้าสู่ระบบสำเร็จ',
+                        text: `ยินดีต้อนรับ ${user.name}`,
+                        confirmButtonColor: '#1e3a8a'
+                    });
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'เข้าสู่ระบบล้มเหลว',
+                        text: 'ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง',
                         confirmButtonColor: '#1e3a8a'
                     });
                 }
             });
-        });
-        
-        // อัปเดตข้อมูลสรุปเมื่อมีการเปลี่ยนแปลง
-        document.getElementById('contact').addEventListener('input', updateSummary);
-        document.getElementById('rentStartdate').addEventListener('change', updateSummary);
-        document.getElementById('rentEnddate').addEventListener('change', updateSummary);
-        document.getElementById('startTime').addEventListener('change', updateSummary);
-        document.getElementById('endTime').addEventListener('change', updateSummary);
-        document.getElementById('reason').addEventListener('input', updateSummary);
-        
-        // ล้างข้อความผิดพลาดเมื่อผู้ใช้เริ่มพิมพ์
-        const inputs = document.querySelectorAll('input, textarea, select');
-        inputs.forEach(input => {
-            input.addEventListener('input', function() {
-                const errorId = this.id + 'Error';
-                const errorElement = document.getElementById(errorId);
-                if (errorElement) {
-                    errorElement.style.display = 'none';
-                    this.classList.remove('input-error');
+            
+            // จัดการเหตุการณ์ปุ่มล็อกเอาท์
+            document.getElementById('logoutBtn').addEventListener('click', function() {
+                Swal.fire({
+                    title: 'ยืนยันการออกจากระบบ?',
+                    text: 'คุณต้องการออกจากระบบผู้ดูแลหรือไม่?',
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#1e3a8a',
+                    cancelButtonColor: '#64748b',
+                    confirmButtonText: 'ออกจากระบบ',
+                    cancelButtonText: 'ยกเลิก'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        logout();
+                    }
+                });
+            });
+            
+            // จัดการเหตุการณ์ปุ่มจัดการสถานะรถ
+            document.getElementById('manageCarsBtn').addEventListener('click', function() {
+                // ซ่อนหน้าหลัก
+                document.querySelector('.main-content').style.display = 'none';
+                // แสดงหน้าจัดการ
+                document.getElementById('carManagementContainer').style.display = 'block';
+                // สร้างฟอร์มจัดการ
+                renderCarManagement();
+            });
+            
+            // จัดการเหตุการณ์ปุ่มกลับไปหน้าหลัก
+            document.getElementById('backToMainBtn').addEventListener('click', function() {
+                document.querySelector('.main-content').style.display = 'grid';
+                document.getElementById('carManagementContainer').style.display = 'none';
+            });
+            
+            // จัดการเหตุการณ์ปุ่มบันทึกทั้งหมด
+            document.getElementById('saveAllStatusBtn').addEventListener('click', function() {
+                Swal.fire({
+                    icon: 'success',
+                    title: 'บันทึกข้อมูลสำเร็จ',
+                    text: 'สถานะรถทั้งหมดถูกบันทึกเรียบร้อยแล้ว',
+                    confirmButtonColor: '#1e3a8a'
+                });
+            });
+            
+            // ปิดฟอร์มล็อกอินเมื่อคลิกนอกกล่อง
+            document.getElementById('loginContainer').addEventListener('click', function(e) {
+                if (e.target.id === 'loginContainer') {
+                    this.style.display = 'none';
                 }
             });
+            
+            // กด Enter ในฟิลด์รหัสผ่านเพื่อล็อกอิน
+            document.getElementById('adminPassword').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    document.getElementById('loginBtn').click();
+                }
+            });
+            
+            // เริ่มต้นโค้ดเดิมทั้งหมดของคุณที่นี่...
+            // (โค้ดเดิมทั้งหมดจากก่อนหน้านี้ให้วางไว้ที่นี่)
+            
+            // ตัวอย่างการเรียกใช้ฟังก์ชันหลักๆ จากโค้ดเดิม
+            // ให้เรียกใช้ฟังก์ชันจากโค้ดเดิมที่นี่
+            // เช่น fetchEmployees(), renderCarOptions(), renderCarList() ฯลฯ
+            
         });
-    });
-</script>
+    </script>
 </body>
 </html>
