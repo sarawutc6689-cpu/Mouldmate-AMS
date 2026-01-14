@@ -19,6 +19,7 @@
             --gray: #64748b;
             --border: #e2e8f0;
             --repair: #f97316; /* สีสำหรับกำลังซ่อมแซม */
+            --retired: #6b7280; /* สีสำหรับปลดการใช้ */
         }
 
         * {
@@ -393,7 +394,7 @@
 
         .status-retired {
             background-color: rgba(107, 114, 128, 0.15);
-            color: #6b7280; /* สีเทา */
+            color: var(--retired);
         }
 
         .date-container {
@@ -789,26 +790,26 @@
 
         .car-management-actions {
             display: grid;
-            grid-template-columns: 1fr 1fr 1fr;
-            gap: 10px;
+            grid-template-columns: 1fr 1fr 1fr 1fr;
+            gap: 8px;
         }
 
         .car-management-btn {
             padding: 8px 5px;
             border: none;
             border-radius: 8px;
-            font-size: 12px;
+            font-size: 11px;
             font-weight: 600;
             cursor: pointer;
             transition: all 0.3s;
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 5px;
+            gap: 3px;
         }
 
         .car-management-btn i {
-            font-size: 14px;
+            font-size: 12px;
         }
 
         .btn-status-available {
@@ -836,6 +837,15 @@
 
         .btn-status-unavailable:hover {
             background-color: rgba(239, 68, 68, 0.25);
+        }
+
+        .btn-status-retired {
+            background-color: rgba(107, 114, 128, 0.15);
+            color: var(--retired);
+        }
+
+        .btn-status-retired:hover {
+            background-color: rgba(107, 114, 128, 0.25);
         }
 
         /* Responsive adjustments */
@@ -866,17 +876,8 @@
             }
             
             .car-management-actions {
-                grid-template-columns: 1fr;
+                grid-template-columns: 1fr 1fr;
             }
-        }
-
-        .btn-status-retired {
-              background-color: rgba(107, 114, 128, 0.15);
-              color: #6b7280;
-            }
-
-        .btn-status-retired:hover {
-             background-color: rgba(107, 114, 128, 0.25);
         }
     </style>
 </head>
@@ -1181,28 +1182,28 @@
                 </div>
                 
                 <div style="margin-top: 20px; padding: 15px; background: #f0f9ff; border-radius: 10px; border-left: 4px solid var(--primary);">
-    <h4 style="color: var(--dark); margin-bottom: 10px; display: flex; align-items: center; gap: 10px;">
-        <i class="fas fa-info-circle"></i> สถานะรถ
-    </h4>
-    <div style="display: flex; gap: 15px; flex-wrap: wrap;">
-        <div style="display: flex; align-items: center;">
-            <div style="width: 12px; height: 12px; background-color: var(--success); border-radius: 50%; margin-right: 8px;"></div>
-            <span style="font-size: 14px;">พร้อมใช้งาน</span>
-        </div>
-        <div style="display: flex; align-items: center;">
-            <div style="width: 12px; height: 12px; background-color: var(--repair); border-radius: 50%; margin-right: 8px;"></div>
-            <span style="font-size: 14px;">กำลังซ่อมแซม</span>
-        </div>
-        <div style="display: flex; align-items: center;">
-            <div style="width: 12px; height: 12px; background-color: var(--danger); border-radius: 50%; margin-right: 8px;"></div>
-            <span style="font-size: 14px;">ไม่พร้อมใช้งาน</span>
-        </div>
-        <div style="display: flex; align-items: center;">
-            <div style="width: 12px; height: 12px; background-color: #6b7280; border-radius: 50%; margin-right: 8px;"></div>
-            <span style="font-size: 14px;">ปลดการใช้</span>
-        </div>
-    </div>
-</div>
+                    <h4 style="color: var(--dark); margin-bottom: 10px; display: flex; align-items: center; gap: 10px;">
+                        <i class="fas fa-info-circle"></i> สถานะรถ
+                    </h4>
+                    <div style="display: flex; gap: 15px; flex-wrap: wrap;">
+                        <div style="display: flex; align-items: center;">
+                            <div style="width: 12px; height: 12px; background-color: var(--success); border-radius: 50%; margin-right: 8px;"></div>
+                            <span style="font-size: 14px;">พร้อมใช้งาน</span>
+                        </div>
+                        <div style="display: flex; align-items: center;">
+                            <div style="width: 12px; height: 12px; background-color: var(--repair); border-radius: 50%; margin-right: 8px;"></div>
+                            <span style="font-size: 14px;">กำลังซ่อมแซม</span>
+                        </div>
+                        <div style="display: flex; align-items: center;">
+                            <div style="width: 12px; height: 12px; background-color: var(--danger); border-radius: 50%; margin-right: 8px;"></div>
+                            <span style="font-size: 14px;">ไม่พร้อมใช้งาน</span>
+                        </div>
+                        <div style="display: flex; align-items: center;">
+                            <div style="width: 12px; height: 12px; background-color: var(--retired); border-radius: 50%; margin-right: 8px;"></div>
+                            <span style="font-size: 14px;">ปลดการใช้</span>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -1249,24 +1250,23 @@
             cars = JSON.parse(savedCars);
         } else {
             // ข้อมูลรถเริ่มต้น
-            // ข้อมูลรถเริ่มต้น
-cars = [
-    { id: 1, name: "นาวาร่า", type: "รถกระบะ", icon: "fas fa-truck-pickup", status: "available", statusText: "พร้อมใช้งาน" },
-    { id: 2, name: "รถกระบะขาว", type: "รถกระบะ", icon: "fas fa-truck-pickup", status: "available", statusText: "พร้อมใช้งาน" },
-    { id: 3, name: "x-lift No.1", type: "รถกระเช้า", icon: "fas fa-truck", status: "available", statusText: "พร้อมใช้งาน" },
-    { id: 4, name: "x-lift No.2", type: "รถกระเช้า", icon: "fas fa-truck", status: "repair", statusText: "กำลังซ่อมแซม" },
-    { id: 5, name: "x-lift No.3", type: "รถกระเช้า", icon: "fas fa-truck", status: "available", statusText: "พร้อมใช้งาน" },
-    { id: 6, name: "x-lift No.4", type: "รถกระเช้า", icon: "fas fa-truck", status: "unavailable", statusText: "ไม่พร้อมใช้งาน" },
-    { id: 7, name: "Fork-lift No.1", type: "รถยก", icon: "fas fa-truck", status: "available", statusText: "พร้อมใช้งาน" },
-    { id: 8, name: "Fork-lift No.2", type: "รถยก", icon: "fas fa-truck", status: "repair", statusText: "กำลังซ่อมแซม" },
-    { id: 9, name: "Fork-lift No.3", type: "รถยก", icon: "fas fa-truck", status: "available", statusText: "พร้อมใช้งาน" },
-    { id: 10, name: "Fork-lift No.4", type: "รถยก", icon: "fas fa-truck", status: "available", statusText: "พร้อมใช้งาน" },
-    { id: 11, name: "Fork-lift No.5", type: "รถยก", icon: "fas fa-truck", status: "unavailable", statusText: "ไม่พร้อมใช้งาน" },
-    { id: 12, name: "Fork-lift No.6", type: "รถยก", icon: "fas fa-truck", status: "available", statusText: "พร้อมใช้งาน" },
-    { id: 13, name: "Fork-lift No.7", type: "รถยก", icon: "fas fa-truck", status: "repair", statusText: "กำลังซ่อมแซม" },
-    { id: 14, name: "Fork-lift No.8", type: "รถยก", icon: "fas fa-truck", status: "available", statusText: "พร้อมใช้งาน" },
-    { id: 15, name: "Fork-lift No.9", type: "รถยก", icon: "fas fa-truck", status: "retired", statusText: "ปลดการใช้" }
-];
+            cars = [
+                { id: 1, name: "นาวาร่า", type: "รถกระบะ", icon: "fas fa-truck-pickup", status: "available", statusText: "พร้อมใช้งาน" },
+                { id: 2, name: "รถกระบะขาว", type: "รถกระบะ", icon: "fas fa-truck-pickup", status: "available", statusText: "พร้อมใช้งาน" },
+                { id: 3, name: "x-lift No.1", type: "รถกระเช้า", icon: "fas fa-truck", status: "available", statusText: "พร้อมใช้งาน" },
+                { id: 4, name: "x-lift No.2", type: "รถกระเช้า", icon: "fas fa-truck", status: "repair", statusText: "กำลังซ่อมแซม" },
+                { id: 5, name: "x-lift No.3", type: "รถกระเช้า", icon: "fas fa-truck", status: "available", statusText: "พร้อมใช้งาน" },
+                { id: 6, name: "x-lift No.4", type: "รถกระเช้า", icon: "fas fa-truck", status: "unavailable", statusText: "ไม่พร้อมใช้งาน" },
+                { id: 7, name: "Fork-lift No.1", type: "รถยก", icon: "fas fa-truck", status: "available", statusText: "พร้อมใช้งาน" },
+                { id: 8, name: "Fork-lift No.2", type: "รถยก", icon: "fas fa-truck", status: "repair", statusText: "กำลังซ่อมแซม" },
+                { id: 9, name: "Fork-lift No.3", type: "รถยก", icon: "fas fa-truck", status: "available", statusText: "พร้อมใช้งาน" },
+                { id: 10, name: "Fork-lift No.4", type: "รถยก", icon: "fas fa-truck", status: "available", statusText: "พร้อมใช้งาน" },
+                { id: 11, name: "Fork-lift No.5", type: "รถยก", icon: "fas fa-truck", status: "unavailable", statusText: "ไม่พร้อมใช้งาน" },
+                { id: 12, name: "Fork-lift No.6", type: "รถยก", icon: "fas fa-truck", status: "available", statusText: "พร้อมใช้งาน" },
+                { id: 13, name: "Fork-lift No.7", type: "รถยก", icon: "fas fa-truck", status: "repair", statusText: "กำลังซ่อมแซม" },
+                { id: 14, name: "Fork-lift No.8", type: "รถยก", icon: "fas fa-truck", status: "available", statusText: "พร้อมใช้งาน" },
+                { id: 15, name: "Fork-lift No.9", type: "รถยก", icon: "fas fa-truck", status: "retired", statusText: "ปลดการใช้" }
+            ];
             
             // บันทึกข้อมูลเริ่มต้นลง localStorage
             saveCarData();
@@ -1288,18 +1288,18 @@ cars = [
             // อัพเดทข้อความสถานะ
             switch(newStatus) {
                 case 'available':
-                cars[carIndex].statusText = 'พร้อมใช้งาน';
-            break;
-            case 'repair':
-                cars[carIndex].statusText = 'กำลังซ่อมแซม';
-            break;
-            case 'unavailable':
-                cars[carIndex].statusText = 'ไม่พร้อมใช้งาน';
-            break;
-            case 'retired':
-                cars[carIndex].statusText = 'ปลดการใช้';
-            break;
-      }
+                    cars[carIndex].statusText = 'พร้อมใช้งาน';
+                    break;
+                case 'repair':
+                    cars[carIndex].statusText = 'กำลังซ่อมแซม';
+                    break;
+                case 'unavailable':
+                    cars[carIndex].statusText = 'ไม่พร้อมใช้งาน';
+                    break;
+                case 'retired':
+                    cars[carIndex].statusText = 'ปลดการใช้';
+                    break;
+            }
             
             saveCarData();
             return true;
@@ -1311,10 +1311,9 @@ cars = [
     // ฟังก์ชันสร้างตัวเลือกรถ
     function renderCarOptions() {
         const container = document.getElementById('carOptionsContainer');
-        const availableCars = cars.filter(car => car.status === "available" && car.status !== "retired");
         container.innerHTML = '';
         
-        // กรองรถที่พร้อมใช้งานเท่านั้นสำหรับตัวเลือก
+        // กรองรถที่พร้อมใช้งานเท่านั้นสำหรับตัวเลือก (ไม่รวมรถที่ปลดการใช้)
         const availableCars = cars.filter(car => car.status === "available");
         
         availableCars.forEach(car => {
@@ -1343,7 +1342,6 @@ cars = [
                 
                 // ตั้งค่าใน input ที่ซ่อนอยู่
                 const carValue = this.getAttribute('data-value');
-                const carStatus = this.getAttribute('data-status');
                 document.getElementById('carSelect').value = carValue;
                 document.getElementById('carSelectError').style.display = "none";
                 
@@ -1374,6 +1372,7 @@ cars = [
             let iconColor = "var(--primary)";
             if (car.status === "repair") iconColor = "var(--repair)";
             if (car.status === "unavailable") iconColor = "var(--danger)";
+            if (car.status === "retired") iconColor = "var(--retired)";
             
             item.innerHTML = `
                 <div class="car-item-icon" style="color: ${iconColor};">
@@ -1404,11 +1403,7 @@ cars = [
             let iconColor = "var(--primary)";
             if (car.status === "repair") iconColor = "var(--repair)";
             if (car.status === "unavailable") iconColor = "var(--danger)";
-            
-            // กำหนดสีปุ่มสถานะปัจจุบัน
-            let currentStatusColor = "var(--success)";
-            if (car.status === "repair") currentStatusColor = "var(--repair)";
-            if (car.status === "unavailable") currentStatusColor = "var(--danger)";
+            if (car.status === "retired") iconColor = "var(--retired)";
             
             item.innerHTML = `
                 <div class="car-management-header-info">
@@ -1462,6 +1457,7 @@ cars = [
                         case 'available': statusText = 'พร้อมใช้งาน'; break;
                         case 'repair': statusText = 'กำลังซ่อมแซม'; break;
                         case 'unavailable': statusText = 'ไม่พร้อมใช้งาน'; break;
+                        case 'retired': statusText = 'ปลดการใช้'; break;
                     }
                     
                     Swal.fire({
