@@ -894,7 +894,7 @@
                     <div class="input-with-icon">
                         <i class="fas fa-user-tag"></i>
                         <select id="role">
-                           
+                            <option value="user">ผู้ใช้ทั่วไป (จองรถ)</option>
                             <option value="admin">ผู้ดูแลระบบ (จัดการสถานะรถ)</option>
                         </select>
                     </div>
@@ -903,7 +903,8 @@
                     <i class="fas fa-sign-in-alt"></i> เข้าสู่ระบบ
                 </button>
                 <div style="text-align: center; margin-top: 20px; color: var(--gray); font-size: 14px;">
-                    <p><strong>หมายเหตุ :</strong> ลืมรหัสสหรือเข้าใช้งานไม่ได้ ติดต่อฝ่ายเทคโนโลยีสารสนเทศ</p>
+                    <p><strong>ผู้ใช้ทั่วไป:</strong> user / password123</p>
+                    <p><strong>ผู้ดูแลระบบ:</strong> admin / admin123</p>
                 </div>
             </div>
         </div>
@@ -1938,7 +1939,7 @@
         // ตรวจสอบข้อมูลล็อกอิน (ในที่นี้ใช้ข้อมูลแบบง่ายๆ)
         const validUsers = {
             'user': { password: 'password123', role: 'user' },
-            'admin': { password: '104810', role: 'admin' }
+            'admin': { password: 'admin123', role: 'admin' }
         };
         
         if (validUsers[username] && validUsers[username].password === password) {
