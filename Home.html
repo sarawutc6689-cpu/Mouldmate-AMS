@@ -391,6 +391,11 @@
             color: var(--danger);
         }
 
+        .status-retired {
+            background-color: rgba(107, 114, 128, 0.15);
+            color: #6b7280; /* สีเทา */
+        }
+
         .date-container {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -864,6 +869,15 @@
                 grid-template-columns: 1fr;
             }
         }
+
+        .btn-status-retired {
+              background-color: rgba(107, 114, 128, 0.15);
+              color: #6b7280;
+            }
+
+        .btn-status-retired:hover {
+             background-color: rgba(107, 114, 128, 0.25);
+        }
     </style>
 </head>
 <body>
@@ -1167,24 +1181,28 @@
                 </div>
                 
                 <div style="margin-top: 20px; padding: 15px; background: #f0f9ff; border-radius: 10px; border-left: 4px solid var(--primary);">
-                    <h4 style="color: var(--dark); margin-bottom: 10px; display: flex; align-items: center; gap: 10px;">
-                        <i class="fas fa-info-circle"></i> สถานะรถ
-                    </h4>
-                    <div style="display: flex; gap: 15px; flex-wrap: wrap;">
-                        <div style="display: flex; align-items: center;">
-                            <div style="width: 12px; height: 12px; background-color: var(--success); border-radius: 50%; margin-right: 8px;"></div>
-                            <span style="font-size: 14px;">พร้อมใช้งาน</span>
-                        </div>
-                        <div style="display: flex; align-items: center;">
-                            <div style="width: 12px; height: 12px; background-color: var(--repair); border-radius: 50%; margin-right: 8px;"></div>
-                            <span style="font-size: 14px;">กำลังซ่อมแซม</span>
-                        </div>
-                        <div style="display: flex; align-items: center;">
-                            <div style="width: 12px; height: 12px; background-color: var(--danger); border-radius: 50%; margin-right: 8px;"></div>
-                            <span style="font-size: 14px;">ไม่พร้อมใช้งาน</span>
-                        </div>
-                    </div>
-                </div>
+    <h4 style="color: var(--dark); margin-bottom: 10px; display: flex; align-items: center; gap: 10px;">
+        <i class="fas fa-info-circle"></i> สถานะรถ
+    </h4>
+    <div style="display: flex; gap: 15px; flex-wrap: wrap;">
+        <div style="display: flex; align-items: center;">
+            <div style="width: 12px; height: 12px; background-color: var(--success); border-radius: 50%; margin-right: 8px;"></div>
+            <span style="font-size: 14px;">พร้อมใช้งาน</span>
+        </div>
+        <div style="display: flex; align-items: center;">
+            <div style="width: 12px; height: 12px; background-color: var(--repair); border-radius: 50%; margin-right: 8px;"></div>
+            <span style="font-size: 14px;">กำลังซ่อมแซม</span>
+        </div>
+        <div style="display: flex; align-items: center;">
+            <div style="width: 12px; height: 12px; background-color: var(--danger); border-radius: 50%; margin-right: 8px;"></div>
+            <span style="font-size: 14px;">ไม่พร้อมใช้งาน</span>
+        </div>
+        <div style="display: flex; align-items: center;">
+            <div style="width: 12px; height: 12px; background-color: #6b7280; border-radius: 50%; margin-right: 8px;"></div>
+            <span style="font-size: 14px;">ปลดการใช้</span>
+        </div>
+    </div>
+</div>
             </div>
         </div>
 
@@ -1231,22 +1249,24 @@
             cars = JSON.parse(savedCars);
         } else {
             // ข้อมูลรถเริ่มต้น
-            cars = [
-                { id: 1, name: "นาวาร่า", type: "รถกระบะ", icon: "fas fa-truck-pickup", status: "available", statusText: "พร้อมใช้งาน" },
-                { id: 2, name: "รถกระบะขาว", type: "รถกระบะ", icon: "fas fa-truck-pickup", status: "available", statusText: "พร้อมใช้งาน" },
-                { id: 3, name: "x-lift No.1", type: "รถกระเช้า", icon: "fas fa-truck", status: "available", statusText: "พร้อมใช้งาน" },
-                { id: 4, name: "x-lift No.2", type: "รถกระเช้า", icon: "fas fa-truck", status: "repair", statusText: "กำลังซ่อมแซม" },
-                { id: 5, name: "x-lift No.3", type: "รถกระเช้า", icon: "fas fa-truck", status: "available", statusText: "พร้อมใช้งาน" },
-                { id: 6, name: "x-lift No.4", type: "รถกระเช้า", icon: "fas fa-truck", status: "unavailable", statusText: "ไม่พร้อมใช้งาน" },
-                { id: 7, name: "Fork-lift No.1", type: "รถยก", icon: "fas fa-truck", status: "available", statusText: "พร้อมใช้งาน" },
-                { id: 8, name: "Fork-lift No.2", type: "รถยก", icon: "fas fa-truck", status: "repair", statusText: "กำลังซ่อมแซม" },
-                { id: 9, name: "Fork-lift No.3", type: "รถยก", icon: "fas fa-truck", status: "available", statusText: "พร้อมใช้งาน" },
-                { id: 10, name: "Fork-lift No.4", type: "รถยก", icon: "fas fa-truck", status: "available", statusText: "พร้อมใช้งาน" },
-                { id: 11, name: "Fork-lift No.5", type: "รถยก", icon: "fas fa-truck", status: "unavailable", statusText: "ไม่พร้อมใช้งาน" },
-                { id: 12, name: "Fork-lift No.6", type: "รถยก", icon: "fas fa-truck", status: "available", statusText: "พร้อมใช้งาน" },
-                { id: 13, name: "Fork-lift No.7", type: "รถยก", icon: "fas fa-truck", status: "repair", statusText: "กำลังซ่อมแซม" },
-                { id: 14, name: "Fork-lift No.8", type: "รถยก", icon: "fas fa-truck", status: "available", statusText: "พร้อมใช้งาน" }
-            ];
+            // ข้อมูลรถเริ่มต้น
+cars = [
+    { id: 1, name: "นาวาร่า", type: "รถกระบะ", icon: "fas fa-truck-pickup", status: "available", statusText: "พร้อมใช้งาน" },
+    { id: 2, name: "รถกระบะขาว", type: "รถกระบะ", icon: "fas fa-truck-pickup", status: "available", statusText: "พร้อมใช้งาน" },
+    { id: 3, name: "x-lift No.1", type: "รถกระเช้า", icon: "fas fa-truck", status: "available", statusText: "พร้อมใช้งาน" },
+    { id: 4, name: "x-lift No.2", type: "รถกระเช้า", icon: "fas fa-truck", status: "repair", statusText: "กำลังซ่อมแซม" },
+    { id: 5, name: "x-lift No.3", type: "รถกระเช้า", icon: "fas fa-truck", status: "available", statusText: "พร้อมใช้งาน" },
+    { id: 6, name: "x-lift No.4", type: "รถกระเช้า", icon: "fas fa-truck", status: "unavailable", statusText: "ไม่พร้อมใช้งาน" },
+    { id: 7, name: "Fork-lift No.1", type: "รถยก", icon: "fas fa-truck", status: "available", statusText: "พร้อมใช้งาน" },
+    { id: 8, name: "Fork-lift No.2", type: "รถยก", icon: "fas fa-truck", status: "repair", statusText: "กำลังซ่อมแซม" },
+    { id: 9, name: "Fork-lift No.3", type: "รถยก", icon: "fas fa-truck", status: "available", statusText: "พร้อมใช้งาน" },
+    { id: 10, name: "Fork-lift No.4", type: "รถยก", icon: "fas fa-truck", status: "available", statusText: "พร้อมใช้งาน" },
+    { id: 11, name: "Fork-lift No.5", type: "รถยก", icon: "fas fa-truck", status: "unavailable", statusText: "ไม่พร้อมใช้งาน" },
+    { id: 12, name: "Fork-lift No.6", type: "รถยก", icon: "fas fa-truck", status: "available", statusText: "พร้อมใช้งาน" },
+    { id: 13, name: "Fork-lift No.7", type: "รถยก", icon: "fas fa-truck", status: "repair", statusText: "กำลังซ่อมแซม" },
+    { id: 14, name: "Fork-lift No.8", type: "รถยก", icon: "fas fa-truck", status: "available", statusText: "พร้อมใช้งาน" },
+    { id: 15, name: "Fork-lift No.9", type: "รถยก", icon: "fas fa-truck", status: "retired", statusText: "ปลดการใช้" }
+];
             
             // บันทึกข้อมูลเริ่มต้นลง localStorage
             saveCarData();
@@ -1268,15 +1288,18 @@
             // อัพเดทข้อความสถานะ
             switch(newStatus) {
                 case 'available':
-                    cars[carIndex].statusText = 'พร้อมใช้งาน';
-                    break;
-                case 'repair':
-                    cars[carIndex].statusText = 'กำลังซ่อมแซม';
-                    break;
-                case 'unavailable':
-                    cars[carIndex].statusText = 'ไม่พร้อมใช้งาน';
-                    break;
-            }
+                cars[carIndex].statusText = 'พร้อมใช้งาน';
+            break;
+            case 'repair':
+                cars[carIndex].statusText = 'กำลังซ่อมแซม';
+            break;
+            case 'unavailable':
+                cars[carIndex].statusText = 'ไม่พร้อมใช้งาน';
+            break;
+            case 'retired':
+                cars[carIndex].statusText = 'ปลดการใช้';
+            break;
+      }
             
             saveCarData();
             return true;
@@ -1288,6 +1311,7 @@
     // ฟังก์ชันสร้างตัวเลือกรถ
     function renderCarOptions() {
         const container = document.getElementById('carOptionsContainer');
+        const availableCars = cars.filter(car => car.status === "available" && car.status !== "retired");
         container.innerHTML = '';
         
         // กรองรถที่พร้อมใช้งานเท่านั้นสำหรับตัวเลือก
@@ -1409,6 +1433,9 @@
                     </button>
                     <button class="car-management-btn btn-status-unavailable" data-status="unavailable">
                         <i class="fas fa-times-circle"></i> ไม่พร้อมใช้งาน
+                    </button>
+                    <button class="car-management-btn btn-status-retired" data-status="retired">
+                        <i class="fas fa-ban"></i> ปลดการใช้
                     </button>
                 </div>
             `;
