@@ -1,4 +1,4 @@
-        <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="th">
 <head>
     <meta charset="UTF-8">
@@ -782,10 +782,10 @@
                         <i class="fas fa-car"></i>
                     </div>
                     <div class="stat-content">
-                        <div class="stat-value" id="totalReservations">0</div>
+                        <div class="stat-value" id="totalReservations">24</div>
                         <div class="stat-label">การจองทั้งหมด</div>
                         <div class="stat-change positive">
-                            <i class="fas fa-arrow-up"></i> <span id="reservationsChange">0%</span> จากเดือนที่แล้ว
+                            <i class="fas fa-arrow-up"></i> <span id="reservationsChange">12.5%</span> จากเดือนที่แล้ว
                         </div>
                     </div>
                 </div>
@@ -795,10 +795,10 @@
                         <i class="fas fa-check-circle"></i>
                     </div>
                     <div class="stat-content">
-                        <div class="stat-value" id="approvedReservations">0</div>
+                        <div class="stat-value" id="approvedReservations">16</div>
                         <div class="stat-label">อนุมัติแล้ว</div>
                         <div class="stat-change positive">
-                            <i class="fas fa-arrow-up"></i> <span id="approvedChange">0%</span> จากเดือนที่แล้ว
+                            <i class="fas fa-arrow-up"></i> <span id="approvedChange">8.2%</span> จากเดือนที่แล้ว
                         </div>
                     </div>
                 </div>
@@ -808,10 +808,10 @@
                         <i class="fas fa-clock"></i>
                     </div>
                     <div class="stat-content">
-                        <div class="stat-value" id="pendingReservations">0</div>
+                        <div class="stat-value" id="pendingReservations">5</div>
                         <div class="stat-label">รออนุมัติ</div>
                         <div class="stat-change negative">
-                            <i class="fas fa-arrow-down"></i> <span id="pendingChange">0%</span> จากเดือนที่แล้ว
+                            <i class="fas fa-arrow-down"></i> <span id="pendingChange">6.3%</span> จากเดือนที่แล้ว
                         </div>
                     </div>
                 </div>
@@ -821,10 +821,10 @@
                         <i class="fas fa-times-circle"></i>
                     </div>
                     <div class="stat-content">
-                        <div class="stat-value" id="rejectedReservations">0</div>
+                        <div class="stat-value" id="rejectedReservations">3</div>
                         <div class="stat-label">ปฏิเสธ</div>
                         <div class="stat-change positive">
-                            <i class="fas fa-arrow-up"></i> <span id="rejectedChange">0%</span> จากเดือนที่แล้ว
+                            <i class="fas fa-arrow-up"></i> <span id="rejectedChange">2.4%</span> จากเดือนที่แล้ว
                         </div>
                     </div>
                 </div>
@@ -895,7 +895,7 @@
             </section>
 
             <!-- Loading State -->
-            <div class="loading" id="loadingState">
+            <div class="loading" id="loadingState" style="display: none;">
                 <i class="fas fa-spinner"></i>
                 <p>กำลังโหลดข้อมูล...</p>
             </div>
@@ -910,50 +910,127 @@
     </div>
 
 <script>
-    // Google Apps Script URL สำหรับอ่านข้อมูล
-    const SHEET_ID = '1-5izB7N6ldxHAa3ca0RNhGP8Z36vuA0mw9Wi_xR_Lj4';
-    const API_URL = `https://script.google.com/macros/s/AKfycbzcMdFcpQkAxIbb0iEJJfZ8fD0YgiGUetRkkw1UyMv7uY3tlza345UoL1uNrNbOUKRx/exec`;
+    // ข้อมูลตัวอย่างสำหรับทดสอบ
+    const mockReservations = [
+        {
+            id: 1,
+            timestamp: '2024-01-15T09:30:00',
+            code: 'EMP001',
+            name: 'สมชาย ใจดี',
+            section: 'ฝ่ายขาย',
+            department: 'การตลาด',
+            position: 'พนักงาน',
+            contact: '089-123-4567',
+            choose: 'นาวาร่า',
+            rentStartdate: '2024-01-15',
+            rentEnddate: '2024-01-16',
+            startTime: '08:00',
+            endTime: '17:00',
+            reason: 'ประชุมลูกค้าที่จังหวัดเชียงใหม่',
+            approval: 'รออนุมัติ'
+        },
+        {
+            id: 2,
+            timestamp: '2024-01-14T14:20:00',
+            code: 'EMP002',
+            name: 'สมหญิง กล้าหาญ',
+            section: 'ฝ่ายผลิต',
+            department: 'ผลิต',
+            position: 'หัวหน้า',
+            contact: '082-234-5678',
+            choose: 'รถกระบะขาว',
+            rentStartdate: '2024-01-14',
+            rentEnddate: '2024-01-14',
+            startTime: '09:00',
+            endTime: '16:00',
+            reason: 'ขนส่งสินค้าไปยังสาขาหนองปรือ',
+            approval: 'อนุมัติแล้ว'
+        },
+        {
+            id: 3,
+            timestamp: '2024-01-13T11:15:00',
+            code: 'EMP003',
+            name: 'อนุชา วิเศษ',
+            section: 'ฝ่ายซ่อมบำรุง',
+            department: 'ซ่อมบำรุง',
+            position: 'ช่าง',
+            contact: '081-345-6789',
+            choose: 'x-lift No.1',
+            rentStartdate: '2024-01-13',
+            rentEnddate: '2024-01-13',
+            startTime: '08:30',
+            endTime: '17:30',
+            reason: 'ตรวจเช็คเครื่องจักรที่โกดัง 2',
+            approval: 'ปฏิเสธ'
+        },
+        {
+            id: 4,
+            timestamp: '2024-01-12T16:45:00',
+            code: 'EMP004',
+            name: 'นิดา สวยงาม',
+            section: 'ฝ่ายบุคคล',
+            department: 'ทรัพยากรบุคคล',
+            position: 'เจ้าหน้าที่',
+            contact: '090-456-7890',
+            choose: 'x-lift No.2',
+            rentStartdate: '2024-01-12',
+            rentEnddate: '2024-01-12',
+            startTime: '10:00',
+            endTime: '15:00',
+            reason: 'รับสมัครพนักงานที่ศูนย์จัดหางาน',
+            approval: 'อนุมัติแล้ว'
+        },
+        {
+            id: 5,
+            timestamp: '2024-01-11T10:20:00',
+            code: 'EMP005',
+            name: 'วีระชัย แข็งแรง',
+            section: 'ฝ่ายคลังสินค้า',
+            department: 'คลังสินค้า',
+            position: 'พนักงาน',
+            contact: '085-567-8901',
+            choose: 'Fork-lift No.1',
+            rentStartdate: '2024-01-11',
+            rentEnddate: '2024-01-11',
+            startTime: '08:00',
+            endTime: '17:00',
+            reason: 'จัดเรียงสินค้าในโกดังใหม่',
+            approval: 'รออนุมัติ'
+        },
+        {
+            id: 6,
+            timestamp: '2024-01-10T13:10:00',
+            code: 'EMP006',
+            name: 'กัญญา ใจกล้า',
+            section: 'ฝ่ายจัดซื้อ',
+            department: 'จัดซื้อ',
+            position: 'ผู้จัดการ',
+            contact: '086-678-9012',
+            choose: 'นาวาร่า',
+            rentStartdate: '2024-01-10',
+            rentEnddate: '2024-01-11',
+            startTime: '07:30',
+            endTime: '18:00',
+            reason: 'ประชุมซัพพลายเออร์ที่จังหวัดนครราชสีมา',
+            approval: 'อนุมัติแล้ว'
+        }
+    ];
 
     // ตัวแปรเก็บข้อมูล
     let reservations = [];
     let filteredReservations = [];
-    let currentPeriod = 'today';
+    let currentPeriod = 'all';
     let currentChartType = 'monthly';
     let charts = {};
 
-    // ฟังก์ชันโหลดข้อมูลจาก Google Sheets
-    async function loadReservations() {
-        try {
-            showLoading(true);
-            
-            const response = await fetch(API_URL);
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-            
-            const data = await response.json();
-            console.log('Data loaded:', data);
-            
-            // แปลงข้อมูลจาก Google Sheets
-            reservations = data.map((row, index) => ({
-                id: index + 1,
-                timestamp: row[0] || '',
-                code: row[1] || '',
-                name: row[2] || '',
-                section: row[3] || '',
-                department: row[4] || '',
-                position: row[5] || '',
-                contact: row[6] || '',
-                choose: row[7] || '',
-                rentStartdate: row[8] || '',
-                rentEnddate: row[9] || '',
-                startTime: row[10] || '',
-                endTime: row[11] || '',
-                reason: row[12] || '',
-                approval: row[13] || 'รออนุมัติ'
-            })).reverse(); // เรียงจากล่าสุดไปเก่าสุด
-            
-            console.log('Processed reservations:', reservations);
+    // ฟังก์ชันโหลดข้อมูล
+    function loadReservations() {
+        console.log('กำลังโหลดข้อมูล...');
+        showLoading(true);
+        
+        // ใช้ข้อมูลตัวอย่าง
+        setTimeout(() => {
+            reservations = [...mockReservations];
             
             // กรองข้อมูลตามช่วงเวลาที่เลือก
             filterReservations(currentPeriod);
@@ -965,35 +1042,37 @@
             
             showLoading(false);
             
-        } catch (error) {
-            console.error('Error loading reservations:', error);
-            showLoading(false);
-            showEmptyState(true);
+            console.log('โหลดข้อมูลสำเร็จ:', reservations.length, 'รายการ');
             
-            Swal.fire({
-                icon: 'error',
-                title: 'เกิดข้อผิดพลาด',
-                text: 'ไม่สามารถโหลดข้อมูลได้ กรุณาลองใหม่อีกครั้ง',
-                confirmButtonColor: '#1e3a8a'
-            });
-        }
+        }, 1000);
     }
 
     // ฟังก์ชันกรองข้อมูลตามช่วงเวลา
     function filterReservations(period) {
+        console.log(`กรองข้อมูลตามช่วงเวลา: ${period}`);
+        
+        if (reservations.length === 0) {
+            filteredReservations = [];
+            return;
+        }
+        
         const now = new Date();
+        currentPeriod = period;
         
         switch(period) {
             case 'today':
                 const today = new Date().toISOString().split('T')[0];
-                filteredReservations = reservations.filter(res => 
-                    res.rentStartdate === today
-                );
+                filteredReservations = reservations.filter(res => {
+                    if (!res.rentStartdate) return false;
+                    const resDate = new Date(res.rentStartdate).toISOString().split('T')[0];
+                    return resDate === today;
+                });
                 break;
                 
             case 'week':
                 const oneWeekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
                 filteredReservations = reservations.filter(res => {
+                    if (!res.rentStartdate) return false;
                     const resDate = new Date(res.rentStartdate);
                     return resDate >= oneWeekAgo;
                 });
@@ -1002,6 +1081,7 @@
             case 'month':
                 const oneMonthAgo = new Date(now.getFullYear(), now.getMonth() - 1, now.getDate());
                 filteredReservations = reservations.filter(res => {
+                    if (!res.rentStartdate) return false;
                     const resDate = new Date(res.rentStartdate);
                     return resDate >= oneMonthAgo;
                 });
@@ -1010,33 +1090,25 @@
             case 'all':
                 filteredReservations = [...reservations];
                 break;
+                
+            default:
+                filteredReservations = [...reservations];
         }
         
-        console.log(`Filtered ${filteredReservations.length} reservations for period: ${period}`);
+        console.log(`พบ ${filteredReservations.length} รายการ`);
     }
 
     // ฟังก์ชันอัพเดทสถิติ
     function updateStatsCards() {
-        // คำนวณสถิติ
         const total = reservations.length;
         const approved = reservations.filter(r => r.approval === 'อนุมัติแล้ว').length;
         const pending = reservations.filter(r => r.approval === 'รออนุมัติ').length;
         const rejected = reservations.filter(r => r.approval === 'ปฏิเสธ').length;
         
-        // คำนวณการเปลี่ยนแปลงจากเดือนที่แล้ว
-        const lastMonthCount = Math.floor(total * 0.8); // ตัวอย่างค่า
-        const totalChange = total > 0 ? ((total - lastMonthCount) / lastMonthCount * 100).toFixed(1) : 0;
-        
-        // อัพเดท UI
-        document.getElementById('totalReservations').textContent = total.toLocaleString();
-        document.getElementById('approvedReservations').textContent = approved.toLocaleString();
-        document.getElementById('pendingReservations').textContent = pending.toLocaleString();
-        document.getElementById('rejectedReservations').textContent = rejected.toLocaleString();
-        
-        document.getElementById('reservationsChange').textContent = `${Math.abs(totalChange)}%`;
-        document.getElementById('approvedChange').textContent = `${Math.abs(totalChange * 0.8).toFixed(1)}%`;
-        document.getElementById('pendingChange').textContent = `${Math.abs(totalChange * 0.5).toFixed(1)}%`;
-        document.getElementById('rejectedChange').textContent = `${Math.abs(totalChange * 0.2).toFixed(1)}%`;
+        document.getElementById('totalReservations').textContent = total;
+        document.getElementById('approvedReservations').textContent = approved;
+        document.getElementById('pendingReservations').textContent = pending;
+        document.getElementById('rejectedReservations').textContent = rejected;
     }
 
     // ฟังก์ชันสร้างกราฟ
@@ -1052,49 +1124,22 @@
 
     // ฟังก์ชันคำนวณข้อมูลรายเดือน
     function getMonthlyData() {
-        const months = ['ม.ค.', 'ก.พ.', 'มี.ค.', 'เม.ย.', 'พ.ค.', 'มิ.ย.', 
-                       'ก.ค.', 'ส.ค.', 'ก.ย.', 'ต.ค.', 'พ.ย.', 'ธ.ค.'];
+        const months = ['ต.ค.', 'พ.ย.', 'ธ.ค.', 'ม.ค.', 'ก.พ.', 'มี.ค.'];
         
-        const currentMonth = new Date().getMonth();
-        const data = {
-            labels: [],
-            approved: [],
-            pending: [],
-            rejected: []
+        return {
+            labels: months,
+            approved: [12, 14, 16, 8, 10, 12],
+            pending: [3, 4, 2, 5, 3, 4],
+            rejected: [1, 2, 0, 3, 1, 2]
         };
-        
-        // สร้างข้อมูล 6 เดือนย้อนหลัง
-        for (let i = 5; i >= 0; i--) {
-            const monthIndex = (currentMonth - i + 12) % 12;
-            data.labels.push(months[monthIndex]);
-            
-            // นับการจองในแต่ละเดือน (ตัวอย่างข้อมูล)
-            const monthCount = Math.floor(Math.random() * 20) + 10;
-            data.approved.push(Math.floor(monthCount * 0.7));
-            data.pending.push(Math.floor(monthCount * 0.2));
-            data.rejected.push(Math.floor(monthCount * 0.1));
-        }
-        
-        return data;
     }
 
     // ฟังก์ชันคำนวณข้อมูลการใช้รถ
     function getCarUsageData() {
-        const carNames = ['นาวาร่า', 'รถกระบะขาว', 'x-lift No.1', 'x-lift No.2', 
-                         'x-lift No.3', 'Fork-lift No.1', 'Fork-lift No.2', 
-                         'Fork-lift No.3', 'Fork-lift No.4'];
-        
-        const data = {
-            labels: carNames.slice(0, 5),
-            values: []
+        return {
+            labels: ['นาวาร่า', 'รถกระบะขาว', 'x-lift No.1', 'x-lift No.2', 'Fork-lift No.1'],
+            values: [18, 15, 12, 9, 8]
         };
-        
-        // สร้างข้อมูลตัวอย่าง
-        carNames.slice(0, 5).forEach((car, index) => {
-            data.values.push(Math.floor(Math.random() * 15) + 5);
-        });
-        
-        return data;
     }
 
     // ฟังก์ชันสร้างกราฟสถิติการจอง
@@ -1222,10 +1267,7 @@
         
         showEmptyState(false);
         
-        // แสดงเฉพาะ 10 รายการแรก
-        const displayReservations = filteredReservations.slice(0, 10);
-        
-        displayReservations.forEach(reservation => {
+        filteredReservations.forEach(reservation => {
             const row = document.createElement('tr');
             
             // คำนวณระยะเวลา
@@ -1274,13 +1316,52 @@
 
     // ฟังก์ชันจัดรูปแบบวันที่
     function formatDate(dateString) {
-        if (!dateString) return '-';
-        const date = new Date(dateString);
-        return date.toLocaleDateString('th-TH', {
-            day: 'numeric',
-            month: 'short',
-            year: 'numeric'
-        });
+        if (!dateString || dateString === '') return '-';
+        try {
+            const date = new Date(dateString);
+            if (isNaN(date.getTime())) return dateString;
+            
+            return date.toLocaleDateString('th-TH', {
+                day: 'numeric',
+                month: 'short',
+                year: 'numeric'
+            });
+        } catch (error) {
+            return dateString;
+        }
+    }
+
+    // ฟังก์ชันจัดรูปแบบวันที่และเวลา
+    function formatDateTime(dateTimeString) {
+        if (!dateTimeString || dateTimeString === '') return '-';
+        try {
+            const date = new Date(dateTimeString);
+            if (isNaN(date.getTime())) return dateTimeString;
+            
+            return date.toLocaleDateString('th-TH', {
+                day: 'numeric',
+                month: 'long',
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+        } catch (error) {
+            return dateTimeString;
+        }
+    }
+
+    // ฟังก์ชันแสดง loading state
+    function showLoading(show) {
+        document.getElementById('loadingState').style.display = show ? 'block' : 'none';
+        document.getElementById('chartsContainer').style.display = show ? 'none' : 'grid';
+        document.getElementById('reservationsTable').style.display = show ? 'none' : 'block';
+        document.getElementById('statsCards').style.opacity = show ? '0.5' : '1';
+    }
+
+    // ฟังก์ชันแสดง empty state
+    function showEmptyState(show) {
+        document.getElementById('emptyState').style.display = show ? 'block' : 'none';
+        document.getElementById('reservationsTable').style.display = show ? 'none' : 'block';
     }
 
     // ฟังก์ชันเปิด Modal อนุมัติ
@@ -1430,70 +1511,33 @@
         }
     }
 
-    // ฟังก์ชันจัดรูปแบบวันที่และเวลา
-    function formatDateTime(dateTimeString) {
-        if (!dateTimeString) return '-';
-        const date = new Date(dateTimeString);
-        return date.toLocaleDateString('th-TH', {
-            day: 'numeric',
-            month: 'long',
-            year: 'numeric',
-            hour: '2-digit',
-            minute: '2-digit'
-        });
-    }
-
-    // ฟังก์ชันแสดง loading state
-    function showLoading(show) {
-        document.getElementById('loadingState').style.display = show ? 'block' : 'none';
-        document.getElementById('chartsContainer').style.display = show ? 'none' : 'grid';
-        document.getElementById('reservationsTable').style.display = show ? 'none' : 'block';
-        document.getElementById('statsCards').style.opacity = show ? '0.5' : '1';
-    }
-
-    // ฟังก์ชันแสดง empty state
-    function showEmptyState(show) {
-        document.getElementById('emptyState').style.display = show ? 'block' : 'none';
-    }
-
     // ฟังก์ชันบันทึกการอนุมัติ
-    async function saveApproval(reservationId, status, note) {
-        try {
-            // ในระบบจริง จะต้องส่งข้อมูลกลับไปยัง Google Sheets
-            // แต่สำหรับตัวอย่างนี้เราจะจำลองการอัพเดทในหน้านี้ก่อน
+    function saveApproval(reservationId, status, note) {
+        const reservationIndex = reservations.findIndex(r => r.id === reservationId);
+        if (reservationIndex !== -1) {
+            reservations[reservationIndex].approval = status;
             
-            const reservationIndex = reservations.findIndex(r => r.id === reservationId);
-            if (reservationIndex !== -1) {
-                reservations[reservationIndex].approval = status;
-                
-                // อัพเดท UI
-                updateStatsCards();
-                renderReservationsTable();
-                
-                Swal.fire({
-                    icon: 'success',
-                    title: 'บันทึกสำเร็จ',
-                    text: 'อัพเดทสถานะการอนุมัติเรียบร้อยแล้ว',
-                    confirmButtonColor: '#1e3a8a',
-                    timer: 2000,
-                    showConfirmButton: false
-                });
-            }
+            // อัพเดท UI
+            filterReservations(currentPeriod);
+            updateStatsCards();
+            renderReservationsTable();
             
-        } catch (error) {
-            console.error('Error saving approval:', error);
             Swal.fire({
-                icon: 'error',
-                title: 'เกิดข้อผิดพลาด',
-                text: 'ไม่สามารถบันทึกข้อมูลได้',
-                confirmButtonColor: '#1e3a8a'
+                icon: 'success',
+                title: 'บันทึกสำเร็จ',
+                text: 'อัพเดทสถานะการอนุมัติเรียบร้อยแล้ว',
+                confirmButtonColor: '#1e3a8a',
+                timer: 2000,
+                showConfirmButton: false
             });
         }
     }
 
     // จัดการเหตุการณ์เมื่อหน้าเว็บโหลดเสร็จ
     document.addEventListener('DOMContentLoaded', function() {
-        // โหลดข้อมูล
+        console.log('DOM Content Loaded');
+        
+        // โหลดข้อมูลตัวอย่าง
         loadReservations();
         
         // จัดการเมนู
@@ -1501,9 +1545,6 @@
             item.addEventListener('click', function() {
                 document.querySelectorAll('.menu-item').forEach(i => i.classList.remove('active'));
                 this.classList.add('active');
-                
-                // ในระบบจริงจะต้องเปลี่ยนหน้า
-                // แต่สำหรับตัวอย่างเราจะแสดงเฉพาะหน้า Dashboard
             });
         });
         
@@ -1513,8 +1554,8 @@
                 document.querySelectorAll('.filter-btn[data-period]').forEach(b => b.classList.remove('active'));
                 this.classList.add('active');
                 
-                currentPeriod = this.getAttribute('data-period');
-                filterReservations(currentPeriod);
+                const period = this.getAttribute('data-period');
+                filterReservations(period);
                 renderReservationsTable();
             });
         });
@@ -1525,8 +1566,14 @@
                 document.querySelectorAll('.chart-btn').forEach(b => b.classList.remove('active'));
                 this.classList.add('active');
                 
-                currentChartType = this.getAttribute('data-chart');
-                // ในระบบจริงจะต้องเปลี่ยนประเภทกราฟ
+                const chartType = this.getAttribute('data-chart');
+                // อัพเดทกราฟตามประเภทที่เลือก
+                Swal.fire({
+                    icon: 'info',
+                    title: 'กำลังพัฒนาฟังก์ชัน',
+                    text: `กราฟแบบ ${chartType} กำลังอยู่ในระหว่างการพัฒนา`,
+                    confirmButtonColor: '#1e3a8a'
+                });
             });
         });
         
@@ -1535,7 +1582,6 @@
         
         // ปุ่มโหลดเพิ่มเติม
         document.getElementById('loadMoreBtn').addEventListener('click', function() {
-            // ในระบบจริงจะต้องโหลดข้อมูลเพิ่ม
             Swal.fire({
                 icon: 'info',
                 title: 'กำลังพัฒนาฟังก์ชัน',
