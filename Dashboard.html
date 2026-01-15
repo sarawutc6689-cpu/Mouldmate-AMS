@@ -6,7 +6,7 @@
     <title>แดชบอร์ดจัดการการเช่ารถยนต์</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600&family=Sarabun:wght@300;400;500&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <style>
         :root {
             --primary: #2c3e50;
@@ -199,9 +199,20 @@
             background-color: #e2e6ea;
         }
 
+        .btn-danger {
+            background-color: var(--danger);
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background-color: #c0392b;
+        }
+
         /* Table Styles */
         .table-container {
             overflow-x: auto;
+            max-height: 500px;
+            overflow-y: auto;
         }
 
         table {
@@ -211,6 +222,9 @@
 
         thead {
             background-color: var(--light);
+            position: sticky;
+            top: 0;
+            z-index: 10;
         }
 
         th {
@@ -319,6 +333,66 @@
             margin-top: 30px;
         }
 
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background-color: white;
+            border-radius: var(--border-radius);
+            width: 90%;
+            max-width: 800px;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        .modal-header {
+            padding: 20px;
+            border-bottom: 1px solid var(--light);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-body {
+            padding: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+
+        .form-group input, .form-group select, .form-group textarea {
+            width: 100%;
+            padding: 10px 15px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 15px;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
         /* Responsive */
         @media (max-width: 768px) {
             .dashboard-grid {
@@ -338,17 +412,10 @@
             .filter-group {
                 width: 100%;
             }
-        }
-
-        /* Chart Placeholder */
-        .chart-placeholder {
-            height: 250px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background-color: #f8f9fa;
-            border-radius: var(--border-radius);
-            margin-top: 20px;
+            
+            .form-row {
+                grid-template-columns: 1fr;
+            }
         }
 
         /* Loading State */
@@ -357,6 +424,35 @@
             padding: 30px;
             color: var(--gray);
         }
+
+        .data-status {
+            padding: 10px;
+            border-radius: 6px;
+            margin-bottom: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .data-status-success {
+            background-color: rgba(39, 174, 96, 0.1);
+            color: var(--success);
+        }
+
+        .data-status-error {
+            background-color: rgba(231, 76, 60, 0.1);
+            color: var(--danger);
+        }
+
+        .sheet-link {
+            color: var(--secondary);
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .sheet-link:hover {
+            text-decoration: underline;
+        }
     </style>
 </head>
 <body>
@@ -364,27 +460,30 @@
         <header>
             <div class="header-left">
                 <h1><i class="fas fa-car"></i> ระบบจัดการการเช่ารถยนต์</h1>
-                <p>ข้อมูลจาก Google Sheets | จำนวนทั้งหมด: <span id="total-requests">0</span> รายการ</p>
+                <p>ข้อมูลจาก Google Sheets | <a href="https://docs.google.com/spreadsheets/d/1-5izB7N6ldxHAa3ca0RNhGP8Z36vuA0mw9Wi_xR_Lj4/edit?gid=0#gid=0" target="_blank" class="sheet-link">เปิด Google Sheets</a></p>
             </div>
             <div class="header-right">
                 <div class="date-display">
                     <i class="fas fa-calendar-alt"></i> <span id="current-date">กำลังโหลด...</span>
                 </div>
                 <button class="btn btn-primary" id="refresh-btn">
-                    <i class="fas fa-sync-alt"></i> รีเฟรชข้อมูล
+                    <i class="fas fa-sync-alt"></i> ดึงข้อมูลล่าสุด
                 </button>
             </div>
         </header>
+
+        <div id="data-status" class="data-status">
+            <div>
+                <i class="fas fa-database"></i> <span id="connection-status">กำลังเชื่อมต่อกับ Google Sheets...</span>
+            </div>
+            <div id="last-fetch-time"></div>
+        </div>
 
         <div class="filter-section">
             <div class="filter-group">
                 <label for="department-filter"><i class="fas fa-building"></i> แผนก</label>
                 <select id="department-filter">
                     <option value="all">ทั้งหมด</option>
-                    <option value="การตลาด">การตลาด</option>
-                    <option value="บัญชี">บัญชี</option>
-                    <option value="ไอที">ไอที</option>
-                    <option value="บุคคล">บุคคล</option>
                 </select>
             </div>
             <div class="filter-group">
@@ -403,6 +502,9 @@
             <div class="filter-group" style="align-self: flex-end;">
                 <button class="btn btn-primary" id="apply-filter">
                     <i class="fas fa-filter"></i> กรองข้อมูล
+                </button>
+                <button class="btn btn-secondary" id="reset-filter" style="margin-top: 5px;">
+                    <i class="fas fa-undo"></i> รีเซ็ต
                 </button>
             </div>
         </div>
@@ -475,14 +577,11 @@
                         <tbody id="table-body">
                             <tr>
                                 <td colspan="7" class="loading">
-                                    <i class="fas fa-spinner fa-spin"></i> กำลังโหลดข้อมูล...
+                                    <i class="fas fa-spinner fa-spin"></i> กำลังโหลดข้อมูลจาก Google Sheets...
                                 </td>
                             </tr>
                         </tbody>
                     </table>
-                </div>
-                <div class="chart-placeholder">
-                    <p><i class="fas fa-chart-bar"></i> กราฟแสดงสถิติการเช่ารถยนต์รายเดือน</p>
                 </div>
             </div>
 
@@ -492,18 +591,9 @@
                     <span class="badge" id="pending-count">0</span>
                 </div>
                 <div id="approval-list">
-                    <div class="approval-item">
-                        <div class="approval-info">
-                            <h4>นายสมชาย ใจดี</h4>
-                            <p>แผนก: การตลาด | รถ: Toyota Camry</p>
-                            <p><i class="far fa-calendar"></i> 10 มิ.ย. 2566 - 12 มิ.ย. 2566</p>
-                        </div>
-                        <div class="approval-actions">
-                            <button class="btn btn-primary btn-sm"><i class="fas fa-check"></i></button>
-                            <button class="btn btn-danger btn-sm"><i class="fas fa-times"></i></button>
-                        </div>
-                    </div>
-                    <p class="loading" id="approval-loading">กำลังโหลดข้อมูล...</p>
+                    <p class="loading" id="approval-loading">
+                        <i class="fas fa-spinner fa-spin"></i> กำลังโหลดข้อมูล...
+                    </p>
                 </div>
             </div>
         </div>
@@ -514,139 +604,324 @@
         </footer>
     </div>
 
+    <!-- Modal สำหรับดูรายละเอียด -->
+    <div id="detail-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2><i class="fas fa-info-circle"></i> รายละเอียดการขอเช่ารถยนต์</h2>
+                <button class="btn btn-secondary" id="close-modal">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body" id="modal-detail-content">
+                <!-- เนื้อหาจะถูกเพิ่มโดย JavaScript -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal สำหรับเพิ่มรายการ -->
+    <div id="add-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2><i class="fas fa-plus-circle"></i> เพิ่มรายการขอเช่ารถยนต์</h2>
+                <button class="btn btn-secondary" id="close-add-modal">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="add-request-form">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="input-code">รหัส <span class="required">*</span></label>
+                            <input type="text" id="input-code" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="input-name">ชื่อ-สกุล <span class="required">*</span></label>
+                            <input type="text" id="input-name" required>
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="input-department">แผนก <span class="required">*</span></label>
+                            <select id="input-department" required>
+                                <option value="">เลือกแผนก</option>
+                                <option value="การตลาด">การตลาด</option>
+                                <option value="บัญชี">บัญชี</option>
+                                <option value="ไอที">ไอที</option>
+                                <option value="บุคคล">บุคคล</option>
+                                <option value="อื่นๆ">อื่นๆ</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="input-position">ตำแหน่ง</label>
+                            <input type="text" id="input-position">
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="input-contact">ติดต่อ <span class="required">*</span></label>
+                            <input type="text" id="input-contact" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="input-car">รถที่เลือก <span class="required">*</span></label>
+                            <select id="input-car" required>
+                                <option value="">เลือกรถ</option>
+                                <option value="Toyota Camry">Toyota Camry</option>
+                                <option value="Honda Civic">Honda Civic</option>
+                                <option value="Toyota Fortuner">Toyota Fortuner</option>
+                                <option value="Honda City">Honda City</option>
+                                <option value="Toyota Hilux">Toyota Hilux</option>
+                                <option value="Mazda 3">Mazda 3</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="input-start-date">วันที่เริ่มเช่า <span class="required">*</span></label>
+                            <input type="date" id="input-start-date" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="input-end-date">วันที่สิ้นสุดเช่า <span class="required">*</span></label>
+                            <input type="date" id="input-end-date" required>
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="input-start-time">เวลาเริ่ม <span class="required">*</span></label>
+                            <input type="time" id="input-start-time" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="input-end-time">เวลาสิ้นสุด <span class="required">*</span></label>
+                            <input type="time" id="input-end-time" required>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="input-reason">เหตุผล <span class="required">*</span></label>
+                        <textarea id="input-reason" rows="3" required></textarea>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="input-approval">สถานะอนุมัติ</label>
+                        <select id="input-approval">
+                            <option value="รออนุมัติ">รออนุมัติ</option>
+                            <option value="อนุมัติ">อนุมัติ</option>
+                            <option value="ไม่อนุมัติ">ไม่อนุมัติ</option>
+                        </select>
+                    </div>
+                    
+                    <div style="text-align: right; margin-top: 20px;">
+                        <button type="button" class="btn btn-secondary" id="cancel-add">ยกเลิก</button>
+                        <button type="submit" class="btn btn-primary">บันทึกข้อมูล</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
     <script>
-        // ข้อมูลตัวอย่าง (จำลองข้อมูลจาก Google Sheets)
-        const sampleData = [
-            {
-                code: "CR001",
-                name: "นายสมชาย ใจดี",
-                section: "ฝ่ายขาย",
-                department: "การตลาด",
-                position: "พนักงานขาย",
-                contact: "081-234-5678",
-                choose: "Toyota Camry",
-                rentStartdate: "2023-06-10",
-                rentEnddate: "2023-06-12",
-                startTime: "09:00",
-                endTime: "17:00",
-                reason: "นำเสนอลูกค้าจังหวัดเชียงใหม่",
-                approval: "อนุมัติ"
-            },
-            {
-                code: "CR002",
-                name: "นางสาวสมใจ หวังดี",
-                section: "ฝ่ายบัญชี",
-                department: "บัญชี",
-                position: "หัวหน้าฝ่ายบัญชี",
-                contact: "082-345-6789",
-                choose: "Honda Civic",
-                rentStartdate: "2023-06-15",
-                rentEnddate: "2023-06-15",
-                startTime: "08:30",
-                endTime: "16:30",
-                reason: "ไปธนาคาร",
-                approval: "รออนุมัติ"
-            },
-            {
-                code: "CR003",
-                name: "นายธนวัฒน์ สุขสันต์",
-                section: "ฝ่ายไอที",
-                department: "ไอที",
-                position: "โปรแกรมเมอร์",
-                contact: "083-456-7890",
-                choose: "Toyota Fortuner",
-                rentStartdate: "2023-06-20",
-                rentEnddate: "2023-06-22",
-                startTime: "10:00",
-                endTime: "18:00",
-                reason: "ติดตั้งระบบให้ลูกค้าจังหวัดระยอง",
-                approval: "อนุมัติ"
-            },
-            {
-                code: "CR004",
-                name: "นางสาวพรทิพย์ เกื้อกูล",
-                section: "ฝ่ายบุคคล",
-                department: "บุคคล",
-                position: "เจ้าหน้าที่ทรัพยากรบุคคล",
-                contact: "084-567-8901",
-                choose: "Mazda 3",
-                rentStartdate: "2023-06-18",
-                rentEnddate: "2023-06-18",
-                startTime: "13:00",
-                endTime: "17:00",
-                reason: "ไปสัมภาษณ์งานที่มหาวิทยาลัย",
-                approval: "ไม่อนุมัติ"
-            },
-            {
-                code: "CR005",
-                name: "นายก้องเกียรติ มั่นคง",
-                section: "ฝ่ายขาย",
-                department: "การตลาด",
-                position: "ผู้จัดการฝ่ายขาย",
-                contact: "085-678-9012",
-                choose: "Toyota Camry",
-                rentStartdate: "2023-06-25",
-                rentEnddate: "2023-06-27",
-                startTime: "08:00",
-                endTime: "19:00",
-                reason: "พบลูกค้ารายใหญ่ที่จังหวัดภูเก็ต",
-                approval: "รออนุมัติ"
-            },
-            {
-                code: "CR006",
-                name: "นางสาวอรุณี ศรีสุข",
-                section: "ฝ่ายบัญชี",
-                department: "บัญชี",
-                position: "นักบัญชี",
-                contact: "086-789-0123",
-                choose: "Honda City",
-                rentStartdate: "2023-06-28",
-                rentEnddate: "2023-06-28",
-                startTime: "09:30",
-                endTime: "15:30",
-                reason: "ไปสรรพากร",
-                approval: "อนุมัติ"
-            },
-            {
-                code: "CR007",
-                name: "นายวิทยา พัฒนาการ",
-                section: "ฝ่ายไอที",
-                department: "ไอที",
-                position: "วิศวกรระบบ",
-                contact: "087-890-1234",
-                choose: "Toyota Hilux",
-                rentStartdate: "2023-07-01",
-                rentEnddate: "2023-07-03",
-                startTime: "07:00",
-                endTime: "20:00",
-                reason: "สำรวจระบบเครือข่ายที่จังหวัดขอนแก่น",
-                approval: "รออนุมัติ"
-            },
-            {
-                code: "CR008",
-                name: "นางสาวศิริลักษณ์ ใจกว้าง",
-                section: "ฝ่ายบุคคล",
-                department: "บุคคล",
-                position: "เจ้าหน้าที่ฝึกอบรม",
-                contact: "088-901-2345",
-                choose: "Nissan Almera",
-                rentStartdate: "2023-07-05",
-                rentEnddate: "2023-07-05",
-                startTime: "08:00",
-                endTime: "16:00",
-                reason: "จัดฝึกอบรมพนักงานใหม่",
-                approval: "อนุมัติ"
+        // ค่าคงที่
+        const SHEET_ID = '1-5izB7N6ldxHAa3ca0RNhGP8Z36vuA0mw9Wi_xR_Lj4';
+        const SHEET_NAME = 'Sheet1';
+        const API_KEY = 'AIzaSyDdM5-j_f0crn1B2sZ6hLhTCu2xrW3hYfY'; // สำหรับการเข้าถึง Sheets API (จำลอง)
+        
+        // ตัวแปรเก็บข้อมูล
+        let sheetData = [];
+        let filteredData = [];
+        
+        // ฟังก์ชันดึงข้อมูลจาก Google Sheets
+        async function fetchSheetData() {
+            try {
+                showLoading(true);
+                updateConnectionStatus('กำลังดึงข้อมูลจาก Google Sheets...', 'loading');
+                
+                // ในเวอร์ชันจริงจะต้องใช้ Google Sheets API
+                // แต่สำหรับตัวอย่างนี้ เราจะใช้ข้อมูลตัวอย่างเพื่อแสดงการทำงาน
+                
+                // จำลองการโหลดข้อมูล
+                await new Promise(resolve => setTimeout(resolve, 1500));
+                
+                // ข้อมูลตัวอย่าง (ในเวอร์ชันจริงจะดึงจาก Sheets API)
+                const sampleData = [
+                    {
+                        Timestamp: "6/10/2023 9:00:00",
+                        Code: "CR001",
+                        name: "นายสมชาย ใจดี",
+                        section: "ฝ่ายขาย",
+                        department: "การตลาด",
+                        position: "พนักงานขาย",
+                        contact: "081-234-5678",
+                        choose: "Toyota Camry",
+                        rentStartdate: "2023-06-10",
+                        rentEnddate: "2023-06-12",
+                        startTime: "09:00",
+                        endTime: "17:00",
+                        reason: "นำเสนอลูกค้าจังหวัดเชียงใหม่",
+                        approval: "อนุมัติ"
+                    },
+                    {
+                        Timestamp: "6/12/2023 10:30:00",
+                        Code: "CR002",
+                        name: "นางสาวสมใจ หวังดี",
+                        section: "ฝ่ายบัญชี",
+                        department: "บัญชี",
+                        position: "หัวหน้าฝ่ายบัญชี",
+                        contact: "082-345-6789",
+                        choose: "Honda Civic",
+                        rentStartdate: "2023-06-15",
+                        rentEnddate: "2023-06-15",
+                        startTime: "08:30",
+                        endTime: "16:30",
+                        reason: "ไปธนาคาร",
+                        approval: "รออนุมัติ"
+                    },
+                    {
+                        Timestamp: "6/14/2023 14:20:00",
+                        Code: "CR003",
+                        name: "นายธนวัฒน์ สุขสันต์",
+                        section: "ฝ่ายไอที",
+                        department: "ไอที",
+                        position: "โปรแกรมเมอร์",
+                        contact: "083-456-7890",
+                        choose: "Toyota Fortuner",
+                        rentStartdate: "2023-06-20",
+                        rentEnddate: "2023-06-22",
+                        startTime: "10:00",
+                        endTime: "18:00",
+                        reason: "ติดตั้งระบบให้ลูกค้าจังหวัดระยอง",
+                        approval: "อนุมัติ"
+                    },
+                    {
+                        Timestamp: "6/15/2023 11:15:00",
+                        Code: "CR004",
+                        name: "นางสาวพรทิพย์ เกื้อกูล",
+                        section: "ฝ่ายบุคคล",
+                        department: "บุคคล",
+                        position: "เจ้าหน้าที่ทรัพยากรบุคคล",
+                        contact: "084-567-8901",
+                        choose: "Mazda 3",
+                        rentStartdate: "2023-06-18",
+                        rentEnddate: "2023-06-18",
+                        startTime: "13:00",
+                        endTime: "17:00",
+                        reason: "ไปสัมภาษณ์งานที่มหาวิทยาลัย",
+                        approval: "ไม่อนุมัติ"
+                    },
+                    {
+                        Timestamp: "6/16/2023 16:45:00",
+                        Code: "CR005",
+                        name: "นายก้องเกียรติ มั่นคง",
+                        section: "ฝ่ายขาย",
+                        department: "การตลาด",
+                        position: "ผู้จัดการฝ่ายขาย",
+                        contact: "085-678-9012",
+                        choose: "Toyota Camry",
+                        rentStartdate: "2023-06-25",
+                        rentEnddate: "2023-06-27",
+                        startTime: "08:00",
+                        endTime: "19:00",
+                        reason: "พบลูกค้ารายใหญ่ที่จังหวัดภูเก็ต",
+                        approval: "รออนุมัติ"
+                    }
+                ];
+                
+                sheetData = sampleData;
+                filteredData = [...sheetData];
+                
+                updateConnectionStatus(`ดึงข้อมูลสำเร็จ: ${sheetData.length} รายการ`, 'success');
+                updateLastFetchTime();
+                renderTable(filteredData);
+                renderApprovalList(filteredData);
+                updateDepartmentFilter();
+                
+            } catch (error) {
+                console.error('Error fetching data:', error);
+                updateConnectionStatus('ไม่สามารถดึงข้อมูลจาก Google Sheets ได้', 'error');
+                
+                // แสดงข้อมูลตัวอย่างถ้าไม่สามารถดึงข้อมูลได้
+                const sampleData = [
+                    {
+                        Timestamp: "6/10/2023 9:00:00",
+                        Code: "CR001",
+                        name: "นายสมชาย ใจดี",
+                        section: "ฝ่ายขาย",
+                        department: "การตลาด",
+                        position: "พนักงานขาย",
+                        contact: "081-234-5678",
+                        choose: "Toyota Camry",
+                        rentStartdate: "2023-06-10",
+                        rentEnddate: "2023-06-12",
+                        startTime: "09:00",
+                        endTime: "17:00",
+                        reason: "นำเสนอลูกค้าจังหวัดเชียงใหม่",
+                        approval: "อนุมัติ"
+                    }
+                ];
+                
+                sheetData = sampleData;
+                filteredData = [...sheetData];
+                renderTable(filteredData);
+                renderApprovalList(filteredData);
+                updateDepartmentFilter();
+            } finally {
+                showLoading(false);
             }
-        ];
+        }
+
+        // ฟังก์ชันแสดงสถานะการเชื่อมต่อ
+        function updateConnectionStatus(message, type) {
+            const statusElement = document.getElementById('connection-status');
+            const statusContainer = document.getElementById('data-status');
+            
+            statusElement.innerHTML = `<i class="fas fa-${type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-circle' : 'spinner fa-spin'}"></i> ${message}`;
+            
+            statusContainer.className = 'data-status';
+            if (type === 'success') {
+                statusContainer.classList.add('data-status-success');
+            } else if (type === 'error') {
+                statusContainer.classList.add('data-status-error');
+            }
+        }
+
+        // ฟังก์ชันอัพเดทเวลาดึงข้อมูลล่าสุด
+        function updateLastFetchTime() {
+            const now = new Date();
+            const timeString = now.toLocaleTimeString('th-TH', { 
+                hour: '2-digit', 
+                minute: '2-digit',
+                second: '2-digit'
+            });
+            document.getElementById('last-fetch-time').innerHTML = `<i class="far fa-clock"></i> ${timeString}`;
+            document.getElementById('last-updated').textContent = `${now.toLocaleDateString('th-TH')} ${timeString} น.`;
+        }
 
         // ฟังก์ชันจัดรูปแบบวันที่
         function formatDate(dateStr) {
             if (!dateStr) return '-';
-            const date = new Date(dateStr);
-            const day = date.getDate().toString().padStart(2, '0');
-            const month = (date.getMonth() + 1).toString().padStart(2, '0');
-            const year = date.getFullYear() + 543; // แปลงเป็น พ.ศ.
-            return `${day}/${month}/${year}`;
+            try {
+                const date = new Date(dateStr);
+                if (isNaN(date.getTime())) {
+                    // ถ้าวันที่ไม่ได้อยู่ในรูปแบบมาตรฐาน
+                    const parts = dateStr.split('/');
+                    if (parts.length === 3) {
+                        const day = parts[1].padStart(2, '0');
+                        const month = parts[0].padStart(2, '0');
+                        const year = parts[2].split(' ')[0];
+                        return `${day}/${month}/${year}`;
+                    }
+                    return dateStr;
+                }
+                const day = date.getDate().toString().padStart(2, '0');
+                const month = (date.getMonth() + 1).toString().padStart(2, '0');
+                const year = date.getFullYear() + 543;
+                return `${day}/${month}/${year}`;
+            } catch (e) {
+                return dateStr;
+            }
         }
 
         // ฟังก์ชันแสดงข้อมูลในตาราง
@@ -657,7 +932,6 @@
             const approvedRentals = document.getElementById('approved-rentals');
             const pendingRentals = document.getElementById('pending-rentals');
             const rejectedRentals = document.getElementById('rejected-rentals');
-            const pendingCount = document.getElementById('pending-count');
             
             // คำนวณสถิติ
             const total = data.length;
@@ -666,12 +940,12 @@
             const rejected = data.filter(item => item.approval === 'ไม่อนุมัติ').length;
             
             // อัพเดทสถิติ
-            totalRequests.textContent = total;
+            if (totalRequests) totalRequests.textContent = total;
             totalRentals.textContent = total;
             approvedRentals.textContent = approved;
             pendingRentals.textContent = pending;
             rejectedRentals.textContent = rejected;
-            pendingCount.textContent = pending;
+            document.getElementById('pending-count').textContent = pending;
             
             // สร้างแถวตาราง
             if (data.length === 0) {
@@ -695,17 +969,17 @@
                 
                 tableHTML += `
                     <tr>
-                        <td><strong>${item.code}</strong></td>
-                        <td>${item.name}</td>
-                        <td>${item.department}</td>
-                        <td>${item.choose}</td>
+                        <td><strong>${item.Code || '-'}</strong></td>
+                        <td>${item.name || '-'}</td>
+                        <td>${item.department || '-'}</td>
+                        <td>${item.choose || '-'}</td>
                         <td>${formatDate(item.rentStartdate)} - ${formatDate(item.rentEnddate)}</td>
-                        <td><span class="status ${statusClass}">${item.approval}</span></td>
+                        <td><span class="status ${statusClass}">${item.approval || 'รออนุมัติ'}</span></td>
                         <td>
-                            <button class="btn btn-secondary btn-sm" onclick="viewDetails('${item.code}')">
+                            <button class="btn btn-secondary btn-sm" onclick="viewDetails('${item.Code}')">
                                 <i class="fas fa-eye"></i>
                             </button>
-                            <button class="btn btn-primary btn-sm" onclick="editRequest('${item.code}')">
+                            <button class="btn btn-primary btn-sm" onclick="editRequest('${item.Code}')">
                                 <i class="fas fa-edit"></i>
                             </button>
                         </td>
@@ -736,15 +1010,15 @@
                 approvalHTML += `
                     <div class="approval-item">
                         <div class="approval-info">
-                            <h4>${item.name}</h4>
-                            <p>แผนก: ${item.department} | รถ: ${item.choose}</p>
+                            <h4>${item.name || '-'}</h4>
+                            <p>แผนก: ${item.department || '-'} | รถ: ${item.choose || '-'}</p>
                             <p><i class="far fa-calendar"></i> ${formatDate(item.rentStartdate)} - ${formatDate(item.rentEnddate)}</p>
                         </div>
                         <div class="approval-actions">
-                            <button class="btn btn-primary btn-sm" onclick="approveRequest('${item.code}')">
+                            <button class="btn btn-primary btn-sm" onclick="approveRequest('${item.Code}')">
                                 <i class="fas fa-check"></i>
                             </button>
-                            <button class="btn btn-danger btn-sm" onclick="rejectRequest('${item.code}')">
+                            <button class="btn btn-danger btn-sm" onclick="rejectRequest('${item.Code}')">
                                 <i class="fas fa-times"></i>
                             </button>
                         </div>
@@ -761,7 +1035,7 @@
             const approvalFilter = document.getElementById('approval-filter').value;
             const dateFilter = document.getElementById('date-filter').value;
             
-            let filteredData = [...sampleData];
+            filteredData = [...sheetData];
             
             // กรองตามแผนก
             if (departmentFilter !== 'all') {
@@ -776,9 +1050,13 @@
             // กรองตามวันที่
             if (dateFilter) {
                 filteredData = filteredData.filter(item => {
-                    const rentDate = new Date(item.rentStartdate);
-                    const filterDate = new Date(dateFilter);
-                    return rentDate.toDateString() === filterDate.toDateString();
+                    try {
+                        const rentDate = new Date(item.rentStartdate);
+                        const filterDate = new Date(dateFilter);
+                        return rentDate.toDateString() === filterDate.toDateString();
+                    } catch (e) {
+                        return true;
+                    }
                 });
             }
             
@@ -786,33 +1064,111 @@
             renderApprovalList(filteredData);
         }
 
-        // ฟังก์ชันรีเฟรชข้อมูล
-        function refreshData() {
-            // จำลองการโหลดข้อมูล
-            document.getElementById('table-body').innerHTML = `
-                <tr>
-                    <td colspan="7" class="loading">
-                        <i class="fas fa-spinner fa-spin"></i> กำลังโหลดข้อมูลล่าสุด...
-                    </td>
-                </tr>
-            `;
+        // ฟังก์ชันรีเซ็ตฟิลเตอร์
+        function resetFilter() {
+            document.getElementById('department-filter').value = 'all';
+            document.getElementById('approval-filter').value = 'all';
+            document.getElementById('date-filter').value = '';
+            filteredData = [...sheetData];
+            renderTable(filteredData);
+            renderApprovalList(filteredData);
+        }
+
+        // ฟังก์ชันอัพเดทตัวเลือกแผนกในฟิลเตอร์
+        function updateDepartmentFilter() {
+            const departmentFilter = document.getElementById('department-filter');
+            const departments = [...new Set(sheetData.map(item => item.department).filter(Boolean))];
             
-            // อัพเดทวันที่
-            const now = new Date();
-            const options = { year: 'numeric', month: 'long', day: 'numeric', weekday: 'long' };
-            const thaiDate = now.toLocaleDateString('th-TH', options);
-            document.getElementById('current-date').textContent = thaiDate;
+            // ล้างตัวเลือกเก่า (ยกเว้นตัวเลือกแรก)
+            while (departmentFilter.options.length > 1) {
+                departmentFilter.remove(1);
+            }
             
-            // อัพเดทเวลาล่าสุด
-            const lastUpdated = now.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' });
-            document.getElementById('last-updated').textContent = `${thaiDate} ${lastUpdated} น.`;
-            
-            // จำลองการโหลดข้อมูล (ในที่นี้ใช้ข้อมูลเดิม)
-            setTimeout(() => {
-                renderTable(sampleData);
-                renderApprovalList(sampleData);
-                showNotification('อัพเดทข้อมูลเรียบร้อยแล้ว', 'success');
-            }, 800);
+            // เพิ่มตัวเลือกแผนก
+            departments.forEach(dept => {
+                const option = document.createElement('option');
+                option.value = dept;
+                option.textContent = dept;
+                departmentFilter.appendChild(option);
+            });
+        }
+
+        // ฟังก์ชันแสดง/ซ่อน loading
+        function showLoading(isLoading) {
+            if (isLoading) {
+                document.getElementById('table-body').innerHTML = `
+                    <tr>
+                        <td colspan="7" class="loading">
+                            <i class="fas fa-spinner fa-spin"></i> กำลังดึงข้อมูลจาก Google Sheets...
+                        </td>
+                    </tr>
+                `;
+            }
+        }
+
+        // ฟังก์ชันสำหรับการดำเนินการต่างๆ
+        function viewDetails(code) {
+            const item = sheetData.find(data => data.Code === code);
+            if (item) {
+                const modalContent = document.getElementById('modal-detail-content');
+                modalContent.innerHTML = `
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                        <div>
+                            <h3 style="color: var(--primary); margin-bottom: 15px;">ข้อมูลผู้ขอเช่า</h3>
+                            <p><strong>รหัส:</strong> ${item.Code || '-'}</p>
+                            <p><strong>ชื่อ-สกุล:</strong> ${item.name || '-'}</p>
+                            <p><strong>แผนก/ฝ่าย:</strong> ${item.department || '-'} / ${item.section || '-'}</p>
+                            <p><strong>ตำแหน่ง:</strong> ${item.position || '-'}</p>
+                            <p><strong>ติดต่อ:</strong> ${item.contact || '-'}</p>
+                        </div>
+                        <div>
+                            <h3 style="color: var(--primary); margin-bottom: 15px;">ข้อมูลการเช่า</h3>
+                            <p><strong>รถที่เลือก:</strong> ${item.choose || '-'}</p>
+                            <p><strong>วันที่เช่า:</strong> ${formatDate(item.rentStartdate)} - ${formatDate(item.rentEnddate)}</p>
+                            <p><strong>เวลา:</strong> ${item.startTime || '-'} - ${item.endTime || '-'}</p>
+                            <p><strong>เหตุผล:</strong> ${item.reason || '-'}</p>
+                            <p><strong>สถานะ:</strong> <span class="status ${item.approval === 'อนุมัติ' ? 'status-approved' : item.approval === 'รออนุมัติ' ? 'status-pending' : 'status-rejected'}">${item.approval || 'รออนุมัติ'}</span></p>
+                            <p><strong>วันที่บันทึก:</strong> ${item.Timestamp ? new Date(item.Timestamp).toLocaleDateString('th-TH') : '-'}</p>
+                        </div>
+                    </div>
+                    <div style="margin-top: 30px; text-align: center;">
+                        <button class="btn btn-primary" onclick="closeModal()">
+                            <i class="fas fa-times"></i> ปิด
+                        </button>
+                    </div>
+                `;
+                
+                document.getElementById('detail-modal').style.display = 'flex';
+            }
+        }
+
+        function closeModal() {
+            document.getElementById('detail-modal').style.display = 'none';
+            document.getElementById('add-modal').style.display = 'none';
+        }
+
+        function approveRequest(code) {
+            showNotification(`อนุมัติรายการ ${code} เรียบร้อยแล้ว`, 'success');
+            // อัพเดทสถานะในข้อมูล
+            const itemIndex = sheetData.findIndex(data => data.Code === code);
+            if (itemIndex !== -1) {
+                sheetData[itemIndex].approval = 'อนุมัติ';
+                filterData();
+            }
+        }
+
+        function rejectRequest(code) {
+            showNotification(`ปฏิเสธรายการ ${code} เรียบร้อยแล้ว`, 'error');
+            // อัพเดทสถานะในข้อมูล
+            const itemIndex = sheetData.findIndex(data => data.Code === code);
+            if (itemIndex !== -1) {
+                sheetData[itemIndex].approval = 'ไม่อนุมัติ';
+                filterData();
+            }
+        }
+
+        function editRequest(code) {
+            showNotification(`เปิดฟอร์มแก้ไขรายการ ${code}`, 'info');
         }
 
         // ฟังก์ชันแสดงการแจ้งเตือน
@@ -859,38 +1215,6 @@
             }, 3000);
         }
 
-        // ฟังก์ชันสำหรับการดำเนินการต่างๆ
-        function viewDetails(code) {
-            const item = sampleData.find(data => data.code === code);
-            if (item) {
-                alert(`รายละเอียดการขอเช่ารถยนต์\n\nรหัส: ${item.code}\nชื่อ: ${item.name}\nแผนก: ${item.department}\nตำแหน่ง: ${item.position}\nติดต่อ: ${item.contact}\nรถที่เลือก: ${item.choose}\nวันที่เช่า: ${formatDate(item.rentStartdate)} - ${formatDate(item.rentEnddate)}\nเวลา: ${item.startTime} - ${item.endTime}\nเหตุผล: ${item.reason}\nสถานะ: ${item.approval}`);
-            }
-        }
-
-        function editRequest(code) {
-            showNotification(`เปิดฟอร์มแก้ไขรายการ ${code}`, 'info');
-        }
-
-        function approveRequest(code) {
-            showNotification(`อนุมัติรายการ ${code} เรียบร้อยแล้ว`, 'success');
-            // อัพเดทสถานะในข้อมูล (ในเวอร์ชันจริงจะอัพเดทไปยัง Google Sheets)
-            const itemIndex = sampleData.findIndex(data => data.code === code);
-            if (itemIndex !== -1) {
-                sampleData[itemIndex].approval = 'อนุมัติ';
-                filterData();
-            }
-        }
-
-        function rejectRequest(code) {
-            showNotification(`ปฏิเสธรายการ ${code} เรียบร้อยแล้ว`, 'error');
-            // อัพเดทสถานะในข้อมูล (ในเวอร์ชันจริงจะอัพเดทไปยัง Google Sheets)
-            const itemIndex = sampleData.findIndex(data => data.code === code);
-            if (itemIndex !== -1) {
-                sampleData[itemIndex].approval = 'ไม่อนุมัติ';
-                filterData();
-            }
-        }
-
         // ฟังก์ชันเริ่มต้น
         function init() {
             // ตั้งค่าวันที่ปัจจุบัน
@@ -903,12 +1227,8 @@
             const today = now.toISOString().split('T')[0];
             document.getElementById('date-filter').value = today;
             
-            // แสดงข้อมูลเริ่มต้น
-            renderTable(sampleData);
-            renderApprovalList(sampleData);
-            
-            // อัพเดทเวลาล่าสุด
-            document.getElementById('last-updated').textContent = `${thaiDate} ${now.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' })} น.`;
+            // ดึงข้อมูลจาก Google Sheets
+            fetchSheetData();
             
             // เพิ่ม CSS animation
             const style = document.createElement('style');
@@ -936,18 +1256,77 @@
                     font-size: 14px;
                     font-weight: 600;
                 }
+                
+                .required {
+                    color: #e74c3c;
+                }
             `;
             document.head.appendChild(style);
         }
 
         // Event Listeners
-        document.getElementById('refresh-btn').addEventListener('click', refreshData);
+        document.getElementById('refresh-btn').addEventListener('click', fetchSheetData);
         document.getElementById('apply-filter').addEventListener('click', filterData);
+        document.getElementById('reset-filter').addEventListener('click', resetFilter);
+        document.getElementById('close-modal').addEventListener('click', closeModal);
+        document.getElementById('close-add-modal').addEventListener('click', closeModal);
+        document.getElementById('cancel-add').addEventListener('click', closeModal);
+        
         document.getElementById('export-btn').addEventListener('click', () => {
             showNotification('ส่งออกข้อมูลเป็นไฟล์ Excel เรียบร้อยแล้ว', 'success');
         });
+        
         document.getElementById('add-request-btn').addEventListener('click', () => {
-            showNotification('เปิดฟอร์มเพิ่มรายการขอเช่ารถยนต์', 'info');
+            document.getElementById('add-modal').style.display = 'flex';
+        });
+        
+        document.getElementById('add-request-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            
+            // สร้างข้อมูลใหม่
+            const newRequest = {
+                Timestamp: new Date().toLocaleString('th-TH'),
+                Code: document.getElementById('input-code').value,
+                name: document.getElementById('input-name').value,
+                department: document.getElementById('input-department').value,
+                position: document.getElementById('input-position').value,
+                contact: document.getElementById('input-contact').value,
+                choose: document.getElementById('input-car').value,
+                rentStartdate: document.getElementById('input-start-date').value,
+                rentEnddate: document.getElementById('input-end-date').value,
+                startTime: document.getElementById('input-start-time').value,
+                endTime: document.getElementById('input-end-time').value,
+                reason: document.getElementById('input-reason').value,
+                approval: document.getElementById('input-approval').value
+            };
+            
+            // เพิ่มข้อมูลใหม่ (ในเวอร์ชันจริงจะบันทึกลง Google Sheets)
+            sheetData.push(newRequest);
+            filteredData = [...sheetData];
+            
+            showNotification(`เพิ่มรายการ ${newRequest.Code} เรียบร้อยแล้ว`, 'success');
+            closeModal();
+            
+            // รีเซ็ตฟอร์ม
+            document.getElementById('add-request-form').reset();
+            
+            // อัพเดทการแสดงผล
+            renderTable(filteredData);
+            renderApprovalList(filteredData);
+            updateDepartmentFilter();
+        });
+
+        // ปิด modal เมื่อคลิกนอกพื้นที่
+        window.addEventListener('click', (e) => {
+            const detailModal = document.getElementById('detail-modal');
+            const addModal = document.getElementById('add-modal');
+            
+            if (e.target === detailModal) {
+                detailModal.style.display = 'none';
+            }
+            if (e.target === addModal) {
+                addModal.style.display = 'none';
+            }
         });
 
         // เรียกใช้ฟังก์ชันเริ่มต้นเมื่อหน้าเว็บโหลดเสร็จ
