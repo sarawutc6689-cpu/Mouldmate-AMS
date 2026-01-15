@@ -3,206 +3,100 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>แดชบอร์ดรายงานการจองรถ - แผนกบริการยานยนต์</title>
+    <title>แดชบอร์ดจัดการการเช่ารถยนต์</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600&family=Sarabun:wght@300;400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
-            --primary: #1e3a8a; /* น้ำเงินเข้ม */
-            --primary-light: #3b82f6;
-            --secondary: #f59e0b; /* ส้มทอง (สียานยนต์) */
-            --secondary-light: #fbbf24;
-            --success: #10b981; /* เขียว */
-            --warning: #f59e0b;
-            --danger: #ef4444; /* แดง */
-            --info: #0ea5e9; /* ฟ้า */
-            --light: #f8fafc;
-            --dark: #1e293b;
-            --gray: #64748b;
-            --gray-light: #e2e8f0;
-            --border: #e5e7eb;
-            --card-bg: #ffffff;
-            --sidebar-bg: #1e293b;
-            --sidebar-text: #f1f5f9;
+            --primary: #2c3e50;
+            --secondary: #3498db;
+            --success: #27ae60;
+            --warning: #f39c12;
+            --danger: #e74c3c;
+            --light: #ecf0f1;
+            --dark: #2c3e50;
+            --gray: #95a5a6;
+            --light-gray: #f8f9fa;
+            --border-radius: 10px;
+            --box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            --transition: all 0.3s ease;
         }
 
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: 'Segoe UI', 'Kanit', 'Sukhumvit Set', 'Prompt', sans-serif;
+            font-family: 'Sarabun', sans-serif;
         }
 
         body {
-            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
-            color: var(--dark);
-            min-height: 100vh;
+            background-color: #f5f7fa;
+            color: #333;
+            line-height: 1.6;
         }
 
-        .dashboard-container {
-            display: flex;
-            min-height: 100vh;
+        h1, h2, h3, h4, h5, h6 {
+            font-family: 'Kanit', sans-serif;
+            font-weight: 600;
         }
 
-        /* Sidebar */
-        .sidebar {
-            width: 260px;
-            background: var(--sidebar-bg);
-            color: var(--sidebar-text);
-            padding: 20px 0;
-            transition: all 0.3s;
-            box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
-        }
-
-        .sidebar-header {
-            padding: 0 20px 30px 20px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-            margin-bottom: 20px;
-        }
-
-        .logo-container {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
-
-        .logo {
-            background: linear-gradient(135deg, var(--secondary) 0%, var(--secondary-light) 100%);
-            color: white;
-            width: 50px;
-            height: 50px;
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 24px;
-        }
-
-        .logo-text h2 {
-            font-size: 18px;
-            font-weight: 700;
-            margin-bottom: 3px;
-        }
-
-        .logo-text p {
-            font-size: 12px;
-            opacity: 0.8;
-        }
-
-        .sidebar-menu {
-            list-style: none;
-        }
-
-        .menu-item {
-            padding: 15px 20px;
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            cursor: pointer;
-            transition: all 0.3s;
-            border-left: 3px solid transparent;
-        }
-
-        .menu-item:hover {
-            background: rgba(255, 255, 255, 0.05);
-        }
-
-        .menu-item.active {
-            background: rgba(59, 130, 246, 0.1);
-            border-left: 3px solid var(--primary-light);
-            color: white;
-        }
-
-        .menu-item i {
-            width: 20px;
-            text-align: center;
-        }
-
-        .menu-text {
-            font-weight: 500;
-        }
-
-        /* Main Content */
-        .main-content {
-            flex: 1;
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
             padding: 20px;
-            overflow-y: auto;
         }
 
-        .header {
-            background: white;
-            padding: 20px;
-            border-radius: 16px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
-            margin-bottom: 25px;
+        /* Header */
+        header {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            color: white;
+            padding: 25px 30px;
+            border-radius: var(--border-radius);
+            margin-bottom: 30px;
+            box-shadow: var(--box-shadow);
             display: flex;
             justify-content: space-between;
             align-items: center;
         }
 
-        .header-title h1 {
-            color: var(--primary);
+        .header-left h1 {
             font-size: 28px;
-            font-weight: 700;
-            margin-bottom: 5px;
+            margin-bottom: 8px;
         }
 
-        .header-title p {
-            color: var(--gray);
-            font-size: 14px;
+        .header-left p {
+            font-size: 16px;
+            opacity: 0.9;
         }
 
-        .header-controls {
+        .header-right {
             display: flex;
+            align-items: center;
             gap: 15px;
-            align-items: center;
         }
 
-        .date-filter {
-            display: flex;
-            gap: 10px;
-            align-items: center;
-        }
-
-        .filter-btn {
-            background: white;
-            border: 1px solid var(--border);
-            border-radius: 10px;
+        .date-display {
+            background-color: rgba(255, 255, 255, 0.15);
             padding: 10px 20px;
-            font-size: 14px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            transition: all 0.3s;
+            border-radius: var(--border-radius);
+            font-weight: 500;
         }
 
-        .filter-btn:hover {
-            background: var(--light);
-            border-color: var(--primary-light);
-        }
-
-        .filter-btn.active {
-            background: var(--primary);
-            color: white;
-            border-color: var(--primary);
-        }
-
-        /* Stats Cards */
-        .stats-cards {
+        /* Dashboard Grid */
+        .dashboard-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 20px;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 25px;
             margin-bottom: 30px;
         }
 
         .stat-card {
-            background: white;
-            border-radius: 16px;
+            background-color: white;
+            border-radius: var(--border-radius);
             padding: 25px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
-            transition: transform 0.3s, box-shadow 0.3s;
+            box-shadow: var(--box-shadow);
+            transition: var(--transition);
             display: flex;
             align-items: center;
             gap: 20px;
@@ -210,1390 +104,854 @@
 
         .stat-card:hover {
             transform: translateY(-5px);
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
         }
 
         .stat-icon {
             width: 70px;
             height: 70px;
-            border-radius: 16px;
+            border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 28px;
+            font-size: 30px;
             color: white;
         }
 
-        .stat-icon.total {
-            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
-        }
-
-        .stat-icon.approved {
-            background: linear-gradient(135deg, var(--success) 0%, #34d399 100%);
-        }
-
-        .stat-icon.pending {
-            background: linear-gradient(135deg, var(--warning) 0%, #fbbf24 100%);
-        }
-
-        .stat-icon.rejected {
-            background: linear-gradient(135deg, var(--danger) 0%, #f87171 100%);
-        }
-
-        .stat-content {
-            flex: 1;
-        }
-
-        .stat-value {
+        .stat-info h3 {
             font-size: 32px;
-            font-weight: 700;
-            color: var(--dark);
             margin-bottom: 5px;
+            color: var(--dark);
         }
 
-        .stat-label {
-            font-size: 14px;
+        .stat-info p {
             color: var(--gray);
-            margin-bottom: 8px;
+            font-size: 16px;
         }
 
-        .stat-change {
-            font-size: 12px;
-            display: flex;
-            align-items: center;
-            gap: 5px;
-        }
-
-        .stat-change.positive {
-            color: var(--success);
-        }
-
-        .stat-change.negative {
-            color: var(--danger);
-        }
-
-        /* Charts Container */
-        .charts-container {
+        /* Main Content */
+        .main-content {
             display: grid;
             grid-template-columns: 2fr 1fr;
-            gap: 25px;
+            gap: 30px;
             margin-bottom: 30px;
         }
 
         @media (max-width: 1200px) {
-            .charts-container {
+            .main-content {
                 grid-template-columns: 1fr;
             }
         }
 
-        .chart-card {
-            background: white;
-            border-radius: 16px;
+        .card {
+            background-color: white;
+            border-radius: var(--border-radius);
             padding: 25px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+            box-shadow: var(--box-shadow);
         }
 
-        .chart-header {
+        .card-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
             margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid var(--light);
         }
 
-        .chart-title {
-            font-size: 18px;
-            font-weight: 600;
-            color: var(--dark);
+        .card-header h2 {
+            font-size: 22px;
+            color: var(--primary);
         }
 
-        .chart-options {
+        .card-header .actions {
             display: flex;
             gap: 10px;
         }
 
-        .chart-btn {
-            background: var(--light);
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            padding: 6px 12px;
-            font-size: 12px;
+        .btn {
+            padding: 8px 16px;
+            border-radius: 6px;
+            border: none;
+            font-weight: 500;
             cursor: pointer;
-            transition: all 0.3s;
-        }
-
-        .chart-btn.active {
-            background: var(--primary);
-            color: white;
-            border-color: var(--primary);
-        }
-
-        .chart-container {
-            position: relative;
-            height: 300px;
-        }
-
-        /* Reservations Table */
-        .table-card {
-            background: white;
-            border-radius: 16px;
-            padding: 25px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
-            margin-bottom: 30px;
-        }
-
-        .table-header {
-            display: flex;
-            justify-content: space-between;
+            transition: var(--transition);
+            display: inline-flex;
             align-items: center;
-            margin-bottom: 20px;
+            gap: 8px;
         }
 
-        .table-title {
-            font-size: 18px;
-            font-weight: 600;
+        .btn-primary {
+            background-color: var(--secondary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: #2980b9;
+        }
+
+        .btn-secondary {
+            background-color: var(--light-gray);
             color: var(--dark);
         }
 
-        .table-actions {
-            display: flex;
-            gap: 10px;
+        .btn-secondary:hover {
+            background-color: #e2e6ea;
         }
 
+        /* Table Styles */
         .table-container {
             overflow-x: auto;
         }
 
-        .reservations-table {
+        table {
             width: 100%;
             border-collapse: collapse;
         }
 
-        .reservations-table th {
-            background: var(--light);
+        thead {
+            background-color: var(--light);
+        }
+
+        th {
             padding: 15px;
             text-align: left;
             font-weight: 600;
             color: var(--dark);
-            border-bottom: 2px solid var(--border);
+            border-bottom: 2px solid var(--light);
         }
 
-        .reservations-table td {
+        td {
             padding: 15px;
-            border-bottom: 1px solid var(--border);
-            vertical-align: middle;
+            border-bottom: 1px solid var(--light);
         }
 
-        .reservations-table tr:hover {
-            background: #f8fafc;
+        tbody tr:hover {
+            background-color: rgba(52, 152, 219, 0.05);
         }
 
-        .status-badge {
-            padding: 5px 12px;
+        .status {
+            padding: 6px 12px;
             border-radius: 20px;
-            font-size: 12px;
-            font-weight: 600;
-            display: inline-block;
+            font-size: 14px;
+            font-weight: 500;
         }
 
         .status-approved {
-            background: rgba(16, 185, 129, 0.1);
+            background-color: rgba(39, 174, 96, 0.15);
             color: var(--success);
         }
 
         .status-pending {
-            background: rgba(245, 158, 11, 0.1);
+            background-color: rgba(243, 156, 18, 0.15);
             color: var(--warning);
         }
 
         .status-rejected {
-            background: rgba(239, 68, 68, 0.1);
+            background-color: rgba(231, 76, 60, 0.15);
             color: var(--danger);
         }
 
-        .car-badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            background: var(--light);
-            padding: 5px 12px;
-            border-radius: 20px;
-            font-size: 12px;
+        /* Filter Section */
+        .filter-section {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-bottom: 25px;
+            padding: 20px;
+            background-color: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+        }
+
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            min-width: 180px;
+        }
+
+        .filter-group label {
             font-weight: 500;
+            margin-bottom: 8px;
+            color: var(--dark);
         }
 
-        .action-btn {
-            padding: 6px 12px;
-            border: none;
-            border-radius: 8px;
-            font-size: 12px;
-            font-weight: 500;
-            cursor: pointer;
-            transition: all 0.3s;
-            display: inline-flex;
+        .filter-group select, .filter-group input {
+            padding: 10px 15px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 15px;
+        }
+
+        /* Approval Section */
+        .approval-item {
+            padding: 20px;
+            background-color: var(--light-gray);
+            border-radius: var(--border-radius);
+            margin-bottom: 15px;
+            display: flex;
+            justify-content: space-between;
             align-items: center;
-            gap: 5px;
         }
 
-        .action-approve {
-            background: rgba(16, 185, 129, 0.1);
-            color: var(--success);
+        .approval-info h4 {
+            margin-bottom: 5px;
+            color: var(--primary);
         }
 
-        .action-approve:hover {
-            background: var(--success);
-            color: white;
+        .approval-info p {
+            color: var(--gray);
+            font-size: 14px;
         }
 
-        .action-reject {
-            background: rgba(239, 68, 68, 0.1);
-            color: var(--danger);
+        .approval-actions {
+            display: flex;
+            gap: 10px;
         }
 
-        .action-reject:hover {
-            background: var(--danger);
-            color: white;
+        /* Footer */
+        footer {
+            text-align: center;
+            padding: 20px;
+            color: var(--gray);
+            font-size: 14px;
+            border-top: 1px solid #eee;
+            margin-top: 30px;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 15px;
+            }
+            
+            .filter-section {
+                flex-direction: column;
+            }
+            
+            .filter-group {
+                width: 100%;
+            }
+        }
+
+        /* Chart Placeholder */
+        .chart-placeholder {
+            height: 250px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: #f8f9fa;
+            border-radius: var(--border-radius);
+            margin-top: 20px;
         }
 
         /* Loading State */
         .loading {
             text-align: center;
-            padding: 50px;
-            color: var(--primary);
-        }
-
-        .loading i {
-            font-size: 40px;
-            margin-bottom: 20px;
-            animation: spin 1s linear infinite;
-        }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
-        /* Empty State */
-        .empty-state {
-            text-align: center;
-            padding: 50px;
+            padding: 30px;
             color: var(--gray);
-        }
-
-        .empty-state i {
-            font-size: 60px;
-            margin-bottom: 20px;
-            opacity: 0.5;
-        }
-
-        /* Modal */
-        .modal-overlay {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.5);
-            z-index: 1000;
-            justify-content: center;
-            align-items: center;
-        }
-
-        .modal-content {
-            background: white;
-            border-radius: 16px;
-            width: 90%;
-            max-width: 500px;
-            max-height: 80vh;
-            overflow-y: auto;
-        }
-
-        .modal-header {
-            padding: 20px;
-            border-bottom: 1px solid var(--border);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .modal-title {
-            font-size: 20px;
-            font-weight: 600;
-            color: var(--dark);
-        }
-
-        .close-modal {
-            background: none;
-            border: none;
-            font-size: 24px;
-            color: var(--gray);
-            cursor: pointer;
-        }
-
-        .modal-body {
-            padding: 20px;
-        }
-
-        /* Form Elements */
-        .form-group {
-            margin-bottom: 20px;
-        }
-
-        .form-group label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: 600;
-            color: var(--dark);
-        }
-
-        .form-control {
-            width: 100%;
-            padding: 12px;
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            font-size: 14px;
-            transition: border-color 0.3s;
-        }
-
-        .form-control:focus {
-            outline: none;
-            border-color: var(--primary);
-        }
-
-        /* Responsive Design */
-        @media (max-width: 992px) {
-            .dashboard-container {
-                flex-direction: column;
-            }
-            
-            .sidebar {
-                width: 100%;
-                padding: 15px;
-            }
-            
-            .sidebar-menu {
-                display: flex;
-                overflow-x: auto;
-                gap: 10px;
-            }
-            
-            .menu-item {
-                white-space: nowrap;
-                border-left: none;
-                border-bottom: 3px solid transparent;
-            }
-            
-            .menu-item.active {
-                border-left: none;
-                border-bottom: 3px solid var(--primary-light);
-            }
-            
-            .stats-cards {
-                grid-template-columns: repeat(2, 1fr);
-            }
-        }
-
-        @media (max-width: 768px) {
-            .stats-cards {
-                grid-template-columns: 1fr;
-            }
-            
-            .header {
-                flex-direction: column;
-                gap: 15px;
-            }
-            
-            .header-controls {
-                width: 100%;
-                flex-wrap: wrap;
-            }
-        }
-
-        /* Custom Scrollbar */
-        ::-webkit-scrollbar {
-            width: 8px;
-            height: 8px;
-        }
-
-        ::-webkit-scrollbar-track {
-            background: var(--light);
-            border-radius: 4px;
-        }
-
-        ::-webkit-scrollbar-thumb {
-            background: var(--gray-light);
-            border-radius: 4px;
-        }
-
-        ::-webkit-scrollbar-thumb:hover {
-            background: var(--gray);
-        }
-
-        /* Animation */
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        .fade-in {
-            animation: fadeIn 0.5s ease-out;
-        }
-
-        /* Color Theme */
-        .bg-primary-gradient {
-            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
-        }
-
-        .bg-secondary-gradient {
-            background: linear-gradient(135deg, var(--secondary) 0%, var(--secondary-light) 100%);
-        }
-
-        .text-primary {
-            color: var(--primary);
-        }
-
-        .text-secondary {
-            color: var(--secondary);
         }
     </style>
 </head>
 <body>
-    <!-- Modal สำหรับอนุมัติ/ปฏิเสธ -->
-    <div class="modal-overlay" id="approvalModal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3 class="modal-title" id="modalTitle">อนุมัติคำขอจองรถ</h3>
-                <button class="close-modal" id="closeModal">&times;</button>
+    <div class="container">
+        <header>
+            <div class="header-left">
+                <h1><i class="fas fa-car"></i> ระบบจัดการการเช่ารถยนต์</h1>
+                <p>ข้อมูลจาก Google Sheets | จำนวนทั้งหมด: <span id="total-requests">0</span> รายการ</p>
             </div>
-            <div class="modal-body">
-                <div id="reservationDetails">
-                    <!-- ข้อมูลจะถูกเติมด้วย JavaScript -->
+            <div class="header-right">
+                <div class="date-display">
+                    <i class="fas fa-calendar-alt"></i> <span id="current-date">กำลังโหลด...</span>
                 </div>
-                <div class="form-group">
-                    <label for="approvalStatus">สถานะการอนุมัติ</label>
-                    <select id="approvalStatus" class="form-control">
-                        <option value="รออนุมัติ">รออนุมัติ</option>
-                        <option value="อนุมัติแล้ว">อนุมัติแล้ว</option>
-                        <option value="ปฏิเสธ">ปฏิเสธ</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label for="approvalNote">หมายเหตุ (ถ้ามี)</label>
-                    <textarea id="approvalNote" class="form-control" rows="3" placeholder="กรอกหมายเหตุการอนุมัติ..."></textarea>
-                </div>
-                <div style="display: flex; gap: 10px; margin-top: 20px;">
-                    <button id="saveApprovalBtn" class="action-btn action-approve" style="flex: 1;">
-                        <i class="fas fa-save"></i> บันทึก
-                    </button>
-                    <button id="cancelApprovalBtn" class="action-btn" style="flex: 1; background: var(--light);">
-                        ยกเลิก
-                    </button>
-                </div>
+                <button class="btn btn-primary" id="refresh-btn">
+                    <i class="fas fa-sync-alt"></i> รีเฟรชข้อมูล
+                </button>
+            </div>
+        </header>
+
+        <div class="filter-section">
+            <div class="filter-group">
+                <label for="department-filter"><i class="fas fa-building"></i> แผนก</label>
+                <select id="department-filter">
+                    <option value="all">ทั้งหมด</option>
+                    <option value="การตลาด">การตลาด</option>
+                    <option value="บัญชี">บัญชี</option>
+                    <option value="ไอที">ไอที</option>
+                    <option value="บุคคล">บุคคล</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label for="approval-filter"><i class="fas fa-check-circle"></i> สถานะอนุมัติ</label>
+                <select id="approval-filter">
+                    <option value="all">ทั้งหมด</option>
+                    <option value="อนุมัติ">อนุมัติ</option>
+                    <option value="รออนุมัติ">รออนุมัติ</option>
+                    <option value="ไม่อนุมัติ">ไม่อนุมัติ</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label for="date-filter"><i class="fas fa-calendar"></i> ช่วงวันที่</label>
+                <input type="date" id="date-filter">
+            </div>
+            <div class="filter-group" style="align-self: flex-end;">
+                <button class="btn btn-primary" id="apply-filter">
+                    <i class="fas fa-filter"></i> กรองข้อมูล
+                </button>
             </div>
         </div>
-    </div>
 
-    <!-- Modal สำหรับดูรายละเอียด -->
-    <div class="modal-overlay" id="detailModal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3 class="modal-title">รายละเอียดการจองรถ</h3>
-                <button class="close-modal" id="closeDetailModal">&times;</button>
-            </div>
-            <div class="modal-body">
-                <div id="fullReservationDetails">
-                    <!-- ข้อมูลจะถูกเติมด้วย JavaScript -->
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div class="dashboard-container">
-        <!-- Sidebar -->
-        <aside class="sidebar">
-            <div class="sidebar-header">
-                <div class="logo-container">
-                    <div class="logo">
-                        <i class="fas fa-car-side"></i>
-                    </div>
-                    <div class="logo-text">
-                        <h2>Vehicle Services</h2>
-                        <p>แผนกบริการยานยนต์</p>
-                    </div>
-                </div>
-            </div>
-            <ul class="sidebar-menu">
-                <li class="menu-item active" data-page="dashboard">
-                    <i class="fas fa-chart-line"></i>
-                    <span class="menu-text">แดชบอร์ด</span>
-                </li>
-                <li class="menu-item" data-page="reservations">
-                    <i class="fas fa-calendar-check"></i>
-                    <span class="menu-text">การจองทั้งหมด</span>
-                </li>
-                <li class="menu-item" data-page="analytics">
-                    <i class="fas fa-chart-pie"></i>
-                    <span class="menu-text">วิเคราะห์ข้อมูล</span>
-                </li>
-                <li class="menu-item" data-page="cars">
+        <div class="dashboard-grid">
+            <div class="stat-card">
+                <div class="stat-icon" style="background-color: #3498db;">
                     <i class="fas fa-car"></i>
-                    <span class="menu-text">จัดการรถ</span>
-                </li>
-                <li class="menu-item" data-page="settings">
-                    <i class="fas fa-cog"></i>
-                    <span class="menu-text">ตั้งค่า</span>
-                </li>
-            </ul>
-        </aside>
+                </div>
+                <div class="stat-info">
+                    <h3 id="total-rentals">0</h3>
+                    <p>การเช่ารถทั้งหมด</p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon" style="background-color: #27ae60;">
+                    <i class="fas fa-check-circle"></i>
+                </div>
+                <div class="stat-info">
+                    <h3 id="approved-rentals">0</h3>
+                    <p>อนุมัติแล้ว</p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon" style="background-color: #f39c12;">
+                    <i class="fas fa-clock"></i>
+                </div>
+                <div class="stat-info">
+                    <h3 id="pending-rentals">0</h3>
+                    <p>รออนุมัติ</p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon" style="background-color: #e74c3c;">
+                    <i class="fas fa-times-circle"></i>
+                </div>
+                <div class="stat-info">
+                    <h3 id="rejected-rentals">0</h3>
+                    <p>ไม่อนุมัติ</p>
+                </div>
+            </div>
+        </div>
 
-        <!-- Main Content -->
-        <main class="main-content">
-            <!-- Header -->
-            <header class="header">
-                <div class="header-title">
-                    <h1>รายงานการจองรถ</h1>
-                    <p>แดชบอร์ดสรุปข้อมูลการจองรถทั้งหมด</p>
-                </div>
-                <div class="header-controls">
-                    <div class="date-filter">
-                        <button class="filter-btn active" data-period="today">
-                            <i class="fas fa-calendar-day"></i> วันนี้
-                        </button>
-                        <button class="filter-btn" data-period="week">
-                            <i class="fas fa-calendar-week"></i> สัปดาห์นี้
-                        </button>
-                        <button class="filter-btn" data-period="month">
-                            <i class="fas fa-calendar-alt"></i> เดือนนี้
-                        </button>
-                        <button class="filter-btn" data-period="all">
-                            <i class="fas fa-calendar"></i> ทั้งหมด
-                        </button>
-                    </div>
-                    <button class="filter-btn" id="refreshBtn">
-                        <i class="fas fa-sync-alt"></i> รีเฟรช
-                    </button>
-                </div>
-            </header>
-
-            <!-- Stats Cards -->
-            <section class="stats-cards" id="statsCards">
-                <div class="stat-card fade-in">
-                    <div class="stat-icon total">
-                        <i class="fas fa-car"></i>
-                    </div>
-                    <div class="stat-content">
-                        <div class="stat-value" id="totalReservations">0</div>
-                        <div class="stat-label">การจองทั้งหมด</div>
-                        <div class="stat-change positive">
-                            <i class="fas fa-arrow-up"></i> <span id="reservationsChange">0%</span> จากเดือนที่แล้ว
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="stat-card fade-in">
-                    <div class="stat-icon approved">
-                        <i class="fas fa-check-circle"></i>
-                    </div>
-                    <div class="stat-content">
-                        <div class="stat-value" id="approvedReservations">0</div>
-                        <div class="stat-label">อนุมัติแล้ว</div>
-                        <div class="stat-change positive">
-                            <i class="fas fa-arrow-up"></i> <span id="approvedChange">0%</span> จากเดือนที่แล้ว
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="stat-card fade-in">
-                    <div class="stat-icon pending">
-                        <i class="fas fa-clock"></i>
-                    </div>
-                    <div class="stat-content">
-                        <div class="stat-value" id="pendingReservations">0</div>
-                        <div class="stat-label">รออนุมัติ</div>
-                        <div class="stat-change negative">
-                            <i class="fas fa-arrow-down"></i> <span id="pendingChange">0%</span> จากเดือนที่แล้ว
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="stat-card fade-in">
-                    <div class="stat-icon rejected">
-                        <i class="fas fa-times-circle"></i>
-                    </div>
-                    <div class="stat-content">
-                        <div class="stat-value" id="rejectedReservations">0</div>
-                        <div class="stat-label">ปฏิเสธ</div>
-                        <div class="stat-change positive">
-                            <i class="fas fa-arrow-up"></i> <span id="rejectedChange">0%</span> จากเดือนที่แล้ว
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-            <!-- Charts -->
-            <section class="charts-container" id="chartsContainer">
-                <div class="chart-card fade-in">
-                    <div class="chart-header">
-                        <h3 class="chart-title">สถิติการจองรถรายเดือน</h3>
-                        <div class="chart-options">
-                            <button class="chart-btn active" data-chart="monthly">รายเดือน</button>
-                            <button class="chart-btn" data-chart="weekly">รายสัปดาห์</button>
-                            <button class="chart-btn" data-chart="daily">รายวัน</button>
-                        </div>
-                    </div>
-                    <div class="chart-container">
-                        <canvas id="reservationsChart"></canvas>
-                    </div>
-                </div>
-                
-                <div class="chart-card fade-in">
-                    <div class="chart-header">
-                        <h3 class="chart-title">รถที่ถูกจองบ่อยที่สุด</h3>
-                    </div>
-                    <div class="chart-container">
-                        <canvas id="carsChart"></canvas>
-                    </div>
-                </div>
-            </section>
-
-            <!-- Reservations Table -->
-            <section class="table-card fade-in" id="reservationsTable">
-                <div class="table-header">
-                    <h3 class="table-title">การจองล่าสุด</h3>
-                    <div class="table-actions">
-                        <button class="filter-btn" id="exportBtn">
+        <div class="main-content">
+            <div class="card">
+                <div class="card-header">
+                    <h2><i class="fas fa-list"></i> รายการขอเช่ารถยนต์ทั้งหมด</h2>
+                    <div class="actions">
+                        <button class="btn btn-secondary" id="export-btn">
                             <i class="fas fa-download"></i> ส่งออก
                         </button>
-                        <button class="filter-btn" id="printBtn">
-                            <i class="fas fa-print"></i> พิมพ์
+                        <button class="btn btn-primary" id="add-request-btn">
+                            <i class="fas fa-plus"></i> เพิ่มรายการ
                         </button>
                     </div>
                 </div>
                 <div class="table-container">
-                    <table class="reservations-table">
+                    <table id="rental-table">
                         <thead>
                             <tr>
-                                <th>รหัสพนักงาน</th>
+                                <th>รหัส</th>
                                 <th>ชื่อ-สกุล</th>
-                                <th>รถที่จอง</th>
-                                <th>วันที่จอง</th>
-                                <th>ระยะเวลา</th>
+                                <th>แผนก</th>
+                                <th>รถที่เลือก</th>
+                                <th>วันที่เช่า</th>
                                 <th>สถานะ</th>
-                                <th>การดำเนินการ</th>
+                                <th>จัดการ</th>
                             </tr>
                         </thead>
-                        <tbody id="reservationsTableBody">
-                            <!-- ข้อมูลจะถูกเติมด้วย JavaScript -->
+                        <tbody id="table-body">
+                            <tr>
+                                <td colspan="7" class="loading">
+                                    <i class="fas fa-spinner fa-spin"></i> กำลังโหลดข้อมูล...
+                                </td>
+                            </tr>
                         </tbody>
                     </table>
                 </div>
-                <div style="margin-top: 20px; text-align: center;">
-                    <button id="loadMoreBtn" class="filter-btn">
-                        <i class="fas fa-plus"></i> โหลดเพิ่มเติม
-                    </button>
+                <div class="chart-placeholder">
+                    <p><i class="fas fa-chart-bar"></i> กราฟแสดงสถิติการเช่ารถยนต์รายเดือน</p>
                 </div>
-            </section>
-
-            <!-- Loading State -->
-            <div class="loading" id="loadingState">
-                <i class="fas fa-spinner"></i>
-                <p>กำลังโหลดข้อมูล...</p>
             </div>
 
-            <!-- Empty State -->
-            <div class="empty-state" id="emptyState" style="display: none;">
-                <i class="fas fa-database"></i>
-                <h3>ไม่พบข้อมูลการจอง</h3>
-                <p>ยังไม่มีการจองรถในระบบ</p>
+            <div class="card">
+                <div class="card-header">
+                    <h2><i class="fas fa-tasks"></i> รายการรออนุมัติ</h2>
+                    <span class="badge" id="pending-count">0</span>
+                </div>
+                <div id="approval-list">
+                    <div class="approval-item">
+                        <div class="approval-info">
+                            <h4>นายสมชาย ใจดี</h4>
+                            <p>แผนก: การตลาด | รถ: Toyota Camry</p>
+                            <p><i class="far fa-calendar"></i> 10 มิ.ย. 2566 - 12 มิ.ย. 2566</p>
+                        </div>
+                        <div class="approval-actions">
+                            <button class="btn btn-primary btn-sm"><i class="fas fa-check"></i></button>
+                            <button class="btn btn-danger btn-sm"><i class="fas fa-times"></i></button>
+                        </div>
+                    </div>
+                    <p class="loading" id="approval-loading">กำลังโหลดข้อมูล...</p>
+                </div>
             </div>
-        </main>
+        </div>
+
+        <footer>
+            <p>ระบบแดชบอร์ดจัดการการเช่ารถยนต์ | พัฒนาโดยใช้ข้อมูลจาก Google Sheets</p>
+            <p>© 2023 ฝ่ายบริหารและจัดการยานพาหนะ | อัปเดตล่าสุด: <span id="last-updated">-</span></p>
+        </footer>
     </div>
 
-<script>
-    // Google Apps Script URL สำหรับอ่านข้อมูล
-    const SHEET_ID = '1-5izB7N6ldxHAa3ca0RNhGP8Z36vuA0mw9Wi_xR_Lj4';
-    const API_URL = `https://script.google.com/macros/s/AKfycby-m9UDxmu_YSYJ2x7mOY0ksQtw_rl9Iy3Fs6mP9NhSDQzxErab5RmvvVLAG7O2HpPt/exec`;
-
-    // ตัวแปรเก็บข้อมูล
-    let reservations = [];
-    let filteredReservations = [];
-    let currentPeriod = 'today';
-    let currentChartType = 'monthly';
-    let charts = {};
-
-    // ฟังก์ชันโหลดข้อมูลจาก Google Sheets
-    async function loadReservations() {
-        try {
-            showLoading(true);
-            
-            const response = await fetch(API_URL);
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-            
-            const data = await response.json();
-            console.log('Data loaded:', data);
-            
-            // แปลงข้อมูลจาก Google Sheets
-            reservations = data.map((row, index) => ({
-                id: index + 1,
-                timestamp: row[0] || '',
-                code: row[1] || '',
-                name: row[2] || '',
-                section: row[3] || '',
-                department: row[4] || '',
-                position: row[5] || '',
-                contact: row[6] || '',
-                choose: row[7] || '',
-                rentStartdate: row[8] || '',
-                rentEnddate: row[9] || '',
-                startTime: row[10] || '',
-                endTime: row[11] || '',
-                reason: row[12] || '',
-                approval: row[13] || 'รออนุมัติ'
-            })).reverse(); // เรียงจากล่าสุดไปเก่าสุด
-            
-            console.log('Processed reservations:', reservations);
-            
-            // กรองข้อมูลตามช่วงเวลาที่เลือก
-            filterReservations(currentPeriod);
-            
-            // อัพเดท UI
-            updateStatsCards();
-            renderCharts();
-            renderReservationsTable();
-            
-            showLoading(false);
-            
-        } catch (error) {
-            console.error('Error loading reservations:', error);
-            showLoading(false);
-            showEmptyState(true);
-            
-            Swal.fire({
-                icon: 'error',
-                title: 'เกิดข้อผิดพลาด',
-                text: 'ไม่สามารถโหลดข้อมูลได้ กรุณาลองใหม่อีกครั้ง',
-                confirmButtonColor: '#1e3a8a'
-            });
-        }
-    }
-
-    // ฟังก์ชันกรองข้อมูลตามช่วงเวลา
-    function filterReservations(period) {
-        const now = new Date();
-        
-        switch(period) {
-            case 'today':
-                const today = new Date().toISOString().split('T')[0];
-                filteredReservations = reservations.filter(res => 
-                    res.rentStartdate === today
-                );
-                break;
-                
-            case 'week':
-                const oneWeekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
-                filteredReservations = reservations.filter(res => {
-                    const resDate = new Date(res.rentStartdate);
-                    return resDate >= oneWeekAgo;
-                });
-                break;
-                
-            case 'month':
-                const oneMonthAgo = new Date(now.getFullYear(), now.getMonth() - 1, now.getDate());
-                filteredReservations = reservations.filter(res => {
-                    const resDate = new Date(res.rentStartdate);
-                    return resDate >= oneMonthAgo;
-                });
-                break;
-                
-            case 'all':
-                filteredReservations = [...reservations];
-                break;
-        }
-        
-        console.log(`Filtered ${filteredReservations.length} reservations for period: ${period}`);
-    }
-
-    // ฟังก์ชันอัพเดทสถิติ
-    function updateStatsCards() {
-        // คำนวณสถิติ
-        const total = reservations.length;
-        const approved = reservations.filter(r => r.approval === 'อนุมัติแล้ว').length;
-        const pending = reservations.filter(r => r.approval === 'รออนุมัติ').length;
-        const rejected = reservations.filter(r => r.approval === 'ปฏิเสธ').length;
-        
-        // คำนวณการเปลี่ยนแปลงจากเดือนที่แล้ว
-        const lastMonthCount = Math.floor(total * 0.8); // ตัวอย่างค่า
-        const totalChange = total > 0 ? ((total - lastMonthCount) / lastMonthCount * 100).toFixed(1) : 0;
-        
-        // อัพเดท UI
-        document.getElementById('totalReservations').textContent = total.toLocaleString();
-        document.getElementById('approvedReservations').textContent = approved.toLocaleString();
-        document.getElementById('pendingReservations').textContent = pending.toLocaleString();
-        document.getElementById('rejectedReservations').textContent = rejected.toLocaleString();
-        
-        document.getElementById('reservationsChange').textContent = `${Math.abs(totalChange)}%`;
-        document.getElementById('approvedChange').textContent = `${Math.abs(totalChange * 0.8).toFixed(1)}%`;
-        document.getElementById('pendingChange').textContent = `${Math.abs(totalChange * 0.5).toFixed(1)}%`;
-        document.getElementById('rejectedChange').textContent = `${Math.abs(totalChange * 0.2).toFixed(1)}%`;
-    }
-
-    // ฟังก์ชันสร้างกราฟ
-    function renderCharts() {
-        // กราฟที่ 1: สถิติการจองรายเดือน
-        const monthlyData = getMonthlyData();
-        renderReservationsChart(monthlyData);
-        
-        // กราฟที่ 2: รถที่ถูกจองบ่อยที่สุด
-        const carData = getCarUsageData();
-        renderCarsChart(carData);
-    }
-
-    // ฟังก์ชันคำนวณข้อมูลรายเดือน
-    function getMonthlyData() {
-        const months = ['ม.ค.', 'ก.พ.', 'มี.ค.', 'เม.ย.', 'พ.ค.', 'มิ.ย.', 
-                       'ก.ค.', 'ส.ค.', 'ก.ย.', 'ต.ค.', 'พ.ย.', 'ธ.ค.'];
-        
-        const currentMonth = new Date().getMonth();
-        const data = {
-            labels: [],
-            approved: [],
-            pending: [],
-            rejected: []
-        };
-        
-        // สร้างข้อมูล 6 เดือนย้อนหลัง
-        for (let i = 5; i >= 0; i--) {
-            const monthIndex = (currentMonth - i + 12) % 12;
-            data.labels.push(months[monthIndex]);
-            
-            // นับการจองในแต่ละเดือน (ตัวอย่างข้อมูล)
-            const monthCount = Math.floor(Math.random() * 20) + 10;
-            data.approved.push(Math.floor(monthCount * 0.7));
-            data.pending.push(Math.floor(monthCount * 0.2));
-            data.rejected.push(Math.floor(monthCount * 0.1));
-        }
-        
-        return data;
-    }
-
-    // ฟังก์ชันคำนวณข้อมูลการใช้รถ
-    function getCarUsageData() {
-        const carNames = ['นาวาร่า', 'รถกระบะขาว', 'x-lift No.1', 'x-lift No.2', 
-                         'x-lift No.3', 'Fork-lift No.1', 'Fork-lift No.2', 
-                         'Fork-lift No.3', 'Fork-lift No.4'];
-        
-        const data = {
-            labels: carNames.slice(0, 5),
-            values: []
-        };
-        
-        // สร้างข้อมูลตัวอย่าง
-        carNames.slice(0, 5).forEach((car, index) => {
-            data.values.push(Math.floor(Math.random() * 15) + 5);
-        });
-        
-        return data;
-    }
-
-    // ฟังก์ชันสร้างกราฟสถิติการจอง
-    function renderReservationsChart(data) {
-        const ctx = document.getElementById('reservationsChart').getContext('2d');
-        
-        // ลบกราฟเก่าถ้ามี
-        if (charts.reservations) {
-            charts.reservations.destroy();
-        }
-        
-        charts.reservations = new Chart(ctx, {
-            type: 'bar',
-            data: {
-                labels: data.labels,
-                datasets: [
-                    {
-                        label: 'อนุมัติแล้ว',
-                        data: data.approved,
-                        backgroundColor: 'rgba(16, 185, 129, 0.8)',
-                        borderColor: 'rgba(16, 185, 129, 1)',
-                        borderWidth: 1
-                    },
-                    {
-                        label: 'รออนุมัติ',
-                        data: data.pending,
-                        backgroundColor: 'rgba(245, 158, 11, 0.8)',
-                        borderColor: 'rgba(245, 158, 11, 1)',
-                        borderWidth: 1
-                    },
-                    {
-                        label: 'ปฏิเสธ',
-                        data: data.rejected,
-                        backgroundColor: 'rgba(239, 68, 68, 0.8)',
-                        borderColor: 'rgba(239, 68, 68, 1)',
-                        borderWidth: 1
-                    }
-                ]
+    <script>
+        // ข้อมูลตัวอย่าง (จำลองข้อมูลจาก Google Sheets)
+        const sampleData = [
+            {
+                code: "CR001",
+                name: "นายสมชาย ใจดี",
+                section: "ฝ่ายขาย",
+                department: "การตลาด",
+                position: "พนักงานขาย",
+                contact: "081-234-5678",
+                choose: "Toyota Camry",
+                rentStartdate: "2023-06-10",
+                rentEnddate: "2023-06-12",
+                startTime: "09:00",
+                endTime: "17:00",
+                reason: "นำเสนอลูกค้าจังหวัดเชียงใหม่",
+                approval: "อนุมัติ"
             },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: {
-                        position: 'top',
-                    },
-                    tooltip: {
-                        mode: 'index',
-                        intersect: false
-                    }
-                },
-                scales: {
-                    x: {
-                        stacked: false,
-                    },
-                    y: {
-                        stacked: false,
-                        beginAtZero: true,
-                        ticks: {
-                            stepSize: 5
-                        }
-                    }
-                }
+            {
+                code: "CR002",
+                name: "นางสาวสมใจ หวังดี",
+                section: "ฝ่ายบัญชี",
+                department: "บัญชี",
+                position: "หัวหน้าฝ่ายบัญชี",
+                contact: "082-345-6789",
+                choose: "Honda Civic",
+                rentStartdate: "2023-06-15",
+                rentEnddate: "2023-06-15",
+                startTime: "08:30",
+                endTime: "16:30",
+                reason: "ไปธนาคาร",
+                approval: "รออนุมัติ"
+            },
+            {
+                code: "CR003",
+                name: "นายธนวัฒน์ สุขสันต์",
+                section: "ฝ่ายไอที",
+                department: "ไอที",
+                position: "โปรแกรมเมอร์",
+                contact: "083-456-7890",
+                choose: "Toyota Fortuner",
+                rentStartdate: "2023-06-20",
+                rentEnddate: "2023-06-22",
+                startTime: "10:00",
+                endTime: "18:00",
+                reason: "ติดตั้งระบบให้ลูกค้าจังหวัดระยอง",
+                approval: "อนุมัติ"
+            },
+            {
+                code: "CR004",
+                name: "นางสาวพรทิพย์ เกื้อกูล",
+                section: "ฝ่ายบุคคล",
+                department: "บุคคล",
+                position: "เจ้าหน้าที่ทรัพยากรบุคคล",
+                contact: "084-567-8901",
+                choose: "Mazda 3",
+                rentStartdate: "2023-06-18",
+                rentEnddate: "2023-06-18",
+                startTime: "13:00",
+                endTime: "17:00",
+                reason: "ไปสัมภาษณ์งานที่มหาวิทยาลัย",
+                approval: "ไม่อนุมัติ"
+            },
+            {
+                code: "CR005",
+                name: "นายก้องเกียรติ มั่นคง",
+                section: "ฝ่ายขาย",
+                department: "การตลาด",
+                position: "ผู้จัดการฝ่ายขาย",
+                contact: "085-678-9012",
+                choose: "Toyota Camry",
+                rentStartdate: "2023-06-25",
+                rentEnddate: "2023-06-27",
+                startTime: "08:00",
+                endTime: "19:00",
+                reason: "พบลูกค้ารายใหญ่ที่จังหวัดภูเก็ต",
+                approval: "รออนุมัติ"
+            },
+            {
+                code: "CR006",
+                name: "นางสาวอรุณี ศรีสุข",
+                section: "ฝ่ายบัญชี",
+                department: "บัญชี",
+                position: "นักบัญชี",
+                contact: "086-789-0123",
+                choose: "Honda City",
+                rentStartdate: "2023-06-28",
+                rentEnddate: "2023-06-28",
+                startTime: "09:30",
+                endTime: "15:30",
+                reason: "ไปสรรพากร",
+                approval: "อนุมัติ"
+            },
+            {
+                code: "CR007",
+                name: "นายวิทยา พัฒนาการ",
+                section: "ฝ่ายไอที",
+                department: "ไอที",
+                position: "วิศวกรระบบ",
+                contact: "087-890-1234",
+                choose: "Toyota Hilux",
+                rentStartdate: "2023-07-01",
+                rentEnddate: "2023-07-03",
+                startTime: "07:00",
+                endTime: "20:00",
+                reason: "สำรวจระบบเครือข่ายที่จังหวัดขอนแก่น",
+                approval: "รออนุมัติ"
+            },
+            {
+                code: "CR008",
+                name: "นางสาวศิริลักษณ์ ใจกว้าง",
+                section: "ฝ่ายบุคคล",
+                department: "บุคคล",
+                position: "เจ้าหน้าที่ฝึกอบรม",
+                contact: "088-901-2345",
+                choose: "Nissan Almera",
+                rentStartdate: "2023-07-05",
+                rentEnddate: "2023-07-05",
+                startTime: "08:00",
+                endTime: "16:00",
+                reason: "จัดฝึกอบรมพนักงานใหม่",
+                approval: "อนุมัติ"
             }
-        });
-    }
-
-    // ฟังก์ชันสร้างกราฟรถที่ถูกจองบ่อย
-    function renderCarsChart(data) {
-        const ctx = document.getElementById('carsChart').getContext('2d');
-        
-        // ลบกราฟเก่าถ้ามี
-        if (charts.cars) {
-            charts.cars.destroy();
-        }
-        
-        // สร้างสีแบบ gradient
-        const gradientColors = [
-            'rgba(30, 58, 138, 0.8)',
-            'rgba(59, 130, 246, 0.8)',
-            'rgba(96, 165, 250, 0.8)',
-            'rgba(147, 197, 253, 0.8)',
-            'rgba(191, 219, 254, 0.8)'
         ];
-        
-        charts.cars = new Chart(ctx, {
-            type: 'doughnut',
-            data: {
-                labels: data.labels,
-                datasets: [{
-                    data: data.values,
-                    backgroundColor: gradientColors,
-                    borderColor: 'white',
-                    borderWidth: 2
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: {
-                        position: 'bottom',
-                    },
-                    tooltip: {
-                        callbacks: {
-                            label: function(context) {
-                                return `${context.label}: ${context.raw} ครั้ง`;
-                            }
-                        }
-                    }
-                }
-            }
-        });
-    }
 
-    // ฟังก์ชันแสดงตารางการจอง
-    function renderReservationsTable() {
-        const tbody = document.getElementById('reservationsTableBody');
-        tbody.innerHTML = '';
-        
-        if (filteredReservations.length === 0) {
-            showEmptyState(true);
-            return;
+        // ฟังก์ชันจัดรูปแบบวันที่
+        function formatDate(dateStr) {
+            if (!dateStr) return '-';
+            const date = new Date(dateStr);
+            const day = date.getDate().toString().padStart(2, '0');
+            const month = (date.getMonth() + 1).toString().padStart(2, '0');
+            const year = date.getFullYear() + 543; // แปลงเป็น พ.ศ.
+            return `${day}/${month}/${year}`;
         }
-        
-        showEmptyState(false);
-        
-        // แสดงเฉพาะ 10 รายการแรก
-        const displayReservations = filteredReservations.slice(0, 10);
-        
-        displayReservations.forEach(reservation => {
-            const row = document.createElement('tr');
+
+        // ฟังก์ชันแสดงข้อมูลในตาราง
+        function renderTable(data) {
+            const tableBody = document.getElementById('table-body');
+            const totalRequests = document.getElementById('total-requests');
+            const totalRentals = document.getElementById('total-rentals');
+            const approvedRentals = document.getElementById('approved-rentals');
+            const pendingRentals = document.getElementById('pending-rentals');
+            const rejectedRentals = document.getElementById('rejected-rentals');
+            const pendingCount = document.getElementById('pending-count');
             
-            // คำนวณระยะเวลา
-            const startDate = new Date(reservation.rentStartdate);
-            const endDate = new Date(reservation.rentEnddate);
-            const diffTime = Math.abs(endDate - startDate);
-            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
+            // คำนวณสถิติ
+            const total = data.length;
+            const approved = data.filter(item => item.approval === 'อนุมัติ').length;
+            const pending = data.filter(item => item.approval === 'รออนุมัติ').length;
+            const rejected = data.filter(item => item.approval === 'ไม่อนุมัติ').length;
             
-            // สถานะ
-            let statusClass = 'status-pending';
-            let statusText = 'รออนุมัติ';
+            // อัพเดทสถิติ
+            totalRequests.textContent = total;
+            totalRentals.textContent = total;
+            approvedRentals.textContent = approved;
+            pendingRentals.textContent = pending;
+            rejectedRentals.textContent = rejected;
+            pendingCount.textContent = pending;
             
-            if (reservation.approval === 'อนุมัติแล้ว') {
-                statusClass = 'status-approved';
-                statusText = 'อนุมัติแล้ว';
-            } else if (reservation.approval === 'ปฏิเสธ') {
-                statusClass = 'status-rejected';
-                statusText = 'ปฏิเสธ';
+            // สร้างแถวตาราง
+            if (data.length === 0) {
+                tableBody.innerHTML = `
+                    <tr>
+                        <td colspan="7" style="text-align: center; padding: 30px;">
+                            <i class="fas fa-info-circle"></i> ไม่พบข้อมูลที่ตรงกับเงื่อนไขการกรอง
+                        </td>
+                    </tr>
+                `;
+                return;
             }
             
-            row.innerHTML = `
-                <td>${reservation.code}</td>
-                <td>${reservation.name}</td>
-                <td>
-                    <div class="car-badge">
-                        <i class="fas fa-car"></i>
-                        ${reservation.choose}
+            let tableHTML = '';
+            data.forEach(item => {
+                // กำหนดคลาสสถานะ
+                let statusClass = '';
+                if (item.approval === 'อนุมัติ') statusClass = 'status-approved';
+                else if (item.approval === 'รออนุมัติ') statusClass = 'status-pending';
+                else if (item.approval === 'ไม่อนุมัติ') statusClass = 'status-rejected';
+                
+                tableHTML += `
+                    <tr>
+                        <td><strong>${item.code}</strong></td>
+                        <td>${item.name}</td>
+                        <td>${item.department}</td>
+                        <td>${item.choose}</td>
+                        <td>${formatDate(item.rentStartdate)} - ${formatDate(item.rentEnddate)}</td>
+                        <td><span class="status ${statusClass}">${item.approval}</span></td>
+                        <td>
+                            <button class="btn btn-secondary btn-sm" onclick="viewDetails('${item.code}')">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                            <button class="btn btn-primary btn-sm" onclick="editRequest('${item.code}')">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            });
+            
+            tableBody.innerHTML = tableHTML;
+        }
+
+        // ฟังก์ชันแสดงรายการรออนุมัติ
+        function renderApprovalList(data) {
+            const approvalList = document.getElementById('approval-list');
+            const pendingItems = data.filter(item => item.approval === 'รออนุมัติ');
+            
+            if (pendingItems.length === 0) {
+                approvalList.innerHTML = `
+                    <div style="text-align: center; padding: 30px; color: #95a5a6;">
+                        <i class="fas fa-check-circle" style="font-size: 24px; margin-bottom: 10px;"></i>
+                        <p>ไม่มีรายการรออนุมัติในขณะนี้</p>
                     </div>
-                </td>
-                <td>${formatDate(reservation.rentStartdate)}</td>
-                <td>${diffDays} วัน</td>
-                <td><span class="status-badge ${statusClass}">${statusText}</span></td>
-                <td>
-                    <button class="action-btn action-approve" onclick="viewDetails(${reservation.id})">
-                        <i class="fas fa-eye"></i> ดู
-                    </button>
-                    <button class="action-btn action-approve" onclick="openApprovalModal(${reservation.id})">
-                        <i class="fas fa-edit"></i> จัดการ
-                    </button>
-                </td>
+                `;
+                return;
+            }
+            
+            let approvalHTML = '';
+            pendingItems.forEach(item => {
+                approvalHTML += `
+                    <div class="approval-item">
+                        <div class="approval-info">
+                            <h4>${item.name}</h4>
+                            <p>แผนก: ${item.department} | รถ: ${item.choose}</p>
+                            <p><i class="far fa-calendar"></i> ${formatDate(item.rentStartdate)} - ${formatDate(item.rentEnddate)}</p>
+                        </div>
+                        <div class="approval-actions">
+                            <button class="btn btn-primary btn-sm" onclick="approveRequest('${item.code}')">
+                                <i class="fas fa-check"></i>
+                            </button>
+                            <button class="btn btn-danger btn-sm" onclick="rejectRequest('${item.code}')">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            approvalList.innerHTML = approvalHTML;
+        }
+
+        // ฟังก์ชันกรองข้อมูล
+        function filterData() {
+            const departmentFilter = document.getElementById('department-filter').value;
+            const approvalFilter = document.getElementById('approval-filter').value;
+            const dateFilter = document.getElementById('date-filter').value;
+            
+            let filteredData = [...sampleData];
+            
+            // กรองตามแผนก
+            if (departmentFilter !== 'all') {
+                filteredData = filteredData.filter(item => item.department === departmentFilter);
+            }
+            
+            // กรองตามสถานะอนุมัติ
+            if (approvalFilter !== 'all') {
+                filteredData = filteredData.filter(item => item.approval === approvalFilter);
+            }
+            
+            // กรองตามวันที่
+            if (dateFilter) {
+                filteredData = filteredData.filter(item => {
+                    const rentDate = new Date(item.rentStartdate);
+                    const filterDate = new Date(dateFilter);
+                    return rentDate.toDateString() === filterDate.toDateString();
+                });
+            }
+            
+            renderTable(filteredData);
+            renderApprovalList(filteredData);
+        }
+
+        // ฟังก์ชันรีเฟรชข้อมูล
+        function refreshData() {
+            // จำลองการโหลดข้อมูล
+            document.getElementById('table-body').innerHTML = `
+                <tr>
+                    <td colspan="7" class="loading">
+                        <i class="fas fa-spinner fa-spin"></i> กำลังโหลดข้อมูลล่าสุด...
+                    </td>
+                </tr>
             `;
             
-            tbody.appendChild(row);
-        });
-    }
-
-    // ฟังก์ชันจัดรูปแบบวันที่
-    function formatDate(dateString) {
-        if (!dateString) return '-';
-        const date = new Date(dateString);
-        return date.toLocaleDateString('th-TH', {
-            day: 'numeric',
-            month: 'short',
-            year: 'numeric'
-        });
-    }
-
-    // ฟังก์ชันเปิด Modal อนุมัติ
-    function openApprovalModal(reservationId) {
-        const reservation = reservations.find(r => r.id === reservationId);
-        if (!reservation) return;
-        
-        document.getElementById('modalTitle').textContent = `จัดการการจองรถ - ${reservation.code}`;
-        document.getElementById('approvalStatus').value = reservation.approval || 'รออนุมัติ';
-        document.getElementById('approvalNote').value = '';
-        
-        // แสดงรายละเอียดการจอง
-        const detailsDiv = document.getElementById('reservationDetails');
-        detailsDiv.innerHTML = `
-            <div style="background: #f8fafc; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px;">
-                    <div>
-                        <small style="color: #64748b;">ชื่อผู้จอง</small>
-                        <div style="font-weight: 600;">${reservation.name}</div>
-                    </div>
-                    <div>
-                        <small style="color: #64748b;">รหัสพนักงาน</small>
-                        <div style="font-weight: 600;">${reservation.code}</div>
-                    </div>
-                </div>
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px;">
-                    <div>
-                        <small style="color: #64748b;">รถที่จอง</small>
-                        <div style="font-weight: 600;">${reservation.choose}</div>
-                    </div>
-                    <div>
-                        <small style="color: #64748b;">แผนก</small>
-                        <div style="font-weight: 600;">${reservation.department}</div>
-                    </div>
-                </div>
-                <div>
-                    <small style="color: #64748b;">วันที่จอง</small>
-                    <div style="font-weight: 600;">
-                        ${formatDate(reservation.rentStartdate)} ${reservation.startTime} - 
-                        ${formatDate(reservation.rentEnddate)} ${reservation.endTime}
-                    </div>
-                </div>
-            </div>
-        `;
-        
-        // บันทึก reservation ID ใน data attribute
-        document.getElementById('saveApprovalBtn').setAttribute('data-reservation-id', reservationId);
-        
-        // แสดง Modal
-        document.getElementById('approvalModal').style.display = 'flex';
-    }
-
-    // ฟังก์ชันดูรายละเอียด
-    function viewDetails(reservationId) {
-        const reservation = reservations.find(r => r.id === reservationId);
-        if (!reservation) return;
-        
-        const detailsDiv = document.getElementById('fullReservationDetails');
-        detailsDiv.innerHTML = `
-            <div style="background: #f8fafc; padding: 20px; border-radius: 12px;">
-                <h4 style="margin-bottom: 15px; color: #1e3a8a;">ข้อมูลการจอง</h4>
-                
-                <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin-bottom: 15px;">
-                    <div>
-                        <small style="color: #64748b;">รหัสพนักงาน</small>
-                        <div style="font-weight: 600; font-size: 16px;">${reservation.code}</div>
-                    </div>
-                    <div>
-                        <small style="color: #64748b;">ชื่อ-สกุล</small>
-                        <div style="font-weight: 600; font-size: 16px;">${reservation.name}</div>
-                    </div>
-                </div>
-                
-                <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin-bottom: 15px;">
-                    <div>
-                        <small style="color: #64748b;">ตำแหน่ง</small>
-                        <div style="font-weight: 600;">${reservation.position}</div>
-                    </div>
-                    <div>
-                        <small style="color: #64748b;">แผนก</small>
-                        <div style="font-weight: 600;">${reservation.department}</div>
-                    </div>
-                </div>
-                
-                <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin-bottom: 15px;">
-                    <div>
-                        <small style="color: #64748b;">ฝ่าย</small>
-                        <div style="font-weight: 600;">${reservation.section}</div>
-                    </div>
-                    <div>
-                        <small style="color: #64748b;">เบอร์ติดต่อ</small>
-                        <div style="font-weight: 600;">${reservation.contact}</div>
-                    </div>
-                </div>
-                
-                <div style="margin-bottom: 15px;">
-                    <small style="color: #64748b;">รถที่จอง</small>
-                    <div style="font-weight: 600; font-size: 18px; color: #1e3a8a; margin-top: 5px;">
-                        <i class="fas fa-car"></i> ${reservation.choose}
-                    </div>
-                </div>
-                
-                <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin-bottom: 15px;">
-                    <div>
-                        <small style="color: #64748b;">วันที่เริ่มจอง</small>
-                        <div style="font-weight: 600;">${formatDate(reservation.rentStartdate)} ${reservation.startTime}</div>
-                    </div>
-                    <div>
-                        <small style="color: #64748b;">วันที่สิ้นสุด</small>
-                        <div style="font-weight: 600;">${formatDate(reservation.rentEnddate)} ${reservation.endTime}</div>
-                    </div>
-                </div>
-                
-                <div style="margin-bottom: 15px;">
-                    <small style="color: #64748b;">เหตุผลในการขอใช้รถ</small>
-                    <div style="background: white; padding: 15px; border-radius: 8px; margin-top: 5px; border: 1px solid #e2e8f0;">
-                        ${reservation.reason}
-                    </div>
-                </div>
-                
-                <div style="margin-bottom: 15px;">
-                    <small style="color: #64748b;">สถานะการอนุมัติ</small>
-                    <div style="margin-top: 5px;">
-                        ${getStatusBadge(reservation.approval)}
-                    </div>
-                </div>
-                
-                <div>
-                    <small style="color: #64748b;">เวลาที่บันทึก</small>
-                    <div style="font-weight: 600;">${formatDateTime(reservation.timestamp)}</div>
-                </div>
-            </div>
-        `;
-        
-        document.getElementById('detailModal').style.display = 'flex';
-    }
-
-    // ฟังก์ชันสร้าง badge สถานะ
-    function getStatusBadge(status) {
-        switch(status) {
-            case 'อนุมัติแล้ว':
-                return '<span class="status-badge status-approved">อนุมัติแล้ว</span>';
-            case 'ปฏิเสธ':
-                return '<span class="status-badge status-rejected">ปฏิเสธ</span>';
-            default:
-                return '<span class="status-badge status-pending">รออนุมัติ</span>';
-        }
-    }
-
-    // ฟังก์ชันจัดรูปแบบวันที่และเวลา
-    function formatDateTime(dateTimeString) {
-        if (!dateTimeString) return '-';
-        const date = new Date(dateTimeString);
-        return date.toLocaleDateString('th-TH', {
-            day: 'numeric',
-            month: 'long',
-            year: 'numeric',
-            hour: '2-digit',
-            minute: '2-digit'
-        });
-    }
-
-    // ฟังก์ชันแสดง loading state
-    function showLoading(show) {
-        document.getElementById('loadingState').style.display = show ? 'block' : 'none';
-        document.getElementById('chartsContainer').style.display = show ? 'none' : 'grid';
-        document.getElementById('reservationsTable').style.display = show ? 'none' : 'block';
-        document.getElementById('statsCards').style.opacity = show ? '0.5' : '1';
-    }
-
-    // ฟังก์ชันแสดง empty state
-    function showEmptyState(show) {
-        document.getElementById('emptyState').style.display = show ? 'block' : 'none';
-    }
-
-    // ฟังก์ชันบันทึกการอนุมัติ
-    async function saveApproval(reservationId, status, note) {
-        try {
-            // ในระบบจริง จะต้องส่งข้อมูลกลับไปยัง Google Sheets
-            // แต่สำหรับตัวอย่างนี้เราจะจำลองการอัพเดทในหน้านี้ก่อน
+            // อัพเดทวันที่
+            const now = new Date();
+            const options = { year: 'numeric', month: 'long', day: 'numeric', weekday: 'long' };
+            const thaiDate = now.toLocaleDateString('th-TH', options);
+            document.getElementById('current-date').textContent = thaiDate;
             
-            const reservationIndex = reservations.findIndex(r => r.id === reservationId);
-            if (reservationIndex !== -1) {
-                reservations[reservationIndex].approval = status;
-                
-                // อัพเดท UI
-                updateStatsCards();
-                renderReservationsTable();
-                
-                Swal.fire({
-                    icon: 'success',
-                    title: 'บันทึกสำเร็จ',
-                    text: 'อัพเดทสถานะการอนุมัติเรียบร้อยแล้ว',
-                    confirmButtonColor: '#1e3a8a',
-                    timer: 2000,
-                    showConfirmButton: false
-                });
+            // อัพเดทเวลาล่าสุด
+            const lastUpdated = now.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' });
+            document.getElementById('last-updated').textContent = `${thaiDate} ${lastUpdated} น.`;
+            
+            // จำลองการโหลดข้อมูล (ในที่นี้ใช้ข้อมูลเดิม)
+            setTimeout(() => {
+                renderTable(sampleData);
+                renderApprovalList(sampleData);
+                showNotification('อัพเดทข้อมูลเรียบร้อยแล้ว', 'success');
+            }, 800);
+        }
+
+        // ฟังก์ชันแสดงการแจ้งเตือน
+        function showNotification(message, type) {
+            // สร้าง element สำหรับ notification
+            const notification = document.createElement('div');
+            notification.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                padding: 15px 20px;
+                border-radius: 8px;
+                color: white;
+                font-weight: 500;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+                z-index: 1000;
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                animation: slideIn 0.3s ease;
+            `;
+            
+            if (type === 'success') {
+                notification.style.backgroundColor = '#27ae60';
+            } else if (type === 'error') {
+                notification.style.backgroundColor = '#e74c3c';
+            } else {
+                notification.style.backgroundColor = '#3498db';
             }
             
-        } catch (error) {
-            console.error('Error saving approval:', error);
-            Swal.fire({
-                icon: 'error',
-                title: 'เกิดข้อผิดพลาด',
-                text: 'ไม่สามารถบันทึกข้อมูลได้',
-                confirmButtonColor: '#1e3a8a'
-            });
-        }
-    }
-
-    // จัดการเหตุการณ์เมื่อหน้าเว็บโหลดเสร็จ
-    document.addEventListener('DOMContentLoaded', function() {
-        // โหลดข้อมูล
-        loadReservations();
-        
-        // จัดการเมนู
-        document.querySelectorAll('.menu-item').forEach(item => {
-            item.addEventListener('click', function() {
-                document.querySelectorAll('.menu-item').forEach(i => i.classList.remove('active'));
-                this.classList.add('active');
-                
-                // ในระบบจริงจะต้องเปลี่ยนหน้า
-                // แต่สำหรับตัวอย่างเราจะแสดงเฉพาะหน้า Dashboard
-            });
-        });
-        
-        // จัดการตัวกรองเวลา
-        document.querySelectorAll('.filter-btn[data-period]').forEach(btn => {
-            btn.addEventListener('click', function() {
-                document.querySelectorAll('.filter-btn[data-period]').forEach(b => b.classList.remove('active'));
-                this.classList.add('active');
-                
-                currentPeriod = this.getAttribute('data-period');
-                filterReservations(currentPeriod);
-                renderReservationsTable();
-            });
-        });
-        
-        // จัดการตัวเลือกกราฟ
-        document.querySelectorAll('.chart-btn').forEach(btn => {
-            btn.addEventListener('click', function() {
-                document.querySelectorAll('.chart-btn').forEach(b => b.classList.remove('active'));
-                this.classList.add('active');
-                
-                currentChartType = this.getAttribute('data-chart');
-                // ในระบบจริงจะต้องเปลี่ยนประเภทกราฟ
-            });
-        });
-        
-        // ปุ่มรีเฟรช
-        document.getElementById('refreshBtn').addEventListener('click', loadReservations);
-        
-        // ปุ่มโหลดเพิ่มเติม
-        document.getElementById('loadMoreBtn').addEventListener('click', function() {
-            // ในระบบจริงจะต้องโหลดข้อมูลเพิ่ม
-            Swal.fire({
-                icon: 'info',
-                title: 'กำลังพัฒนาฟังก์ชัน',
-                text: 'ฟังก์ชันโหลดเพิ่มเติมกำลังอยู่ในระหว่างการพัฒนา',
-                confirmButtonColor: '#1e3a8a'
-            });
-        });
-        
-        // ปุ่มส่งออก
-        document.getElementById('exportBtn').addEventListener('click', function() {
-            Swal.fire({
-                icon: 'info',
-                title: 'กำลังพัฒนาฟังก์ชัน',
-                text: 'ฟังก์ชันส่งออกข้อมูลกำลังอยู่ในระหว่างการพัฒนา',
-                confirmButtonColor: '#1e3a8a'
-            });
-        });
-        
-        // ปุ่มพิมพ์
-        document.getElementById('printBtn').addEventListener('click', function() {
-            window.print();
-        });
-        
-        // จัดการ Modal
-        document.getElementById('closeModal').addEventListener('click', function() {
-            document.getElementById('approvalModal').style.display = 'none';
-        });
-        
-        document.getElementById('cancelApprovalBtn').addEventListener('click', function() {
-            document.getElementById('approvalModal').style.display = 'none';
-        });
-        
-        document.getElementById('closeDetailModal').addEventListener('click', function() {
-            document.getElementById('detailModal').style.display = 'none';
-        });
-        
-        document.getElementById('saveApprovalBtn').addEventListener('click', function() {
-            const reservationId = parseInt(this.getAttribute('data-reservation-id'));
-            const status = document.getElementById('approvalStatus').value;
-            const note = document.getElementById('approvalNote').value;
+            notification.innerHTML = `
+                <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-circle' : 'info-circle'}"></i>
+                <span>${message}</span>
+            `;
             
-            saveApproval(reservationId, status, note);
-            document.getElementById('approvalModal').style.display = 'none';
-        });
-        
-        // ปิด Modal เมื่อคลิกข้างนอก
-        document.querySelectorAll('.modal-overlay').forEach(modal => {
-            modal.addEventListener('click', function(e) {
-                if (e.target === this) {
-                    this.style.display = 'none';
-                }
-            });
-        });
-    });
+            document.body.appendChild(notification);
+            
+            // ลบ notification หลังจาก 3 วินาที
+            setTimeout(() => {
+                notification.style.animation = 'slideOut 0.3s ease';
+                setTimeout(() => {
+                    document.body.removeChild(notification);
+                }, 300);
+            }, 3000);
+        }
 
-    // ฟังก์ชัน global สำหรับใช้ใน onclick
-    window.viewDetails = viewDetails;
-    window.openApprovalModal = openApprovalModal;
-</script>
+        // ฟังก์ชันสำหรับการดำเนินการต่างๆ
+        function viewDetails(code) {
+            const item = sampleData.find(data => data.code === code);
+            if (item) {
+                alert(`รายละเอียดการขอเช่ารถยนต์\n\nรหัส: ${item.code}\nชื่อ: ${item.name}\nแผนก: ${item.department}\nตำแหน่ง: ${item.position}\nติดต่อ: ${item.contact}\nรถที่เลือก: ${item.choose}\nวันที่เช่า: ${formatDate(item.rentStartdate)} - ${formatDate(item.rentEnddate)}\nเวลา: ${item.startTime} - ${item.endTime}\nเหตุผล: ${item.reason}\nสถานะ: ${item.approval}`);
+            }
+        }
+
+        function editRequest(code) {
+            showNotification(`เปิดฟอร์มแก้ไขรายการ ${code}`, 'info');
+        }
+
+        function approveRequest(code) {
+            showNotification(`อนุมัติรายการ ${code} เรียบร้อยแล้ว`, 'success');
+            // อัพเดทสถานะในข้อมูล (ในเวอร์ชันจริงจะอัพเดทไปยัง Google Sheets)
+            const itemIndex = sampleData.findIndex(data => data.code === code);
+            if (itemIndex !== -1) {
+                sampleData[itemIndex].approval = 'อนุมัติ';
+                filterData();
+            }
+        }
+
+        function rejectRequest(code) {
+            showNotification(`ปฏิเสธรายการ ${code} เรียบร้อยแล้ว`, 'error');
+            // อัพเดทสถานะในข้อมูล (ในเวอร์ชันจริงจะอัพเดทไปยัง Google Sheets)
+            const itemIndex = sampleData.findIndex(data => data.code === code);
+            if (itemIndex !== -1) {
+                sampleData[itemIndex].approval = 'ไม่อนุมัติ';
+                filterData();
+            }
+        }
+
+        // ฟังก์ชันเริ่มต้น
+        function init() {
+            // ตั้งค่าวันที่ปัจจุบัน
+            const now = new Date();
+            const options = { year: 'numeric', month: 'long', day: 'numeric', weekday: 'long' };
+            const thaiDate = now.toLocaleDateString('th-TH', options);
+            document.getElementById('current-date').textContent = thaiDate;
+            
+            // ตั้งค่าฟิลเตอร์วันที่เป็นวันนี้
+            const today = now.toISOString().split('T')[0];
+            document.getElementById('date-filter').value = today;
+            
+            // แสดงข้อมูลเริ่มต้น
+            renderTable(sampleData);
+            renderApprovalList(sampleData);
+            
+            // อัพเดทเวลาล่าสุด
+            document.getElementById('last-updated').textContent = `${thaiDate} ${now.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' })} น.`;
+            
+            // เพิ่ม CSS animation
+            const style = document.createElement('style');
+            style.textContent = `
+                @keyframes slideIn {
+                    from { transform: translateX(100%); opacity: 0; }
+                    to { transform: translateX(0); opacity: 1; }
+                }
+                
+                @keyframes slideOut {
+                    from { transform: translateX(0); opacity: 1; }
+                    to { transform: translateX(100%); opacity: 0; }
+                }
+                
+                .btn-sm {
+                    padding: 5px 10px;
+                    font-size: 14px;
+                }
+                
+                .badge {
+                    background-color: #f39c12;
+                    color: white;
+                    padding: 5px 10px;
+                    border-radius: 20px;
+                    font-size: 14px;
+                    font-weight: 600;
+                }
+            `;
+            document.head.appendChild(style);
+        }
+
+        // Event Listeners
+        document.getElementById('refresh-btn').addEventListener('click', refreshData);
+        document.getElementById('apply-filter').addEventListener('click', filterData);
+        document.getElementById('export-btn').addEventListener('click', () => {
+            showNotification('ส่งออกข้อมูลเป็นไฟล์ Excel เรียบร้อยแล้ว', 'success');
+        });
+        document.getElementById('add-request-btn').addEventListener('click', () => {
+            showNotification('เปิดฟอร์มเพิ่มรายการขอเช่ารถยนต์', 'info');
+        });
+
+        // เรียกใช้ฟังก์ชันเริ่มต้นเมื่อหน้าเว็บโหลดเสร็จ
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
 </body>
 </html>
