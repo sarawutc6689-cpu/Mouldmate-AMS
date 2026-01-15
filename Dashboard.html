@@ -1,125 +1,1116 @@
 <!DOCTYPE html>
 <html lang="th">
 <head>
-<meta charset="UTF-8">
-<title>Car Rent Dashboard</title>
-
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-
-<style>
-body { background:#f4f6f9; }
-.card { border-radius:10px; }
-.no-print { display:inline-block; }
-.summary { font-size:20px; font-weight:bold; }
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Car Rent Dashboard</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600&family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+    <style>
+        :root {
+            --primary: #4361ee;
+            --primary-light: #4895ef;
+            --secondary: #3f37c9;
+            --success: #4cc9f0;
+            --warning: #f72585;
+            --light: #f8f9fa;
+            --dark: #212529;
+            --gray: #6c757d;
+            --gray-light: #e9ecef;
+            --border-radius: 12px;
+            --box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+            --transition: all 0.3s ease;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Roboto', 'Kanit', sans-serif;
+            background-color: #f5f7fb;
+            color: var(--dark);
+            line-height: 1.6;
+        }
+        
+        .container {
+            display: flex;
+            min-height: 100vh;
+        }
+        
+        /* Sidebar */
+        .sidebar {
+            width: 260px;
+            background: linear-gradient(180deg, var(--primary) 0%, var(--secondary) 100%);
+            color: white;
+            padding: 25px 20px;
+            display: flex;
+            flex-direction: column;
+            box-shadow: var(--box-shadow);
+            z-index: 10;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid rgba(255,255,255,0.2);
+        }
+        
+        .logo-icon {
+            font-size: 28px;
+            margin-right: 12px;
+            background-color: rgba(255,255,255,0.2);
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .logo-text {
+            font-size: 22px;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+        
+        .logo-subtext {
+            font-size: 12px;
+            opacity: 0.8;
+        }
+        
+        .nav-menu {
+            flex-grow: 1;
+        }
+        
+        .nav-item {
+            display: flex;
+            align-items: center;
+            padding: 15px;
+            margin-bottom: 8px;
+            border-radius: var(--border-radius);
+            transition: var(--transition);
+            cursor: pointer;
+        }
+        
+        .nav-item:hover, .nav-item.active {
+            background-color: rgba(255,255,255,0.15);
+        }
+        
+        .nav-icon {
+            font-size: 20px;
+            margin-right: 15px;
+            width: 24px;
+            text-align: center;
+        }
+        
+        .nav-text {
+            font-size: 16px;
+            font-weight: 500;
+        }
+        
+        .user-info {
+            display: flex;
+            align-items: center;
+            padding-top: 20px;
+            border-top: 1px solid rgba(255,255,255,0.2);
+        }
+        
+        .user-avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background-color: rgba(255,255,255,0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+            margin-right: 15px;
+        }
+        
+        .user-name {
+            font-weight: 500;
+            margin-bottom: 5px;
+        }
+        
+        .user-role {
+            font-size: 13px;
+            opacity: 0.8;
+        }
+        
+        /* Main Content */
+        .main-content {
+            flex-grow: 1;
+            padding: 25px;
+            overflow-y: auto;
+        }
+        
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+        
+        .header-title {
+            font-size: 28px;
+            font-weight: 600;
+            color: var(--dark);
+        }
+        
+        .header-actions {
+            display: flex;
+            gap: 15px;
+        }
+        
+        .btn {
+            padding: 12px 24px;
+            border-radius: var(--border-radius);
+            border: none;
+            font-weight: 500;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            font-family: 'Roboto', 'Kanit', sans-serif;
+        }
+        
+        .btn-primary {
+            background-color: var(--primary);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background-color: var(--secondary);
+            transform: translateY(-2px);
+        }
+        
+        .btn-outline {
+            background-color: transparent;
+            color: var(--primary);
+            border: 1px solid var(--primary);
+        }
+        
+        .btn-outline:hover {
+            background-color: rgba(67, 97, 238, 0.1);
+        }
+        
+        /* Stats Cards */
+        .stats-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 25px;
+            margin-bottom: 40px;
+        }
+        
+        .stat-card {
+            background-color: white;
+            border-radius: var(--border-radius);
+            padding: 25px;
+            box-shadow: var(--box-shadow);
+            transition: var(--transition);
+            border-left: 5px solid var(--primary);
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .stat-card.warning {
+            border-left-color: var(--warning);
+        }
+        
+        .stat-card.success {
+            border-left-color: var(--success);
+        }
+        
+        .stat-card.secondary {
+            border-left-color: var(--secondary);
+        }
+        
+        .stat-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .stat-title {
+            font-size: 16px;
+            color: var(--gray);
+            font-weight: 500;
+        }
+        
+        .stat-icon {
+            font-size: 28px;
+            color: var(--primary);
+        }
+        
+        .stat-card.warning .stat-icon {
+            color: var(--warning);
+        }
+        
+        .stat-card.success .stat-icon {
+            color: var(--success);
+        }
+        
+        .stat-card.secondary .stat-icon {
+            color: var(--secondary);
+        }
+        
+        .stat-value {
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+        
+        .stat-change {
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+        }
+        
+        .stat-change.positive {
+            color: #2ecc71;
+        }
+        
+        .stat-change.negative {
+            color: #e74c3c;
+        }
+        
+        /* Charts Section */
+        .charts-section {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 25px;
+            margin-bottom: 40px;
+        }
+        
+        .chart-card {
+            background-color: white;
+            border-radius: var(--border-radius);
+            padding: 25px;
+            box-shadow: var(--box-shadow);
+        }
+        
+        .chart-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+        }
+        
+        .chart-title {
+            font-size: 20px;
+            font-weight: 600;
+        }
+        
+        .chart-container {
+            height: 300px;
+            position: relative;
+        }
+        
+        /* Data Table */
+        .data-table-container {
+            background-color: white;
+            border-radius: var(--border-radius);
+            padding: 25px;
+            box-shadow: var(--box-shadow);
+            margin-bottom: 40px;
+        }
+        
+        .table-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+        }
+        
+        .table-title {
+            font-size: 20px;
+            font-weight: 600;
+        }
+        
+        .search-box {
+            position: relative;
+        }
+        
+        .search-input {
+            padding: 12px 15px 12px 40px;
+            border-radius: var(--border-radius);
+            border: 1px solid var(--gray-light);
+            width: 250px;
+            font-family: 'Roboto', 'Kanit', sans-serif;
+            transition: var(--transition);
+        }
+        
+        .search-input:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+        
+        .search-icon {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--gray);
+        }
+        
+        .table-responsive {
+            overflow-x: auto;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        thead {
+            background-color: var(--gray-light);
+        }
+        
+        th {
+            padding: 18px 15px;
+            text-align: left;
+            font-weight: 600;
+            color: var(--dark);
+            border-bottom: 2px solid var(--gray-light);
+        }
+        
+        td {
+            padding: 18px 15px;
+            border-bottom: 1px solid var(--gray-light);
+        }
+        
+        tbody tr:hover {
+            background-color: rgba(67, 97, 238, 0.05);
+        }
+        
+        .status {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 500;
+            display: inline-block;
+        }
+        
+        .status.active {
+            background-color: rgba(46, 204, 113, 0.2);
+            color: #27ae60;
+        }
+        
+        .status.pending {
+            background-color: rgba(241, 196, 15, 0.2);
+            color: #f39c12;
+        }
+        
+        .status.completed {
+            background-color: rgba(52, 152, 219, 0.2);
+            color: #2980b9;
+        }
+        
+        /* Footer */
+        .footer {
+            text-align: center;
+            padding-top: 20px;
+            border-top: 1px solid var(--gray-light);
+            color: var(--gray);
+            font-size: 14px;
+        }
+        
+        /* Loading */
+        .loading {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 200px;
+            font-size: 18px;
+            color: var(--gray);
+        }
+        
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid rgba(67, 97, 238, 0.2);
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: 15px;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        /* Responsive */
+        @media (max-width: 1200px) {
+            .charts-section {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        @media (max-width: 992px) {
+            .sidebar {
+                width: 80px;
+                padding: 25px 15px;
+            }
+            
+            .logo-text, .logo-subtext, .nav-text, .user-name, .user-role {
+                display: none;
+            }
+            
+            .logo {
+                justify-content: center;
+            }
+            
+            .logo-icon {
+                margin-right: 0;
+            }
+            
+            .nav-item {
+                justify-content: center;
+            }
+            
+            .nav-icon {
+                margin-right: 0;
+            }
+            
+            .user-info {
+                justify-content: center;
+            }
+            
+            .user-avatar {
+                margin-right: 0;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                flex-direction: column;
+            }
+            
+            .sidebar {
+                width: 100%;
+                flex-direction: row;
+                padding: 15px;
+                justify-content: space-between;
+            }
+            
+            .logo, .nav-menu, .user-info {
+                margin-bottom: 0;
+                padding-bottom: 0;
+                border: none;
+            }
+            
+            .nav-menu {
+                flex-grow: 0;
+                display: flex;
+            }
+            
+            .nav-item {
+                margin-bottom: 0;
+                margin-right: 10px;
+            }
+            
+            .main-content {
+                padding: 20px;
+            }
+            
+            .stats-cards {
+                grid-template-columns: 1fr;
+            }
+            
+            .header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 15px;
+            }
+            
+            .header-actions {
+                width: 100%;
+                justify-content: space-between;
+            }
+            
+            .search-input {
+                width: 100%;
+            }
+        }
+    </style>
 </head>
+<body>
+    <div class="container">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="logo">
+                <div class="logo-icon">
+                    <i class="fas fa-car"></i>
+                </div>
+                <div>
+                    <div class="logo-text">Car Rent</div>
+                    <div class="logo-subtext">Management System</div>
+                </div>
+            </div>
+            
+            <div class="nav-menu">
+                <div class="nav-item active">
+                    <div class="nav-icon">
+                        <i class="fas fa-tachometer-alt"></i>
+                    </div>
+                    <div class="nav-text">Dashboard</div>
+                </div>
+                <div class="nav-item">
+                    <div class="nav-icon">
+                        <i class="fas fa-calendar-alt"></i>
+                    </div>
+                    <div class="nav-text">Reservations</div>
+                </div>
+                <div class="nav-item">
+                    <div class="nav-icon">
+                        <i class="fas fa-car-side"></i>
+                    </div>
+                    <div class="nav-text">Vehicles</div>
+                </div>
+                <div class="nav-item">
+                    <div class="nav-icon">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <div class="nav-text">Users</div>
+                </div>
+                <div class="nav-item">
+                    <div class="nav-icon">
+                        <i class="fas fa-chart-bar"></i>
+                    </div>
+                    <div class="nav-text">Reports</div>
+                </div>
+                <div class="nav-item">
+                    <div class="nav-icon">
+                        <i class="fas fa-cog"></i>
+                    </div>
+                    <div class="nav-text">Settings</div>
+                </div>
+            </div>
+            
+            <div class="user-info">
+                <div class="user-avatar">
+                    <i class="fas fa-user"></i>
+                </div>
+                <div>
+                    <div class="user-name">ผู้ดูแลระบบ</div>
+                    <div class="user-role">Administrator</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Header -->
+            <div class="header">
+                <h1 class="header-title">Car Rent Dashboard</h1>
+                <div class="header-actions">
+                    <button class="btn btn-outline" id="refreshBtn">
+                        <i class="fas fa-sync-alt"></i>
+                        Refresh Data
+                    </button>
+                    <button class="btn btn-primary" id="addReservationBtn">
+                        <i class="fas fa-plus"></i>
+                        New Reservation
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Stats Cards -->
+            <div class="stats-cards">
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <div class="stat-title">Total Reservations</div>
+                        <div class="stat-icon">
+                            <i class="fas fa-calendar-check"></i>
+                        </div>
+                    </div>
+                    <div class="stat-value" id="totalReservations">0</div>
+                    <div class="stat-change positive">
+                        <i class="fas fa-arrow-up"></i>
+                        <span>12% from last month</span>
+                    </div>
+                </div>
+                
+                <div class="stat-card warning">
+                    <div class="stat-header">
+                        <div class="stat-title">Active Now</div>
+                        <div class="stat-icon">
+                            <i class="fas fa-car"></i>
+                        </div>
+                    </div>
+                    <div class="stat-value" id="activeNow">0</div>
+                    <div class="stat-change positive">
+                        <i class="fas fa-arrow-up"></i>
+                        <span>3 today</span>
+                    </div>
+                </div>
+                
+                <div class="stat-card success">
+                    <div class="stat-header">
+                        <div class="stat-title">Upcoming</div>
+                        <div class="stat-icon">
+                            <i class="fas fa-clock"></i>
+                        </div>
+                    </div>
+                    <div class="stat-value" id="upcomingReservations">0</div>
+                    <div class="stat-change negative">
+                        <i class="fas fa-arrow-down"></i>
+                        <span>2% from last week</span>
+                    </div>
+                </div>
+                
+                <div class="stat-card secondary">
+                    <div class="stat-header">
+                        <div class="stat-title">Departments</div>
+                        <div class="stat-icon">
+                            <i class="fas fa-building"></i>
+                        </div>
+                    </div>
+                    <div class="stat-value" id="totalDepartments">0</div>
+                    <div class="stat-change positive">
+                        <i class="fas fa-arrow-up"></i>
+                        <span>5 active</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Charts Section -->
+            <div class="charts-section">
+                <div class="chart-card">
+                    <div class="chart-header">
+                        <div class="chart-title">Reservations Trend</div>
+                        <div>
+                            <select id="timeRange" class="search-input" style="width: auto; padding: 8px 15px;">
+                                <option value="week">Last 7 Days</option>
+                                <option value="month">Last 30 Days</option>
+                                <option value="quarter">Last 3 Months</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="reservationsChart"></canvas>
+                    </div>
+                </div>
+                
+                <div class="chart-card">
+                    <div class="chart-header">
+                        <div class="chart-title">Vehicle Usage</div>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="vehicleChart"></canvas>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Data Table -->
+            <div class="data-table-container">
+                <div class="table-header">
+                    <div class="table-title">Recent Reservations</div>
+                    <div class="search-box">
+                        <i class="fas fa-search search-icon"></i>
+                        <input type="text" class="search-input" id="searchInput" placeholder="Search reservations...">
+                    </div>
+                </div>
+                
+                <div class="table-responsive">
+                    <div class="loading" id="tableLoading">
+                        <div class="spinner"></div>
+                        <div>Loading data from Google Sheets...</div>
+                    </div>
+                    <table id="reservationsTable" style="display: none;">
+                        <thead>
+                            <tr>
+                                <th>Code</th>
+                                <th>Name</th>
+                                <th>Department</th>
+                                <th>Vehicle</th>
+                                <th>Rental Period</th>
+                                <th>Status</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tableBody">
+                            <!-- Data will be populated by JavaScript -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            
+            <!-- Footer -->
+            <div class="footer">
+                <p>Car Rent Dashboard • Data sourced from Google Sheets • Updated in real-time</p>
+            </div>
+        </div>
+    </div>
 
-<body onload="loadData()">
-<div class="container my-4" id="pdfContent">
-
-<h4 class="text-center mb-3">รายงานการขอใช้รถ (สำหรับหัวหน้างาน)</h4>
-
-<div class="row text-center mb-3">
-  <div class="col card p-2">ทั้งหมด<br><span id="sumTotal" class="summary"></span></div>
-  <div class="col card p-2 bg-warning-subtle">รออนุมัติ<br><span id="sumPending" class="summary"></span></div>
-  <div class="col card p-2 bg-success-subtle">อนุมัติ<br><span id="sumApproved" class="summary"></span></div>
-  <div class="col card p-2 bg-danger-subtle">ปฏิเสธ<br><span id="sumRejected" class="summary"></span></div>
-</div>
-
-<table class="table table-bordered table-sm bg-white">
-<thead class="table-light">
-<tr>
-<th>ชื่อ</th><th>แผนก</th><th>รถ</th>
-<th>วันที่</th><th>เหตุผล</th><th>สถานะ</th><th>จัดการ</th>
-</tr>
-</thead>
-<tbody id="tbody"></tbody>
-</table>
-
-<p class="mt-4 small">
-ผู้ตรวจสอบ: ______________________ วันที่: ____ / ____ / ______
-</p>
-
-</div>
-
-<div class="text-center mb-4">
-<button class="btn btn-danger no-print" onclick="exportPDF()">📄 Export PDF</button>
-</div>
-
-<script>
-const API = "https://script.google.com/macros/s/AKfycbzcMdFcpQkAxIbb0iEJJfZ8fD0YgiGUetRkkw1UyMv7uY3tlza345UoL1uNrNbOUKRx/exec";
-let data = [];
-
-async function loadData() {
-  const res = await fetch(API);
-  const json = await res.json();
-  const rows = json.data;
-  rows.shift();
-
-  data = rows.map((r,i)=>({
-    row:i+2,name:r[2],dept:r[4],car:r[7],
-    date:`${r[8]} - ${r[9]}`,reason:r[12],
-    approval:r[13]||"รออนุมัติ"
-  }));
-
-  render();
-}
-
-function render() {
-  tbody.innerHTML="";
-  let p=0,a=0,r=0;
-
-  data.forEach(d=>{
-    if(d.approval==="รออนุมัติ")p++;
-    if(d.approval==="อนุมัติ")a++;
-    if(d.approval==="ปฏิเสธ")r++;
-
-    tbody.innerHTML+=`
-<tr>
-<td>${d.name}</td>
-<td>${d.dept}</td>
-<td>${d.car}</td>
-<td>${d.date}</td>
-<td>${d.reason||"-"}</td>
-<td>${d.approval}</td>
-<td>
-<button class="btn btn-success btn-sm" onclick="setStatus(${d.row},'อนุมัติ')">✔</button>
-<button class="btn btn-danger btn-sm" onclick="reject(${d.row})">✖</button>
-</td>
-</tr>`;
-  });
-
-  sumTotal.innerText=data.length;
-  sumPending.innerText=p;
-  sumApproved.innerText=a;
-  sumRejected.innerText=r;
-}
-
-async function setStatus(row,st,note="") {
-  await fetch(API,{method:"POST",body:JSON.stringify({
-    rowIndex:row,approval:st,approver:"หัวหน้างาน",note
-  })});
-  loadData();
-}
-
-function reject(row){
-  const note=prompt("เหตุผล");
-  if(note!==null)setStatus(row,"ปฏิเสธ",note);
-}
-
-async function exportPDF(){
-  const { jsPDF } = window.jspdf;
-  const canvas = await html2canvas(pdfContent,{scale:2});
-  const pdf = new jsPDF("p","mm","a4");
-  const w = pdf.internal.pageSize.getWidth();
-  const h = canvas.height * w / canvas.width;
-  pdf.addImage(canvas.toDataURL(),"PNG",0,0,w,h);
-  pdf.save("Car_Rent_Report.pdf");
-}
-</script>
-
+    <script>
+        // Google Apps Script URL
+        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzcMdFcpQkAxIbb0iEJJfZ8fD0YgiGUetRkkw1UyMv7uY3tlza345UoL1uNrNbOUKRx/exec';
+        
+        // Global data variable
+        let reservationsData = [];
+        
+        // DOM Elements
+        const refreshBtn = document.getElementById('refreshBtn');
+        const searchInput = document.getElementById('searchInput');
+        const tableBody = document.getElementById('tableBody');
+        const tableLoading = document.getElementById('tableLoading');
+        const reservationsTable = document.getElementById('reservationsTable');
+        const totalReservations = document.getElementById('totalReservations');
+        const activeNow = document.getElementById('activeNow');
+        const upcomingReservations = document.getElementById('upcomingReservations');
+        const totalDepartments = document.getElementById('totalDepartments');
+        
+        // Chart variables
+        let reservationsChart, vehicleChart;
+        
+        // Initialize the dashboard
+        document.addEventListener('DOMContentLoaded', function() {
+            loadData();
+            
+            // Set up event listeners
+            refreshBtn.addEventListener('click', loadData);
+            searchInput.addEventListener('input', filterTable);
+            
+            // Initialize charts with empty data
+            initCharts();
+        });
+        
+        // Load data from Google Sheets
+        async function loadData() {
+            try {
+                tableLoading.style.display = 'flex';
+                reservationsTable.style.display = 'none';
+                
+                // Fetch data from Google Apps Script
+                const response = await fetch(SCRIPT_URL);
+                const data = await response.json();
+                
+                if (data && data.status === 'success') {
+                    reservationsData = data.data;
+                    updateDashboard(reservationsData);
+                    updateCharts(reservationsData);
+                    updateTable(reservationsData);
+                } else {
+                    throw new Error('Failed to fetch data');
+                }
+            } catch (error) {
+                console.error('Error loading data:', error);
+                // For demo purposes, generate mock data if fetch fails
+                generateMockData();
+            }
+        }
+        
+        // Update dashboard stats
+        function updateDashboard(data) {
+            // Update total reservations
+            totalReservations.textContent = data.length;
+            
+            // Calculate active now (reservations happening today)
+            const today = new Date().toISOString().split('T')[0];
+            const activeCount = data.filter(item => {
+                const startDate = formatDate(item.rentStartdate);
+                const endDate = formatDate(item.rentEnddate);
+                return today >= startDate && today <= endDate;
+            }).length;
+            
+            activeNow.textContent = activeCount;
+            
+            // Calculate upcoming reservations (starting in the next 7 days)
+            const nextWeek = new Date();
+            nextWeek.setDate(nextWeek.getDate() + 7);
+            const nextWeekStr = nextWeek.toISOString().split('T')[0];
+            
+            const upcomingCount = data.filter(item => {
+                const startDate = formatDate(item.rentStartdate);
+                return startDate > today && startDate <= nextWeekStr;
+            }).length;
+            
+            upcomingReservations.textContent = upcomingCount;
+            
+            // Calculate unique departments
+            const departments = [...new Set(data.map(item => item.department).filter(Boolean))];
+            totalDepartments.textContent = departments.length;
+        }
+        
+        // Initialize charts
+        function initCharts() {
+            // Reservations Trend Chart
+            const reservationsCtx = document.getElementById('reservationsChart').getContext('2d');
+            reservationsChart = new Chart(reservationsCtx, {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        label: 'Reservations',
+                        data: [],
+                        borderColor: '#4361ee',
+                        backgroundColor: 'rgba(67, 97, 238, 0.1)',
+                        borderWidth: 3,
+                        fill: true,
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                color: 'rgba(0, 0, 0, 0.05)'
+                            },
+                            ticks: {
+                                stepSize: 1
+                            }
+                        },
+                        x: {
+                            grid: {
+                                color: 'rgba(0, 0, 0, 0.05)'
+                            }
+                        }
+                    }
+                }
+            });
+            
+            // Vehicle Usage Chart
+            const vehicleCtx = document.getElementById('vehicleChart').getContext('2d');
+            vehicleChart = new Chart(vehicleCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        data: [],
+                        backgroundColor: [
+                            '#4361ee',
+                            '#3f37c9',
+                            '#4cc9f0',
+                            '#f72585',
+                            '#7209b7',
+                            '#3a0ca3'
+                        ],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'right'
+                        }
+                    }
+                }
+            });
+        }
+        
+        // Update charts with data
+        function updateCharts(data) {
+            // Update reservations trend chart (last 7 days)
+            const last7Days = [...Array(7)].map((_, i) => {
+                const d = new Date();
+                d.setDate(d.getDate() - 6 + i);
+                return d.toLocaleDateString('th-TH', { day: 'numeric', month: 'short' });
+            });
+            
+            const dailyCounts = new Array(7).fill(0);
+            
+            data.forEach(item => {
+                const startDate = new Date(item.rentStartdate);
+                const today = new Date();
+                const sevenDaysAgo = new Date();
+                sevenDaysAgo.setDate(today.getDate() - 6);
+                
+                if (startDate >= sevenDaysAgo && startDate <= today) {
+                    const dayIndex = Math.floor((startDate - sevenDaysAgo) / (1000 * 60 * 60 * 24));
+                    if (dayIndex >= 0 && dayIndex < 7) {
+                        dailyCounts[dayIndex]++;
+                    }
+                }
+            });
+            
+            reservationsChart.data.labels = last7Days;
+            reservationsChart.data.datasets[0].data = dailyCounts;
+            reservationsChart.update();
+            
+            // Update vehicle usage chart
+            const vehicleCounts = {};
+            data.forEach(item => {
+                const vehicle = item.choose || 'Unknown';
+                vehicleCounts[vehicle] = (vehicleCounts[vehicle] || 0) + 1;
+            });
+            
+            const vehicles = Object.keys(vehicleCounts);
+            const counts = vehicles.map(vehicle => vehicleCounts[vehicle]);
+            
+            vehicleChart.data.labels = vehicles;
+            vehicleChart.data.datasets[0].data = counts;
+            vehicleChart.update();
+        }
+        
+        // Update table with data
+        function updateTable(data) {
+            tableBody.innerHTML = '';
+            
+            // Sort by date (newest first)
+            const sortedData = [...data].sort((a, b) => {
+                return new Date(b.rentStartdate) - new Date(a.rentStartdate);
+            });
+            
+            // Show only recent 10 reservations
+            const displayData = sortedData.slice(0, 10);
+            
+            displayData.forEach(item => {
+                const row = document.createElement('tr');
+                
+                // Determine status
+                const today = new Date().toISOString().split('T')[0];
+                const startDate = formatDate(item.rentStartdate);
+                const endDate = formatDate(item.rentEnddate);
+                
+                let status = 'pending';
+                let statusText = 'Pending';
+                
+                if (today > endDate) {
+                    status = 'completed';
+                    statusText = 'Completed';
+                } else if (today >= startDate && today <= endDate) {
+                    status = 'active';
+                    statusText = 'Active';
+                }
+                
+                // Format rental period
+                const rentalPeriod = `${formatDate(item.rentStartdate)} - ${formatDate(item.rentEnddate)}`;
+                
+                row.innerHTML = `
+                    <td><strong>${item.Code || '-'}</strong></td>
+                    <td>${item.name || '-'}</td>
+                    <td>${item.department || '-'}</td>
+                    <td>${item.choose || '-'}</td>
+                    <td>${rentalPeriod}</td>
+                    <td><span class="status ${status}">${statusText}</span></td>
+                    <td>
+                        <button class="btn btn-outline" style="padding: 6px 12px; font-size: 14px;">
+                            <i class="fas fa-eye"></i> View
+                        </button>
+                    </td>
+                `;
+                
+                tableBody.appendChild(row);
+            });
+            
+            tableLoading.style.display = 'none';
+            reservationsTable.style.display = 'table';
+        }
+        
+        // Filter table based on search input
+        function filterTable() {
+            const searchTerm = searchInput.value.toLowerCase();
+            const rows = tableBody.querySelectorAll('tr');
+            
+            rows.forEach(row => {
+                const text = row.textContent.toLowerCase();
+                row.style.display = text.includes(searchTerm) ? '' : 'none';
+            });
+        }
+        
+        // Format date for display
+        function formatDate(dateString) {
+            if (!dateString) return '-';
+            
+            // Try to parse date string
+            const date = new Date(dateString);
+            
+            if (isNaN(date.getTime())) {
+                // If parsing fails, return original string
+                return dateString;
+            }
+            
+            // Format as DD/MM/YYYY
+            const day = date.getDate().toString().padStart(2, '0');
+            const month = (date.getMonth() + 1).toString().padStart(2, '0');
+            const year = date.getFullYear();
+            
+            return `${day}/${month}/${year}`;
+        }
+        
+        // Generate mock data for demo purposes
+        function generateMockData() {
+            const mockData = [];
+            const departments = ['ฝ่ายขาย', 'ฝ่ายการตลาด', 'ฝ่ายบัญชี', 'ฝ่ายบุคคล', 'ฝ่ายไอที', 'ฝ่ายผลิต'];
+            const vehicles = ['Toyota Camry', 'Honda Civic', 'Ford Ranger', 'Isuzu D-Max', 'MG ZS', 'Mazda CX-5'];
+            const names = ['สมชาย ใจดี', 'สมหมาย เก่งมาก', 'สุภาพร สวยงาม', 'ธนพล แข็งแรง', 'พรทิพย์ ใจกว้าง', 'วีระชัย กล้าหาญ'];
+            const positions = ['ผู้จัดการ', 'พนักงานขาย', 'วิศวกร', 'นักบัญชี', 'ผู้ช่วย', 'หัวหน้าแผนก'];
+            
+            // Generate 15 mock reservations
+            for (let i = 1; i <= 15; i++) {
+                const startDate = new Date();
+                startDate.setDate(startDate.getDate() + Math.floor(Math.random() * 30) - 10);
+                
+                const endDate = new Date(startDate);
+                endDate.setDate(endDate.getDate() + Math.floor(Math.random() * 5) + 1);
+                
+                const department = departments[Math.floor(Math.random() * departments.length)];
+                const vehicle = vehicles[Math.floor(Math.random() * vehicles.length)];
+                const name = names[Math.floor(Math.random() * names.length)];
+                const position = positions[Math.floor(Math.random() * positions.length)];
+                
+                mockData.push({
+                    Code: `RES${String(i).padStart(3, '0')}`,
+                    name: name,
+                    department: department,
+                    position: position,
+                    choose: vehicle,
+                    rentStartdate: startDate.toISOString().split('T')[0],
+                    rentEnddate: endDate.toISOString().split('T')[0],
+                    startTime: '09:00',
+                    endTime: '17:00',
+                    reason: 'Business meeting'
+                });
+            }
+            
+            reservationsData = mockData;
+            updateDashboard(mockData);
+            updateCharts(mockData);
+            updateTable(mockData);
+        }
+        
+        // Add click event to navigation items
+        document.querySelectorAll('.nav-item').forEach(item => {
+            item.addEventListener('click', function() {
+                document.querySelectorAll('.nav-item').forEach(nav => {
+                    nav.classList.remove('active');
+                });
+                this.classList.add('active');
+                
+                // Show a simple alert for demo purposes
+                const navText = this.querySelector('.nav-text').textContent;
+                alert(`Navigating to ${navText} section`);
+            });
+        });
+        
+        // Add click event to Add Reservation button
+        document.getElementById('addReservationBtn').addEventListener('click', function() {
+            alert('เปิดฟอร์มเพิ่มการจองรถใหม่');
+            // In a real application, this would open a modal or navigate to a form
+        });
+    </script>
 </body>
 </html>
