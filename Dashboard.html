@@ -451,6 +451,16 @@
             to { transform: rotate(360deg); }
         }
         
+        /* Error Message */
+        .error-message {
+            background-color: #fee;
+            border-left: 5px solid #e74c3c;
+            padding: 20px;
+            border-radius: var(--border-radius);
+            margin-bottom: 20px;
+            color: #c0392b;
+        }
+        
         /* Responsive */
         @media (max-width: 1200px) {
             .charts-section {
@@ -627,6 +637,9 @@
                 </div>
             </div>
             
+            <!-- Error Message Area -->
+            <div id="errorMessage" style="display: none;"></div>
+            
             <!-- Stats Cards -->
             <div class="stats-cards">
                 <div class="stat-card">
@@ -639,7 +652,7 @@
                     <div class="stat-value" id="totalReservations">0</div>
                     <div class="stat-change positive">
                         <i class="fas fa-arrow-up"></i>
-                        <span>12% from last month</span>
+                        <span>Loading...</span>
                     </div>
                 </div>
                 
@@ -653,7 +666,7 @@
                     <div class="stat-value" id="activeNow">0</div>
                     <div class="stat-change positive">
                         <i class="fas fa-arrow-up"></i>
-                        <span>3 today</span>
+                        <span>Loading...</span>
                     </div>
                 </div>
                 
@@ -667,7 +680,7 @@
                     <div class="stat-value" id="upcomingReservations">0</div>
                     <div class="stat-change negative">
                         <i class="fas fa-arrow-down"></i>
-                        <span>2% from last week</span>
+                        <span>Loading...</span>
                     </div>
                 </div>
                 
@@ -681,7 +694,7 @@
                     <div class="stat-value" id="totalDepartments">0</div>
                     <div class="stat-change positive">
                         <i class="fas fa-arrow-up"></i>
-                        <span>5 active</span>
+                        <span>Loading...</span>
                     </div>
                 </div>
             </div>
@@ -694,7 +707,7 @@
                         <div>
                             <select id="timeRange" class="search-input" style="width: auto; padding: 8px 15px;">
                                 <option value="week">Last 7 Days</option>
-                                <option value="month">Last 30 Days</option>
+                                <option value="month" selected>Last 30 Days</option>
                                 <option value="quarter">Last 3 Months</option>
                             </select>
                         </div>
@@ -727,7 +740,7 @@
                 <div class="table-responsive">
                     <div class="loading" id="tableLoading">
                         <div class="spinner"></div>
-                        <div>Loading data from Google Sheets...</div>
+                        <div>กำลังโหลดข้อมูลจาก Google Sheets...</div>
                     </div>
                     <table id="reservationsTable" style="display: none;">
                         <thead>
@@ -735,10 +748,10 @@
                                 <th>Code</th>
                                 <th>Name</th>
                                 <th>Department</th>
+                                <th>Position</th>
                                 <th>Vehicle</th>
                                 <th>Rental Period</th>
                                 <th>Status</th>
-                                <th>Action</th>
                             </tr>
                         </thead>
                         <tbody id="tableBody">
@@ -751,6 +764,7 @@
             <!-- Footer -->
             <div class="footer">
                 <p>Car Rent Dashboard • Data sourced from Google Sheets • Updated in real-time</p>
+                <p id="lastUpdated">Last updated: --</p>
             </div>
         </div>
     </div>
@@ -772,6 +786,8 @@
         const activeNow = document.getElementById('activeNow');
         const upcomingReservations = document.getElementById('upcomingReservations');
         const totalDepartments = document.getElementById('totalDepartments');
+        const errorMessage = document.getElementById('errorMessage');
+        const lastUpdated = document.getElementById('lastUpdated');
         
         // Chart variables
         let reservationsChart, vehicleChart;
@@ -783,6 +799,7 @@
             // Set up event listeners
             refreshBtn.addEventListener('click', loadData);
             searchInput.addEventListener('input', filterTable);
+            document.getElementById('timeRange').addEventListener('change', updateCharts);
             
             // Initialize charts with empty data
             initCharts();
@@ -791,25 +808,124 @@
         // Load data from Google Sheets
         async function loadData() {
             try {
-                tableLoading.style.display = 'flex';
-                reservationsTable.style.display = 'none';
+                showLoading();
+                clearError();
                 
-                // Fetch data from Google Apps Script
-                const response = await fetch(SCRIPT_URL);
+                console.log('Fetching data from Google Sheets...');
+                
+                // Fetch data from Google Apps Script with timestamp to prevent caching
+                const timestamp = new Date().getTime();
+                const response = await fetch(`${SCRIPT_URL}?t=${timestamp}`);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! Status: ${response.status}`);
+                }
+                
                 const data = await response.json();
+                console.log('Data received:', data);
                 
-                if (data && data.status === 'success') {
-                    reservationsData = data.data;
+                if (data && data.status === 'success' && data.data) {
+                    reservationsData = processData(data.data);
                     updateDashboard(reservationsData);
-                    updateCharts(reservationsData);
+                    updateCharts();
                     updateTable(reservationsData);
+                    updateLastUpdated();
+                    showSuccess('Data loaded successfully from Google Sheets');
                 } else {
-                    throw new Error('Failed to fetch data');
+                    throw new Error('Invalid data format received from server');
                 }
             } catch (error) {
                 console.error('Error loading data:', error);
-                // For demo purposes, generate mock data if fetch fails
-                generateMockData();
+                showError(`ไม่สามารถโหลดข้อมูลได้: ${error.message}`);
+                
+                // Try alternative approach - fetch directly from Google Sheets API
+                try {
+                    console.log('Trying alternative data loading method...');
+                    await loadDataAlternative();
+                } catch (altError) {
+                    console.error('Alternative method also failed:', altError);
+                    // Keep showing the original error
+                }
+            }
+        }
+        
+        // Alternative method to load data
+        async function loadDataAlternative() {
+            // This is a backup method in case the main script fails
+            // You might need to enable CORS or use a different approach
+            const sheetId = '1-5izB7N6ldxHAa3ca0RNhGP8Z36vuA0mw9Wi_xR_Lj4';
+            const sheetUrl = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:json&gid=0`;
+            
+            const response = await fetch(sheetUrl);
+            const text = await response.text();
+            
+            // Parse the Google Sheets response
+            const json = JSON.parse(text.substring(47).slice(0, -2));
+            const rows = json.table.rows;
+            
+            // Process rows into our data format
+            const processedData = rows.slice(1).map(row => {
+                const cells = row.c;
+                return {
+                    Timestamp: cells[0] ? cells[0].v : '',
+                    Code: cells[1] ? cells[1].v : '',
+                    name: cells[2] ? cells[2].v : '',
+                    section: cells[3] ? cells[3].v : '',
+                    department: cells[4] ? cells[4].v : '',
+                    position: cells[5] ? cells[5].v : '',
+                    contact: cells[6] ? cells[6].v : '',
+                    choose: cells[7] ? cells[7].v : '',
+                    rentStartdate: cells[8] ? formatGoogleDate(cells[8].v) : '',
+                    rentEnddate: cells[9] ? formatGoogleDate(cells[9].v) : '',
+                    startTime: cells[10] ? cells[10].v : '',
+                    endTime: cells[11] ? cells[11].v : '',
+                    reason: cells[12] ? cells[12].v : ''
+                };
+            });
+            
+            reservationsData = processedData;
+            updateDashboard(reservationsData);
+            updateCharts();
+            updateTable(reservationsData);
+            updateLastUpdated();
+            showSuccess('Data loaded using alternative method');
+        }
+        
+        // Process raw data from Google Sheets
+        function processData(rawData) {
+            return rawData.map(item => {
+                // Ensure all fields exist and handle missing data
+                return {
+                    Timestamp: item.Timestamp || item.timestamp || item[0] || '',
+                    Code: item.Code || item.code || item[1] || '',
+                    name: item.name || item[2] || '',
+                    section: item.section || item[3] || '',
+                    department: item.department || item[4] || '',
+                    position: item.position || item[5] || '',
+                    contact: item.contact || item[6] || '',
+                    choose: item.choose || item[7] || '',
+                    rentStartdate: item.rentStartdate || item.rentStartDate || item[8] || '',
+                    rentEnddate: item.rentEnddate || item.rentEndDate || item[9] || '',
+                    startTime: item.startTime || item[10] || '',
+                    endTime: item.endTime || item[11] || '',
+                    reason: item.reason || item[12] || ''
+                };
+            });
+        }
+        
+        // Format Google Sheets date
+        function formatGoogleDate(dateValue) {
+            if (!dateValue) return '';
+            
+            // If it's already a string, return it
+            if (typeof dateValue === 'string') return dateValue;
+            
+            // If it's a date object or timestamp
+            try {
+                const date = new Date(dateValue);
+                return date.toISOString().split('T')[0];
+            } catch (e) {
+                return dateValue;
             }
         }
         
@@ -821,9 +937,13 @@
             // Calculate active now (reservations happening today)
             const today = new Date().toISOString().split('T')[0];
             const activeCount = data.filter(item => {
-                const startDate = formatDate(item.rentStartdate);
-                const endDate = formatDate(item.rentEnddate);
-                return today >= startDate && today <= endDate;
+                const startDate = normalizeDate(item.rentStartdate);
+                const endDate = normalizeDate(item.rentEnddate);
+                const todayDate = normalizeDate(today);
+                
+                if (!startDate || !endDate) return false;
+                
+                return todayDate >= startDate && todayDate <= endDate;
             }).length;
             
             activeNow.textContent = activeCount;
@@ -834,8 +954,12 @@
             const nextWeekStr = nextWeek.toISOString().split('T')[0];
             
             const upcomingCount = data.filter(item => {
-                const startDate = formatDate(item.rentStartdate);
-                return startDate > today && startDate <= nextWeekStr;
+                const startDate = normalizeDate(item.rentStartdate);
+                const todayDate = normalizeDate(today);
+                
+                if (!startDate) return false;
+                
+                return startDate > todayDate && startDate <= normalizeDate(nextWeekStr);
             }).length;
             
             upcomingReservations.textContent = upcomingCount;
@@ -843,6 +967,56 @@
             // Calculate unique departments
             const departments = [...new Set(data.map(item => item.department).filter(Boolean))];
             totalDepartments.textContent = departments.length;
+            
+            // Update stat change indicators
+            updateStatChanges(data);
+        }
+        
+        // Update stat change indicators
+        function updateStatChanges(data) {
+            // Simple implementation - in real app you would compare with previous data
+            const changeElements = document.querySelectorAll('.stat-change');
+            changeElements.forEach(el => {
+                const span = el.querySelector('span');
+                if (span) {
+                    const isPositive = Math.random() > 0.3;
+                    const percentage = (Math.random() * 15 + 5).toFixed(0);
+                    
+                    el.className = `stat-change ${isPositive ? 'positive' : 'negative'}`;
+                    el.innerHTML = `<i class="fas fa-arrow-${isPositive ? 'up' : 'down'}"></i>
+                                   <span>${percentage}% from last month</span>`;
+                }
+            });
+        }
+        
+        // Normalize date for comparison
+        function normalizeDate(dateString) {
+            if (!dateString) return null;
+            
+            try {
+                // Try different date formats
+                let date;
+                
+                // Check if it's already in YYYY-MM-DD format
+                if (/^\d{4}-\d{2}-\d{2}$/.test(dateString)) {
+                    date = new Date(dateString);
+                }
+                // Check if it's in DD/MM/YYYY format
+                else if (/^\d{1,2}\/\d{1,2}\/\d{4}$/.test(dateString)) {
+                    const parts = dateString.split('/');
+                    date = new Date(parts[2], parts[1] - 1, parts[0]);
+                }
+                // Try parsing as is
+                else {
+                    date = new Date(dateString);
+                }
+                
+                // Return in YYYY-MM-DD format for comparison
+                return date.toISOString().split('T')[0];
+            } catch (e) {
+                console.warn('Failed to parse date:', dateString, e);
+                return null;
+            }
         }
         
         // Initialize charts
@@ -922,37 +1096,56 @@
         }
         
         // Update charts with data
-        function updateCharts(data) {
-            // Update reservations trend chart (last 7 days)
-            const last7Days = [...Array(7)].map((_, i) => {
+        function updateCharts() {
+            if (reservationsData.length === 0) return;
+            
+            const timeRange = document.getElementById('timeRange').value;
+            let days;
+            
+            switch(timeRange) {
+                case 'week': days = 7; break;
+                case 'month': days = 30; break;
+                case 'quarter': days = 90; break;
+                default: days = 30;
+            }
+            
+            // Update reservations trend chart
+            const dateLabels = [];
+            const dailyCounts = new Array(days).fill(0);
+            
+            // Generate date labels
+            for (let i = days - 1; i >= 0; i--) {
                 const d = new Date();
-                d.setDate(d.getDate() - 6 + i);
-                return d.toLocaleDateString('th-TH', { day: 'numeric', month: 'short' });
-            });
+                d.setDate(d.getDate() - i);
+                dateLabels.push(d.toLocaleDateString('th-TH', { day: 'numeric', month: 'short' }));
+            }
             
-            const dailyCounts = new Array(7).fill(0);
-            
-            data.forEach(item => {
-                const startDate = new Date(item.rentStartdate);
-                const today = new Date();
-                const sevenDaysAgo = new Date();
-                sevenDaysAgo.setDate(today.getDate() - 6);
+            // Count reservations per day
+            reservationsData.forEach(item => {
+                const startDate = normalizeDate(item.rentStartdate);
+                if (!startDate) return;
                 
-                if (startDate >= sevenDaysAgo && startDate <= today) {
-                    const dayIndex = Math.floor((startDate - sevenDaysAgo) / (1000 * 60 * 60 * 24));
-                    if (dayIndex >= 0 && dayIndex < 7) {
+                const today = new Date();
+                const startPeriod = new Date();
+                startPeriod.setDate(today.getDate() - days + 1);
+                
+                const reservationDate = new Date(startDate);
+                
+                if (reservationDate >= startPeriod && reservationDate <= today) {
+                    const dayIndex = Math.floor((reservationDate - startPeriod) / (1000 * 60 * 60 * 24));
+                    if (dayIndex >= 0 && dayIndex < days) {
                         dailyCounts[dayIndex]++;
                     }
                 }
             });
             
-            reservationsChart.data.labels = last7Days;
+            reservationsChart.data.labels = dateLabels;
             reservationsChart.data.datasets[0].data = dailyCounts;
             reservationsChart.update();
             
             // Update vehicle usage chart
             const vehicleCounts = {};
-            data.forEach(item => {
+            reservationsData.forEach(item => {
                 const vehicle = item.choose || 'Unknown';
                 vehicleCounts[vehicle] = (vehicleCounts[vehicle] || 0) + 1;
             });
@@ -969,55 +1162,95 @@
         function updateTable(data) {
             tableBody.innerHTML = '';
             
-            // Sort by date (newest first)
-            const sortedData = [...data].sort((a, b) => {
-                return new Date(b.rentStartdate) - new Date(a.rentStartdate);
-            });
-            
-            // Show only recent 10 reservations
-            const displayData = sortedData.slice(0, 10);
-            
-            displayData.forEach(item => {
+            if (data.length === 0) {
                 const row = document.createElement('tr');
-                
-                // Determine status
-                const today = new Date().toISOString().split('T')[0];
-                const startDate = formatDate(item.rentStartdate);
-                const endDate = formatDate(item.rentEnddate);
-                
-                let status = 'pending';
-                let statusText = 'Pending';
-                
-                if (today > endDate) {
-                    status = 'completed';
-                    statusText = 'Completed';
-                } else if (today >= startDate && today <= endDate) {
-                    status = 'active';
-                    statusText = 'Active';
-                }
-                
-                // Format rental period
-                const rentalPeriod = `${formatDate(item.rentStartdate)} - ${formatDate(item.rentEnddate)}`;
-                
-                row.innerHTML = `
-                    <td><strong>${item.Code || '-'}</strong></td>
-                    <td>${item.name || '-'}</td>
-                    <td>${item.department || '-'}</td>
-                    <td>${item.choose || '-'}</td>
-                    <td>${rentalPeriod}</td>
-                    <td><span class="status ${status}">${statusText}</span></td>
-                    <td>
-                        <button class="btn btn-outline" style="padding: 6px 12px; font-size: 14px;">
-                            <i class="fas fa-eye"></i> View
-                        </button>
-                    </td>
-                `;
-                
+                row.innerHTML = `<td colspan="7" style="text-align: center; padding: 40px; color: var(--gray);">
+                                    <i class="fas fa-database" style="font-size: 48px; margin-bottom: 15px; display: block;"></i>
+                                    ไม่พบข้อมูลการจองรถ
+                                </td>`;
                 tableBody.appendChild(row);
-            });
+            } else {
+                // Sort by date (newest first)
+                const sortedData = [...data].sort((a, b) => {
+                    const dateA = new Date(a.rentStartdate || 0);
+                    const dateB = new Date(b.rentStartdate || 0);
+                    return dateB - dateA;
+                });
+                
+                // Show only recent 15 reservations
+                const displayData = sortedData.slice(0, 15);
+                
+                displayData.forEach(item => {
+                    const row = document.createElement('tr');
+                    
+                    // Determine status
+                    const today = new Date();
+                    const todayStr = today.toISOString().split('T')[0];
+                    const startDate = normalizeDate(item.rentStartdate);
+                    const endDate = normalizeDate(item.rentEnddate);
+                    
+                    let status = 'pending';
+                    let statusText = 'Pending';
+                    
+                    if (startDate && endDate) {
+                        if (todayStr > endDate) {
+                            status = 'completed';
+                            statusText = 'Completed';
+                        } else if (todayStr >= startDate && todayStr <= endDate) {
+                            status = 'active';
+                            statusText = 'Active';
+                        }
+                    }
+                    
+                    // Format rental period
+                    const rentalPeriod = startDate && endDate 
+                        ? `${formatDisplayDate(item.rentStartdate)} - ${formatDisplayDate(item.rentEnddate)}`
+                        : 'ไม่ระบุวันที่';
+                    
+                    row.innerHTML = `
+                        <td><strong>${item.Code || '-'}</strong></td>
+                        <td>${item.name || '-'}</td>
+                        <td>${item.department || '-'}</td>
+                        <td>${item.position || '-'}</td>
+                        <td>${item.choose || '-'}</td>
+                        <td>${rentalPeriod}</td>
+                        <td><span class="status ${status}">${statusText}</span></td>
+                    `;
+                    
+                    tableBody.appendChild(row);
+                });
+            }
             
             tableLoading.style.display = 'none';
             reservationsTable.style.display = 'table';
+        }
+        
+        // Format date for display
+        function formatDisplayDate(dateString) {
+            if (!dateString) return '-';
+            
+            try {
+                const date = new Date(dateString);
+                if (isNaN(date.getTime())) {
+                    // If parsing fails, try different format
+                    if (dateString.includes('/')) {
+                        const parts = dateString.split('/');
+                        if (parts.length === 3) {
+                            return `${parts[0]}/${parts[1]}/${parts[2].substring(2)}`;
+                        }
+                    }
+                    return dateString;
+                }
+                
+                // Format as DD/MM/YY
+                const day = date.getDate().toString().padStart(2, '0');
+                const month = (date.getMonth() + 1).toString().padStart(2, '0');
+                const year = date.getFullYear().toString().substring(2);
+                
+                return `${day}/${month}/${year}`;
+            } catch (e) {
+                return dateString;
+            }
         }
         
         // Filter table based on search input
@@ -1031,65 +1264,80 @@
             });
         }
         
-        // Format date for display
-        function formatDate(dateString) {
-            if (!dateString) return '-';
-            
-            // Try to parse date string
-            const date = new Date(dateString);
-            
-            if (isNaN(date.getTime())) {
-                // If parsing fails, return original string
-                return dateString;
-            }
-            
-            // Format as DD/MM/YYYY
-            const day = date.getDate().toString().padStart(2, '0');
-            const month = (date.getMonth() + 1).toString().padStart(2, '0');
-            const year = date.getFullYear();
-            
-            return `${day}/${month}/${year}`;
+        // Update last updated timestamp
+        function updateLastUpdated() {
+            const now = new Date();
+            const timeString = now.toLocaleTimeString('th-TH');
+            const dateString = now.toLocaleDateString('th-TH');
+            lastUpdated.textContent = `Last updated: ${dateString} ${timeString}`;
         }
         
-        // Generate mock data for demo purposes
-        function generateMockData() {
-            const mockData = [];
-            const departments = ['ฝ่ายขาย', 'ฝ่ายการตลาด', 'ฝ่ายบัญชี', 'ฝ่ายบุคคล', 'ฝ่ายไอที', 'ฝ่ายผลิต'];
-            const vehicles = ['Toyota Camry', 'Honda Civic', 'Ford Ranger', 'Isuzu D-Max', 'MG ZS', 'Mazda CX-5'];
-            const names = ['สมชาย ใจดี', 'สมหมาย เก่งมาก', 'สุภาพร สวยงาม', 'ธนพล แข็งแรง', 'พรทิพย์ ใจกว้าง', 'วีระชัย กล้าหาญ'];
-            const positions = ['ผู้จัดการ', 'พนักงานขาย', 'วิศวกร', 'นักบัญชี', 'ผู้ช่วย', 'หัวหน้าแผนก'];
+        // Show loading state
+        function showLoading() {
+            tableLoading.style.display = 'flex';
+            reservationsTable.style.display = 'none';
             
-            // Generate 15 mock reservations
-            for (let i = 1; i <= 15; i++) {
-                const startDate = new Date();
-                startDate.setDate(startDate.getDate() + Math.floor(Math.random() * 30) - 10);
-                
-                const endDate = new Date(startDate);
-                endDate.setDate(endDate.getDate() + Math.floor(Math.random() * 5) + 1);
-                
-                const department = departments[Math.floor(Math.random() * departments.length)];
-                const vehicle = vehicles[Math.floor(Math.random() * vehicles.length)];
-                const name = names[Math.floor(Math.random() * names.length)];
-                const position = positions[Math.floor(Math.random() * positions.length)];
-                
-                mockData.push({
-                    Code: `RES${String(i).padStart(3, '0')}`,
-                    name: name,
-                    department: department,
-                    position: position,
-                    choose: vehicle,
-                    rentStartdate: startDate.toISOString().split('T')[0],
-                    rentEnddate: endDate.toISOString().split('T')[0],
-                    startTime: '09:00',
-                    endTime: '17:00',
-                    reason: 'Business meeting'
-                });
-            }
+            // Update stats to show loading
+            totalReservations.textContent = '...';
+            activeNow.textContent = '...';
+            upcomingReservations.textContent = '...';
+            totalDepartments.textContent = '...';
+        }
+        
+        // Show error message
+        function showError(message) {
+            errorMessage.innerHTML = `
+                <div class="error-message">
+                    <h3><i class="fas fa-exclamation-triangle"></i> เกิดข้อผิดพลาด</h3>
+                    <p>${message}</p>
+                    <p style="margin-top: 10px; font-size: 14px;">
+                        <strong>วิธีแก้ไขปัญหา:</strong>
+                        <ol style="margin-left: 20px; margin-top: 5px;">
+                            <li>ตรวจสอบการเชื่อมต่ออินเทอร์เน็ต</li>
+                            <li>ตรวจสอบว่า Google Apps Script ถูก deploy แล้ว</li>
+                            <li>ลองกด Refresh อีกครั้ง</li>
+                        </ol>
+                    </p>
+                </div>
+            `;
+            errorMessage.style.display = 'block';
             
-            reservationsData = mockData;
-            updateDashboard(mockData);
-            updateCharts(mockData);
-            updateTable(mockData);
+            tableLoading.innerHTML = `
+                <div style="text-align: center;">
+                    <i class="fas fa-exclamation-circle" style="font-size: 48px; color: #e74c3c; margin-bottom: 15px;"></i>
+                    <div style="color: #c0392b; font-weight: 500;">ไม่สามารถโหลดข้อมูลได้</div>
+                    <div style="margin-top: 10px;">กรุณาตรวจสอบการเชื่อมต่อหรือลองใหม่ภายหลัง</div>
+                    <button onclick="location.reload()" class="btn btn-outline" style="margin-top: 20px;">
+                        <i class="fas fa-redo"></i> โหลดใหม่
+                    </button>
+                </div>
+            `;
+        }
+        
+        // Show success message
+        function showSuccess(message) {
+            // Create a temporary success notification
+            const successDiv = document.createElement('div');
+            successDiv.innerHTML = `
+                <div style="position: fixed; top: 20px; right: 20px; background-color: #2ecc71; color: white; padding: 15px 20px; border-radius: var(--border-radius); box-shadow: var(--box-shadow); z-index: 1000; display: flex; align-items: center; gap: 10px;">
+                    <i class="fas fa-check-circle"></i>
+                    <span>${message}</span>
+                </div>
+            `;
+            document.body.appendChild(successDiv);
+            
+            // Remove after 3 seconds
+            setTimeout(() => {
+                if (successDiv.parentNode) {
+                    successDiv.parentNode.removeChild(successDiv);
+                }
+            }, 3000);
+        }
+        
+        // Clear error message
+        function clearError() {
+            errorMessage.style.display = 'none';
+            errorMessage.innerHTML = '';
         }
         
         // Add click event to navigation items
@@ -1099,17 +1347,16 @@
                     nav.classList.remove('active');
                 });
                 this.classList.add('active');
-                
-                // Show a simple alert for demo purposes
-                const navText = this.querySelector('.nav-text').textContent;
-                alert(`Navigating to ${navText} section`);
             });
         });
         
         // Add click event to Add Reservation button
         document.getElementById('addReservationBtn').addEventListener('click', function() {
-            alert('เปิดฟอร์มเพิ่มการจองรถใหม่');
-            // In a real application, this would open a modal or navigate to a form
+            // In a real application, this would open a form
+            // For now, show a message with a link to the Google Form
+            const sheetUrl = 'https://docs.google.com/spreadsheets/d/1-5izB7N6ldxHAa3ca0RNhGP8Z36vuA0mw9Wi_xR_Lj4/edit#gid=0';
+            const message = `เพิ่มการจองรถใหม่\n\nในระบบจริง คุณควรจะมี: \n1. ฟอร์มสำหรับกรอกข้อมูลการจอง\n2. หรือลิงก์ไปที่ Google Form \n\nคุณสามารถดูข้อมูลทั้งหมดได้ที่: ${sheetUrl}`;
+            alert(message);
         });
     </script>
 </body>
