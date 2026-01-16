@@ -963,60 +963,34 @@
         }
 
         // แปลงวันที่
-        function parseDate(dateStr) {
-            if (!dateStr) return '';
+       function parseDate(dateStr) {
+    if (!dateStr || dateStr.trim() === '') return '';
+    
+    // ลองแปลงหลายรูปแบบ
+    const date = new Date(dateStr);
+    
+    // ถ้าข้อมูลเป็นรูปแบบ DD/MM/YYYY
+    if (dateStr.includes('/')) {
+        const parts = dateStr.split('/');
+        if (parts.length === 3) {
+            const day = parseInt(parts[0]);
+            const month = parseInt(parts[1]) - 1;
+            const year = parseInt(parts[2]);
             
-            try {
-                // ลองแปลงหลายรูปแบบ
-                const patterns = [
-                    /^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})$/,  // DD/MM/YYYY
-                    /^(\d{4})[\/\-](\d{1,2})[\/\-](\d{1,2})$/,  // YYYY-MM-DD
-                    /^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{2})$/,  // DD/MM/YY
-                ];
-                
-                for (const pattern of patterns) {
-                    const match = dateStr.match(pattern);
-                    if (match) {
-                        let day, month, year;
-                        
-                        if (match[3].length === 4) {
-                            // YYYY-MM-DD หรือ DD/MM/YYYY
-                            if (match[1].length === 4) {
-                                // YYYY-MM-DD
-                                year = parseInt(match[1]);
-                                month = parseInt(match[2]);
-                                day = parseInt(match[3]);
-                            } else {
-                                // DD/MM/YYYY
-                                day = parseInt(match[1]);
-                                month = parseInt(match[2]);
-                                year = parseInt(match[3]);
-                            }
-                        } else {
-                            // DD/MM/YY
-                            day = parseInt(match[1]);
-                            month = parseInt(match[2]);
-                            year = 2000 + parseInt(match[3]);
-                        }
-                        
-                        const date = new Date(year, month - 1, day);
-                        return date.toISOString().split('T')[0];
-                    }
-                }
-                
-                // ลองใช้ Date() โดยตรง
-                const date = new Date(dateStr);
-                if (!isNaN(date.getTime())) {
-                    return date.toISOString().split('T')[0];
-                }
-                
-                return dateStr;
-                
-            } catch (error) {
-                console.log('Date parse error:', dateStr, error);
-                return dateStr;
-            }
+            // ถ้าปีมีแค่ 2 หลัก
+            const fullYear = year < 100 ? year + 2500 : year;
+            
+            return new Date(fullYear, month, day).toISOString().split('T')[0];
         }
+    }
+    
+    // ถ้าแปลงด้วย Date() ได้
+    if (!isNaN(date.getTime())) {
+        return date.toISOString().split('T')[0];
+    }
+    
+    return dateStr;
+}
 
         // อัพเดทปฏิทิน
         function updateCalendarDisplay() {
