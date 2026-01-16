@@ -6,7 +6,6 @@
     <title>รายงานระบบจองรถ - TokaiSolidtire</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600&family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root {
@@ -485,6 +484,40 @@
             to { transform: rotate(360deg); }
         }
         
+        /* Message */
+        .message {
+            padding: 15px 20px;
+            border-radius: var(--border-radius);
+            margin-bottom: 20px;
+            display: none;
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+            box-shadow: var(--box-shadow);
+        }
+        
+        .message.success {
+            background-color: rgba(46, 204, 113, 0.1);
+            border-left: 5px solid #27ae60;
+            color: #27ae60;
+            display: block;
+        }
+        
+        .message.error {
+            background-color: rgba(231, 76, 60, 0.1);
+            border-left: 5px solid #e74c3c;
+            color: #e74c3c;
+            display: block;
+        }
+        
+        .message.warning {
+            background-color: rgba(241, 196, 15, 0.1);
+            border-left: 5px solid #f39c12;
+            color: #f39c12;
+            display: block;
+        }
+        
         /* Responsive */
         @media (max-width: 768px) {
             .header {
@@ -558,6 +591,9 @@
             </div>
         </div>
         
+        <!-- Message -->
+        <div class="message" id="message"></div>
+        
         <!-- Filter Section -->
         <div class="filter-section">
             <div class="filter-title">
@@ -588,11 +624,6 @@
                     <label class="filter-label">แผนก</label>
                     <select class="filter-select" id="departmentFilter">
                         <option value="all">ทั้งหมด</option>
-                        <option value="การตลาด">การตลาด</option>
-                        <option value="ทรัพยากรบุคคล">ทรัพยากรบุคคล</option>
-                        <option value="ผลิตภัณฑ์">ผลิตภัณฑ์</option>
-                        <option value="การเงิน">การเงิน</option>
-                        <option value="โลจิสติกส์">โลจิสติกส์</option>
                     </select>
                 </div>
                 
@@ -806,96 +837,19 @@
 
     <!-- JavaScript -->
     <script>
-        // ข้อมูลตัวอย่าง
-        const sampleReportData = [
-            {
-                id: "BK001",
-                name: "สมชาย ใจดี",
-                department: "การตลาด",
-                vehicle: "โตโยต้า ฟอร์จูนเนอร์",
-                date: "15-17 ม.ค. 2566",
-                time: "09:00 - 17:00",
-                status: "completed",
-                reason: "นำลูกค้าทัวร์โรงงาน"
-            },
-            {
-                id: "BK002",
-                name: "สุภาพร สุขสวัสดิ์",
-                department: "ทรัพยากรบุคคล",
-                vehicle: "ฮอนด้า ซีวิค",
-                date: "18 ม.ค. 2566",
-                time: "08:30 - 16:30",
-                status: "completed",
-                reason: "ไปสัมมนาที่โรงแรม"
-            },
-            {
-                id: "BK003",
-                name: "วิชัย ตั้งใจเรียน",
-                department: "ผลิตภัณฑ์",
-                vehicle: "โตโยต้า ไฮลักซ์",
-                date: "20-22 ม.ค. 2566",
-                time: "07:00 - 18:00",
-                status: "active",
-                reason: "ขนส่งอุปกรณ์ไปสาขา"
-            },
-            {
-                id: "BK004",
-                name: "อรุณี สดใส",
-                department: "การเงิน",
-                vehicle: "โตโยต้า ฟอร์จูนเนอร์",
-                date: "25-26 ม.ค. 2566",
-                time: "10:00 - 15:00",
-                status: "active",
-                reason: "ไปธนาคารและสรรพากร"
-            },
-            {
-                id: "BK005",
-                name: "บดินทร์ แข็งแรง",
-                department: "โลจิสติกส์",
-                vehicle: "อิซูซุ ดีแมคซ์",
-                date: "28-29 ม.ค. 2566",
-                time: "06:00 - 20:00",
-                status: "completed",
-                reason: "ขนสินค้าให้ลูกค้า"
-            },
-            {
-                id: "BK006",
-                name: "กนกวรรณ ใจกว้าง",
-                department: "การตลาด",
-                vehicle: "ฮอนด้า ซีวิค",
-                date: "30 ม.ค. 2566",
-                time: "13:00 - 17:00",
-                status: "cancelled",
-                reason: "นัดลูกค้า"
-            },
-            {
-                id: "BK007",
-                name: "อนุชา กล้าหาญ",
-                department: "ผลิตภัณฑ์",
-                vehicle: "โตโยต้า ฟอร์จูนเนอร์",
-                date: "31 ม.ค. 2566",
-                time: "08:00 - 16:00",
-                status: "active",
-                reason: "ประชุมกับ supplier"
-            },
-            {
-                id: "BK008",
-                name: "สิริกร งามสง่า",
-                department: "การเงิน",
-                vehicle: "ฮอนด้า ซีวิค",
-                date: "1 ก.พ. 2566",
-                time: "09:00 - 12:00",
-                status: "completed",
-                reason: "ไปธนาคาร"
-            }
-        ];
-
+        // ค่าเริ่มต้น
+        const SHEET_ID = '1-5izB7N6ldxHAa3ca0RNhGP8Z36vuA0mw9Wi_xR_Lj4';
+        
+        // ข้อมูลตัวอย่าง (สำรอง)
+        const sampleReportData = [];
+        
         // ตัวแปรหลัก
         let reportData = [];
         let filteredData = [];
         let currentPage = 1;
         const itemsPerPage = 10;
         let charts = {};
+        let allDepartments = [];
 
         // DOM Elements
         const elements = {
@@ -914,25 +868,30 @@
             currentPage: document.getElementById('currentPage'),
             reportDate: document.getElementById('reportDate'),
             topVehicles: document.getElementById('topVehicles'),
-            topUsers: document.getElementById('topUsers')
+            topUsers: document.getElementById('topUsers'),
+            bookingChange: document.getElementById('bookingChange'),
+            vehicleChange: document.getElementById('vehicleChange'),
+            hoursChange: document.getElementById('hoursChange'),
+            usersChange: document.getElementById('usersChange'),
+            message: document.getElementById('message')
         };
 
         // เริ่มต้น
         document.addEventListener('DOMContentLoaded', function() {
+            console.log('Report page loaded');
             initReport();
             setupEventListeners();
+            loadReportData();
         });
 
         function initReport() {
-            // ตั้งค่าวันเริ่มต้นและสิ้นสุด
+            // ตั้งค่าวันเริ่มต้นและสิ้นสุด (เดือนนี้)
             const today = new Date();
-            const lastMonth = new Date(today.getFullYear(), today.getMonth() - 1, 1);
+            const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+            const lastDayOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0);
             
-            elements.startDate.value = formatDateForInput(lastMonth);
-            elements.endDate.value = formatDateForInput(today);
-            
-            // โหลดข้อมูล
-            loadReportData();
+            elements.startDate.value = formatDateForInput(firstDayOfMonth);
+            elements.endDate.value = formatDateForInput(lastDayOfMonth);
             
             // อัปเดตวันที่รายงาน
             updateReportDate();
@@ -945,7 +904,10 @@
             elements.departmentFilter.addEventListener('change', applyFilters);
             elements.statusFilter.addEventListener('change', applyFilters);
             
-            document.getElementById('refreshReport').addEventListener('click', loadReportData);
+            document.getElementById('refreshReport').addEventListener('click', function() {
+                loadReportData();
+            });
+            
             document.getElementById('chartYear').addEventListener('change', updateMonthlyChart);
         }
 
@@ -961,39 +923,366 @@
             }
         }
 
+        // โหลดข้อมูลจาก Google Sheets
         async function loadReportData() {
             showLoading();
+            showMessage('กำลังโหลดข้อมูลจาก Google Sheets...', 'info');
             
             try {
-                // ลองโหลดจาก Google Sheets หรือ API
-                const data = await loadDataFromSource();
-                reportData = data;
+                // ใช้วิธีการโหลดจาก Google Sheets API
+                const data = await loadFromGoogleSheets();
                 
-                if (reportData.length > 0) {
-                    showMessage('โหลดข้อมูลรายงานสำเร็จ', 'success');
+                if (data && data.length > 0) {
+                    reportData = processRawData(data);
+                    console.log('ข้อมูลที่โหลดได้:', reportData);
+                    
+                    // อัปเดตตัวเลือกแผนก
+                    updateDepartmentOptions();
+                    
+                    showMessage(`โหลดข้อมูลสำเร็จ: ${reportData.length} รายการ`, 'success');
+                    
+                    // เรียกใช้ applyFilters เพื่อแสดงข้อมูล
                     applyFilters();
+                    
+                    // สร้างและอัปเดตกราฟ
                     initCharts();
+                    
+                    // อัปเดตสรุป
                     updateSummary();
+                    
                 } else {
-                    throw new Error('ไม่พบข้อมูล');
+                    throw new Error('ไม่พบข้อมูลจาก Google Sheets');
                 }
                 
             } catch (error) {
-                console.log('ใช้ข้อมูลตัวอย่าง:', error.message);
-                reportData = sampleReportData;
+                console.error('Error loading report data:', error);
+                showMessage('ไม่สามารถโหลดข้อมูลได้: ' + error.message, 'error');
+                
+                // ใช้ข้อมูลตัวอย่างถ้าโหลดไม่สำเร็จ
+                generateSampleData();
+                updateDepartmentOptions();
                 applyFilters();
                 initCharts();
                 updateSummary();
-                showMessage('ใช้ข้อมูลตัวอย่างสำหรับรายงาน', 'warning');
             }
         }
 
-        async function loadDataFromSource() {
-            // ตัวอย่างการโหลดข้อมูล (ปรับเปลี่ยนตามแหล่งข้อมูลจริง)
-            return new Promise((resolve) => {
-                setTimeout(() => {
-                    resolve(sampleReportData);
-                }, 500);
+        // โหลดข้อมูลจาก Google Sheets
+        async function loadFromGoogleSheets() {
+            console.log('กำลังโหลดข้อมูลจาก Google Sheets...');
+            
+            // วิธีที่ 1: ใช้ CSV export
+            try {
+                const csvUrl = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv`;
+                console.log('กำลังโหลดจาก:', csvUrl);
+                
+                const response = await fetch(csvUrl);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const csvText = await response.text();
+                console.log('ได้รับ CSV text:', csvText.substring(0, 200));
+                
+                return parseCSVData(csvText);
+                
+            } catch (error) {
+                console.error('CSV method failed:', error);
+                
+                // วิธีที่ 2: ใช้ Google Apps Script
+                try {
+                    const scriptUrl = 'https://script.google.com/macros/s/AKfycbzcMdFcpQkAxIbb0iEJJfZ8fD0YgiGUetRkkw1UyMv7uY3tlza345UoL1uNrNbOUKRx/exec';
+                    const response = await fetch(`${scriptUrl}?action=getAllData`);
+                    
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    
+                    const result = await response.json();
+                    console.log('Apps Script result:', result);
+                    
+                    if (result.success && result.data) {
+                        return result.data;
+                    } else {
+                        throw new Error('Invalid response from Apps Script');
+                    }
+                    
+                } catch (scriptError) {
+                    console.error('Apps Script method failed:', scriptError);
+                    throw new Error('All data loading methods failed');
+                }
+            }
+        }
+
+        // แปลง CSV เป็นข้อมูล
+        function parseCSVData(csvText) {
+            const lines = csvText.split('\n').filter(line => line.trim() !== '');
+            
+            if (lines.length < 2) {
+                return [];
+            }
+            
+            // แยก header
+            const headers = lines[0].split(',').map(h => h.trim().replace(/"/g, ''));
+            console.log('Headers:', headers);
+            
+            const result = [];
+            
+            // แปลงแต่ละแถว
+            for (let i = 1; i < lines.length; i++) {
+                const line = lines[i];
+                const values = parseCSVLine(line);
+                
+                const row = {};
+                headers.forEach((header, index) => {
+                    if (index < values.length) {
+                        row[header] = values[index] || '';
+                    }
+                });
+                
+                // ตรวจสอบว่ามีข้อมูลสำคัญหรือไม่
+                if (row['name'] || row['ชื่อ-สกุล'] || row['Name']) {
+                    result.push(row);
+                }
+            }
+            
+            console.log('Parsed data:', result);
+            return result;
+        }
+
+        // แยกค่าใน CSV line (รองรับค่าที่มี comma อยู่ใน quotes)
+        function parseCSVLine(line) {
+            const values = [];
+            let currentValue = '';
+            let inQuotes = false;
+            
+            for (let i = 0; i < line.length; i++) {
+                const char = line[i];
+                
+                if (char === '"') {
+                    inQuotes = !inQuotes;
+                } else if (char === ',' && !inQuotes) {
+                    values.push(currentValue.trim().replace(/^"|"$/g, ''));
+                    currentValue = '';
+                } else {
+                    currentValue += char;
+                }
+            }
+            
+            // เพิ่มค่าสุดท้าย
+            values.push(currentValue.trim().replace(/^"|"$/g, ''));
+            
+            return values;
+        }
+
+        // แปลงข้อมูลดิบให้เป็นรูปแบบรายงาน
+        function processRawData(rawData) {
+            const processedData = [];
+            
+            rawData.forEach((item, index) => {
+                // ดึงค่าจากคอลัมน์ต่างๆ
+                const name = item.name || item['ชื่อ-สกุล'] || item['Name'] || item['ชื่อ'] || '';
+                const department = item.department || item['แผนก'] || item['Department'] || '';
+                const vehicle = item.choose || item['รถที่เลือก'] || item['vehicle'] || item['Choose'] || '';
+                const startDate = item.rentStartdate || item['วันที่เริ่ม'] || item['startDate'] || '';
+                const endDate = item.rentEnddate || item['วันที่สิ้นสุด'] || item['endDate'] || '';
+                const startTime = item.startTime || item['เวลาเริ่ม'] || '';
+                const endTime = item.endTime || item['เวลาสิ้นสุด'] || '';
+                const reason = item.reason || item['เหตุผล'] || item['Reason'] || '';
+                
+                // แปลงวันที่
+                const formattedStartDate = parseDate(startDate);
+                const formattedEndDate = parseDate(endDate);
+                
+                // กำหนดสถานะ
+                let status = 'completed'; // ค่าเริ่มต้น
+                const today = new Date().toISOString().split('T')[0];
+                
+                if (formattedStartDate && formattedEndDate) {
+                    if (today >= formattedStartDate && today <= formattedEndDate) {
+                        status = 'active';
+                    } else if (today > formattedEndDate) {
+                        status = 'completed';
+                    }
+                }
+                
+                // สร้างข้อมูลรายงาน
+                const reportItem = {
+                    id: `BK${String(index + 1).padStart(3, '0')}`,
+                    name: name,
+                    department: department || 'ไม่ระบุ',
+                    vehicle: vehicle || 'ไม่ระบุ',
+                    date: formatDisplayDate(formattedStartDate, formattedEndDate),
+                    time: formatTime(startTime, endTime),
+                    status: status,
+                    reason: reason || 'ไม่ระบุ',
+                    rawStartDate: formattedStartDate,
+                    rawEndDate: formattedEndDate,
+                    rawStartTime: startTime,
+                    rawEndTime: endTime
+                };
+                
+                processedData.push(reportItem);
+            });
+            
+            return processedData;
+        }
+
+        // แปลงรูปแบบวันที่
+        function parseDate(dateStr) {
+            if (!dateStr || dateStr.trim() === '') {
+                return '';
+            }
+            
+            try {
+                // ลองแปลงหลายรูปแบบ
+                const formats = [
+                    /^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})$/,  // DD/MM/YYYY
+                    /^(\d{4})[\/\-](\d{1,2})[\/\-](\d{1,2})$/,  // YYYY-MM-DD
+                    /^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{2})$/,  // DD/MM/YY
+                ];
+                
+                for (const format of formats) {
+                    const match = dateStr.match(format);
+                    if (match) {
+                        let day, month, year;
+                        
+                        if (match[1].length === 4) {
+                            // YYYY-MM-DD
+                            year = parseInt(match[1]);
+                            month = parseInt(match[2]) - 1;
+                            day = parseInt(match[3]);
+                        } else {
+                            // DD/MM/YYYY หรือ DD/MM/YY
+                            day = parseInt(match[1]);
+                            month = parseInt(match[2]) - 1;
+                            year = parseInt(match[3]);
+                            
+                            if (year < 100) {
+                                year += 2000;
+                            }
+                        }
+                        
+                        // สร้าง Date object
+                        const date = new Date(year, month, day);
+                        return date.toISOString().split('T')[0];
+                    }
+                }
+                
+                // ลองใช้ Date constructor โดยตรง
+                const date = new Date(dateStr);
+                if (!isNaN(date.getTime())) {
+                    return date.toISOString().split('T')[0];
+                }
+                
+                return '';
+                
+            } catch (error) {
+                console.error('Error parsing date:', dateStr, error);
+                return '';
+            }
+        }
+
+        // จัดรูปแบบวันที่สำหรับแสดง
+        function formatDisplayDate(startDateStr, endDateStr) {
+            if (!startDateStr) {
+                return 'ไม่ระบุ';
+            }
+            
+            try {
+                const startDate = new Date(startDateStr);
+                const thaiYear = startDate.getFullYear() + 543;
+                const monthNames = ['ม.ค.', 'ก.พ.', 'มี.ค.', 'เม.ย.', 'พ.ค.', 'มิ.ย.', 
+                                   'ก.ค.', 'ส.ค.', 'ก.ย.', 'ต.ค.', 'พ.ย.', 'ธ.ค.'];
+                
+                const startDay = startDate.getDate();
+                const startMonth = monthNames[startDate.getMonth()];
+                
+                if (!endDateStr || startDateStr === endDateStr) {
+                    return `${startDay} ${startMonth} ${thaiYear}`;
+                }
+                
+                const endDate = new Date(endDateStr);
+                const endDay = endDate.getDate();
+                
+                if (startDate.getMonth() === endDate.getMonth()) {
+                    // เดือนเดียวกัน
+                    return `${startDay}-${endDay} ${startMonth} ${thaiYear}`;
+                } else {
+                    // ต่างเดือน
+                    const endMonth = monthNames[endDate.getMonth()];
+                    return `${startDay} ${startMonth} - ${endDay} ${endMonth} ${thaiYear}`;
+                }
+                
+            } catch (error) {
+                console.error('Error formatting date:', error);
+                return 'ไม่ระบุ';
+            }
+        }
+
+        // จัดรูปแบบเวลา
+        function formatTime(startTime, endTime) {
+            if (!startTime && !endTime) {
+                return 'ไม่ระบุ';
+            }
+            
+            return `${startTime || '--:--'} - ${endTime || '--:--'}`;
+        }
+
+        // สร้างข้อมูลตัวอย่าง
+        function generateSampleData() {
+            const departments = ['การตลาด', 'ทรัพยากรบุคคล', 'ผลิตภัณฑ์', 'การเงิน', 'โลจิสติกส์'];
+            const vehicles = ['โตโยต้า ฟอร์จูนเนอร์', 'ฮอนด้า ซีวิค', 'โตโยต้า ไฮลักซ์', 'อิซูซุ ดีแมคซ์'];
+            const names = ['สมชาย ใจดี', 'สุภาพร สุขสวัสดิ์', 'วิชัย ตั้งใจเรียน', 'อรุณี สดใส', 'บดินทร์ แข็งแรง'];
+            const reasons = ['นำลูกค้าทัวร์โรงงาน', 'ไปสัมมนาที่โรงแรม', 'ขนส่งอุปกรณ์ไปสาขา', 'ไปธนาคารและสรรพากร'];
+            
+            const today = new Date();
+            const sampleData = [];
+            
+            for (let i = 0; i < 25; i++) {
+                const daysAgo = Math.floor(Math.random() * 90);
+                const startDate = new Date(today);
+                startDate.setDate(startDate.getDate() - daysAgo);
+                
+                const duration = Math.floor(Math.random() * 3) + 1;
+                const endDate = new Date(startDate);
+                endDate.setDate(endDate.getDate() + duration);
+                
+                const status = i % 3 === 0 ? 'active' : (i % 3 === 1 ? 'completed' : 'cancelled');
+                
+                sampleData.push({
+                    id: `BK${String(i + 1).padStart(3, '0')}`,
+                    name: names[Math.floor(Math.random() * names.length)],
+                    department: departments[Math.floor(Math.random() * departments.length)],
+                    vehicle: vehicles[Math.floor(Math.random() * vehicles.length)],
+                    date: formatDisplayDate(startDate.toISOString().split('T')[0], endDate.toISOString().split('T')[0]),
+                    time: '09:00 - 17:00',
+                    status: status,
+                    reason: reasons[Math.floor(Math.random() * reasons.length)],
+                    rawStartDate: startDate.toISOString().split('T')[0],
+                    rawEndDate: endDate.toISOString().split('T')[0],
+                    rawStartTime: '09:00',
+                    rawEndTime: '17:00'
+                });
+            }
+            
+            reportData = sampleData;
+            showMessage('กำลังใช้ข้อมูลตัวอย่าง', 'warning');
+        }
+
+        // อัปเดตตัวเลือกแผนก
+        function updateDepartmentOptions() {
+            allDepartments = [...new Set(reportData.map(item => item.department).filter(dept => dept && dept !== 'ไม่ระบุ'))];
+            
+            const departmentSelect = elements.departmentFilter;
+            departmentSelect.innerHTML = '<option value="all">ทั้งหมด</option>';
+            
+            allDepartments.forEach(dept => {
+                const option = document.createElement('option');
+                option.value = dept;
+                option.textContent = dept;
+                departmentSelect.appendChild(option);
             });
         }
 
@@ -1012,6 +1301,25 @@
                 filtered = filtered.filter(item => item.status === status);
             }
             
+            // กรองตามวันที่
+            const timeRange = elements.timeRange.value;
+            if (timeRange === 'custom') {
+                const startFilter = elements.startDate.value;
+                const endFilter = elements.endDate.value;
+                
+                if (startFilter && endFilter) {
+                    filtered = filtered.filter(item => {
+                        if (!item.rawStartDate) return false;
+                        
+                        const itemDate = new Date(item.rawStartDate);
+                        const startDate = new Date(startFilter);
+                        const endDate = new Date(endFilter);
+                        
+                        return itemDate >= startDate && itemDate <= endDate;
+                    });
+                }
+            }
+            
             filteredData = filtered;
             
             // อัปเดตสถิติ
@@ -1020,8 +1328,13 @@
             // แสดงตาราง
             renderTable();
             
-            // อัปเดตแผนภูมิ
-            updateCharts();
+            // อัปเดตกราฟ
+            if (Object.keys(charts).length > 0) {
+                updateCharts();
+            }
+            
+            // อัปเดตสรุป
+            updateSummary();
         }
 
         function resetFilters() {
@@ -1029,60 +1342,84 @@
             elements.departmentFilter.value = 'all';
             elements.statusFilter.value = 'all';
             document.getElementById('customDateRange').style.display = 'none';
+            
+            // รีเซ็ตเป็นเดือนนี้
+            const today = new Date();
+            const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+            const lastDayOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+            
+            elements.startDate.value = formatDateForInput(firstDayOfMonth);
+            elements.endDate.value = formatDateForInput(lastDayOfMonth);
+            
             applyFilters();
         }
 
         function updateStats() {
             // การจองทั้งหมด
-            elements.totalBookings.textContent = filteredData.length;
+            const totalBookings = filteredData.length;
+            elements.totalBookings.textContent = totalBookings.toLocaleString();
             
             // รถที่ถูกจอง
-            const vehicles = [...new Set(filteredData.map(item => item.vehicle))];
-            elements.totalVehicles.textContent = vehicles.length;
+            const vehicles = [...new Set(filteredData.map(item => item.vehicle).filter(v => v && v !== 'ไม่ระบุ'))];
+            elements.totalVehicles.textContent = vehicles.length.toLocaleString();
             
-            // ชั่วโมงใช้งาน (ตัวอย่าง)
-            const totalHours = filteredData.length * 8; // สมมติว่าแต่ละครั้งใช้ 8 ชม.
-            elements.totalHours.textContent = totalHours;
+            // คำนวณชั่วโมงใช้งาน
+            let totalHours = 0;
+            filteredData.forEach(item => {
+                const hours = calculateHours(item.rawStartTime, item.rawEndTime);
+                totalHours += hours;
+            });
+            
+            elements.totalHours.textContent = Math.round(totalHours).toLocaleString();
             
             // ผู้ใช้งานทั้งหมด
-            const users = [...new Set(filteredData.map(item => item.name))];
-            elements.totalUsers.textContent = users.length;
+            const users = [...new Set(filteredData.map(item => item.name).filter(name => name && name.trim() !== ''))];
+            elements.totalUsers.textContent = users.length.toLocaleString();
+            
+            // อัปเดตเปอร์เซ็นต์การเปลี่ยนแปลง
+            updateChangePercentages();
         }
 
-        function updateSummary() {
-            // รถที่ถูกจองบ่อยที่สุด
-            const vehicleCount = {};
-            filteredData.forEach(item => {
-                vehicleCount[item.vehicle] = (vehicleCount[item.vehicle] || 0) + 1;
+        function calculateHours(startTime, endTime) {
+            if (!startTime || !endTime) {
+                return 8; // ค่า default
+            }
+            
+            try {
+                const [startHour, startMinute] = startTime.split(':').map(Number);
+                const [endHour, endMinute] = endTime.split(':').map(Number);
+                
+                const startTotal = startHour * 60 + startMinute;
+                const endTotal = endHour * 60 + endMinute;
+                
+                const diffMinutes = endTotal - startTotal;
+                return diffMinutes / 60;
+                
+            } catch (error) {
+                return 8; // ค่า default
+            }
+        }
+
+        function updateChangePercentages() {
+            // คำนวณเปอร์เซ็นต์การเปลี่ยนแปลง (ตัวอย่าง)
+            const randomChange = Math.floor(Math.random() * 21) - 10; // -10 ถึง +10
+            
+            const changeElements = [
+                elements.bookingChange,
+                elements.vehicleChange,
+                elements.hoursChange,
+                elements.usersChange
+            ];
+            
+            changeElements.forEach(element => {
+                const isPositive = randomChange >= 0;
+                const changeText = isPositive ? 
+                    `<i class="fas fa-arrow-up"></i> ${Math.abs(randomChange)}% จากเดือนที่แล้ว` :
+                    `<i class="fas fa-arrow-down"></i> ${Math.abs(randomChange)}% จากเดือนที่แล้ว`;
+                
+                element.innerHTML = changeText;
+                element.className = `stat-change ${isPositive ? 'positive' : 'negative'}`;
             });
-            
-            const sortedVehicles = Object.entries(vehicleCount)
-                .sort((a, b) => b[1] - a[1])
-                .slice(0, 5);
-            
-            elements.topVehicles.innerHTML = sortedVehicles.map(([vehicle, count]) => `
-                <li class="summary-item">
-                    <span>${vehicle}</span>
-                    <span style="font-weight: 600;">${count} ครั้ง</span>
-                </li>
-            `).join('');
-            
-            // ผู้จองรถมากที่สุด
-            const userCount = {};
-            filteredData.forEach(item => {
-                userCount[item.name] = (userCount[item.name] || 0) + 1;
-            });
-            
-            const sortedUsers = Object.entries(userCount)
-                .sort((a, b) => b[1] - a[1])
-                .slice(0, 5);
-            
-            elements.topUsers.innerHTML = sortedUsers.map(([user, count]) => `
-                <li class="summary-item">
-                    <span>${user}</span>
-                    <span style="font-weight: 600;">${count} ครั้ง</span>
-                </li>
-            `).join('');
         }
 
         function renderTable() {
@@ -1092,40 +1429,53 @@
             
             let tableHTML = '';
             
-            pageData.forEach(item => {
-                let statusBadge = '';
-                let statusText = '';
-                
-                switch(item.status) {
-                    case 'active':
-                        statusBadge = 'status-active';
-                        statusText = 'กำลังใช้งาน';
-                        break;
-                    case 'completed':
-                        statusBadge = 'status-completed';
-                        statusText = 'เสร็จสิ้น';
-                        break;
-                    case 'cancelled':
-                        statusBadge = 'status-cancelled';
-                        statusText = 'ยกเลิก';
-                        break;
-                }
-                
-                tableHTML += `
+            if (pageData.length === 0) {
+                tableHTML = `
                     <tr>
-                        <td>${item.id}</td>
-                        <td>${item.name}</td>
-                        <td>${item.department}</td>
-                        <td>${item.vehicle}</td>
-                        <td>${item.date}</td>
-                        <td>${item.time}</td>
-                        <td><span class="status-badge ${statusBadge}">${statusText}</span></td>
-                        <td>${item.reason}</td>
+                        <td colspan="8" style="text-align: center; padding: 40px; color: var(--gray);">
+                            <i class="fas fa-database" style="font-size: 48px; margin-bottom: 15px;"></i>
+                            <div>ไม่พบข้อมูลการจอง</div>
+                        </td>
                     </tr>
                 `;
-            });
+            } else {
+                pageData.forEach(item => {
+                    let statusBadge = '';
+                    let statusText = '';
+                    
+                    switch(item.status) {
+                        case 'active':
+                            statusBadge = 'status-active';
+                            statusText = 'กำลังใช้งาน';
+                            break;
+                        case 'completed':
+                            statusBadge = 'status-completed';
+                            statusText = 'เสร็จสิ้น';
+                            break;
+                        case 'cancelled':
+                            statusBadge = 'status-cancelled';
+                            statusText = 'ยกเลิก';
+                            break;
+                    }
+                    
+                    tableHTML += `
+                        <tr>
+                            <td>${item.id}</td>
+                            <td>${item.name}</td>
+                            <td>${item.department}</td>
+                            <td>${item.vehicle}</td>
+                            <td>${item.date}</td>
+                            <td>${item.time}</td>
+                            <td><span class="status-badge ${statusBadge}">${statusText}</span></td>
+                            <td>${item.reason}</td>
+                        </tr>
+                    `;
+                });
+            }
             
             elements.reportTableBody.innerHTML = tableHTML;
+            
+            // อัปเดตข้อมูลเพจ
             elements.rowCount.textContent = pageData.length;
             elements.totalRows.textContent = filteredData.length;
             elements.currentPage.textContent = currentPage;
@@ -1255,8 +1605,6 @@
                 charts.utilization.data = getUtilizationData();
                 charts.utilization.update();
             }
-            
-            updateSummary();
         }
 
         function updateMonthlyChart() {
@@ -1270,31 +1618,40 @@
             const months = ['ม.ค.', 'ก.พ.', 'มี.ค.', 'เม.ย.', 'พ.ค.', 'มิ.ย.', 
                            'ก.ค.', 'ส.ค.', 'ก.ย.', 'ต.ค.', 'พ.ย.', 'ธ.ค.'];
             
-            // ข้อมูลตัวอย่าง
-            const data = [12, 19, 15, 25, 22, 18, 24, 20, 17, 22, 25, 28];
+            // นับจำนวนการจองในแต่ละเดือน
+            const monthlyCounts = new Array(12).fill(0);
+            
+            filteredData.forEach(item => {
+                if (item.rawStartDate) {
+                    const date = new Date(item.rawStartDate);
+                    const month = date.getMonth();
+                    monthlyCounts[month]++;
+                }
+            });
             
             return {
                 labels: months,
                 datasets: [{
                     label: 'จำนวนการจอง',
-                    data: data,
+                    data: monthlyCounts,
                     backgroundColor: 'rgba(67, 97, 238, 0.5)',
                     borderColor: 'rgba(67, 97, 238, 1)',
                     borderWidth: 2,
-                    borderRadius: 5,
-                    borderSkipped: false,
+                    borderRadius: 5
                 }]
             };
         }
 
         function getVehicleTypeData() {
-            const vehicleCount = {};
+            const vehicleCounts = {};
+            
             filteredData.forEach(item => {
-                vehicleCount[item.vehicle] = (vehicleCount[item.vehicle] || 0) + 1;
+                const vehicle = item.vehicle || 'ไม่ระบุ';
+                vehicleCounts[vehicle] = (vehicleCounts[vehicle] || 0) + 1;
             });
             
-            const vehicles = Object.keys(vehicleCount);
-            const counts = Object.values(vehicleCount);
+            const vehicles = Object.keys(vehicleCounts);
+            const counts = Object.values(vehicleCounts);
             
             const colors = [
                 '#4361ee', '#3f37c9', '#4cc9f0', '#f72585',
@@ -1313,13 +1670,15 @@
         }
 
         function getDepartmentData() {
-            const deptCount = {};
+            const deptCounts = {};
+            
             filteredData.forEach(item => {
-                deptCount[item.department] = (deptCount[item.department] || 0) + 1;
+                const dept = item.department || 'ไม่ระบุ';
+                deptCounts[dept] = (deptCounts[dept] || 0) + 1;
             });
             
-            const depts = Object.keys(deptCount);
-            const counts = Object.values(deptCount);
+            const depts = Object.keys(deptCounts);
+            const counts = Object.values(deptCounts);
             
             const colors = [
                 '#4361ee', '#06d6a0', '#ffd166', '#ef476f',
@@ -1340,14 +1699,14 @@
         function getUtilizationData() {
             const days = ['จันทร์', 'อังคาร', 'พุธ', 'พฤหัส', 'ศุกร์', 'เสาร์', 'อาทิตย์'];
             
-            // ข้อมูลตัวอย่าง (เปอร์เซ็นต์การใช้งาน)
-            const data = [85, 92, 78, 95, 88, 45, 30];
+            // ข้อมูลตัวอย่าง
+            const utilization = [85, 92, 78, 95, 88, 45, 30];
             
             return {
                 labels: days,
                 datasets: [{
                     label: 'อัตราการใช้งาน',
-                    data: data,
+                    data: utilization,
                     borderColor: '#06d6a0',
                     backgroundColor: 'rgba(6, 214, 160, 0.1)',
                     borderWidth: 3,
@@ -1357,14 +1716,106 @@
             };
         }
 
+        function updateSummary() {
+            // รถที่ถูกจองบ่อยที่สุด
+            const vehicleCounts = {};
+            filteredData.forEach(item => {
+                const vehicle = item.vehicle;
+                if (vehicle && vehicle !== 'ไม่ระบุ') {
+                    vehicleCounts[vehicle] = (vehicleCounts[vehicle] || 0) + 1;
+                }
+            });
+            
+            const sortedVehicles = Object.entries(vehicleCounts)
+                .sort((a, b) => b[1] - a[1])
+                .slice(0, 5);
+            
+            let vehicleHTML = '';
+            if (sortedVehicles.length > 0) {
+                sortedVehicles.forEach(([vehicle, count]) => {
+                    vehicleHTML += `
+                        <li class="summary-item">
+                            <span>${vehicle}</span>
+                            <span style="font-weight: 600;">${count} ครั้ง</span>
+                        </li>
+                    `;
+                });
+            } else {
+                vehicleHTML = '<li class="summary-item">ไม่มีข้อมูล</li>';
+            }
+            
+            elements.topVehicles.innerHTML = vehicleHTML;
+            
+            // ผู้จองรถมากที่สุด
+            const userCounts = {};
+            filteredData.forEach(item => {
+                const name = item.name;
+                if (name && name.trim() !== '') {
+                    userCounts[name] = (userCounts[name] || 0) + 1;
+                }
+            });
+            
+            const sortedUsers = Object.entries(userCounts)
+                .sort((a, b) => b[1] - a[1])
+                .slice(0, 5);
+            
+            let userHTML = '';
+            if (sortedUsers.length > 0) {
+                sortedUsers.forEach(([user, count]) => {
+                    userHTML += `
+                        <li class="summary-item">
+                            <span>${user}</span>
+                            <span style="font-weight: 600;">${count} ครั้ง</span>
+                        </li>
+                    `;
+                });
+            } else {
+                userHTML = '<li class="summary-item">ไม่มีข้อมูล</li>';
+            }
+            
+            elements.topUsers.innerHTML = userHTML;
+        }
+
         function exportPDF() {
-            alert('กำลังส่งออกเป็น PDF...');
-            // ควรใช้ไลบรารีเช่น jsPDF หรือส่งไปที่ backend
+            alert('ระบบส่งออก PDF กำลังพัฒนา...');
         }
 
         function exportExcel() {
-            alert('กำลังส่งออกเป็น Excel...');
-            // ควรใช้ไลบรารีเช่น SheetJS
+            // สร้าง CSV สำหรับส่งออก
+            const headers = ['เลขที่จอง', 'ผู้จอง', 'แผนก', 'รถที่จอง', 'วันที่จอง', 'เวลาจอง', 'สถานะ', 'เหตุผล'];
+            const csvRows = [];
+            
+            // เพิ่ม header
+            csvRows.push(headers.join(','));
+            
+            // เพิ่มข้อมูล
+            filteredData.forEach(item => {
+                const statusText = item.status === 'active' ? 'กำลังใช้งาน' : 
+                                 item.status === 'completed' ? 'เสร็จสิ้น' : 'ยกเลิก';
+                
+                const row = [
+                    item.id,
+                    `"${item.name}"`,
+                    `"${item.department}"`,
+                    `"${item.vehicle}"`,
+                    `"${item.date}"`,
+                    `"${item.time}"`,
+                    `"${statusText}"`,
+                    `"${item.reason}"`
+                ];
+                
+                csvRows.push(row.join(','));
+            });
+            
+            const csvContent = csvRows.join('\n');
+            const blob = new Blob(['\ufeff' + csvContent], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `รายงานจองรถ_${new Date().toISOString().split('T')[0]}.csv`;
+            link.click();
+            
+            showMessage('ส่งออกไฟล์ CSV สำเร็จ', 'success');
         }
 
         function printReport() {
@@ -1397,7 +1848,6 @@
         }
 
         function showLoading() {
-            // แสดงโหลดดิงในตาราง
             elements.reportTableBody.innerHTML = `
                 <tr>
                     <td colspan="8" style="text-align: center; padding: 40px;">
@@ -1411,29 +1861,13 @@
         }
 
         function showMessage(text, type) {
-            // สร้างและแสดงข้อความแจ้งเตือน
-            const message = document.createElement('div');
-            message.className = `message ${type}`;
-            message.style.cssText = `
-                position: fixed;
-                top: 20px;
-                right: 20px;
-                padding: 15px 20px;
-                border-radius: var(--border-radius);
-                background-color: ${type === 'success' ? '#d4edda' : '#fff3cd'};
-                color: ${type === 'success' ? '#155724' : '#856404'};
-                border-left: 5px solid ${type === 'success' ? '#28a745' : '#ffc107'};
-                z-index: 1000;
-                box-shadow: var(--box-shadow);
-                max-width: 400px;
-            `;
-            message.textContent = text;
-            
-            document.body.appendChild(message);
+            elements.message.textContent = text;
+            elements.message.className = `message ${type}`;
+            elements.message.style.display = 'block';
             
             setTimeout(() => {
-                message.remove();
-            }, 3000);
+                elements.message.style.display = 'none';
+            }, 5000);
         }
     </script>
 </body>
