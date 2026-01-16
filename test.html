@@ -7,7 +7,6 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600&family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
     <style>
-        /* CSS เหมือนเดิม (ใส่ทั้งหมดจากโค้ดก่อนหน้า) */
         :root {
             --primary: #4361ee;
             --primary-light: #4895ef;
@@ -43,64 +42,688 @@
             margin: 0 auto;
         }
         
-        /* ... (ใส่ CSS ทั้งหมดจากโค้ดก่อนหน้า) ... */
+        /* Header */
+        .header {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            color: white;
+            padding: 25px 30px;
+            border-radius: var(--border-radius);
+            margin-bottom: 30px;
+            box-shadow: var(--box-shadow);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
         
-        /* Debug Section */
-        .debug-section {
+        .header-title {
+            font-size: 28px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .header-title i {
+            font-size: 32px;
+            background-color: rgba(255,255,255,0.2);
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .header-controls {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+        
+        .btn {
+            padding: 12px 24px;
+            border-radius: var(--border-radius);
+            border: none;
+            font-weight: 500;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            font-family: 'Roboto', 'Kanit', sans-serif;
+            font-size: 16px;
+        }
+        
+        .btn-primary {
+            background-color: white;
+            color: var(--primary);
+        }
+        
+        .btn-primary:hover {
+            background-color: rgba(255,255,255,0.9);
+            transform: translateY(-2px);
+        }
+        
+        .btn-outline {
+            background-color: transparent;
+            color: white;
+            border: 2px solid rgba(255,255,255,0.3);
+        }
+        
+        .btn-outline:hover {
+            background-color: rgba(255,255,255,0.1);
+            border-color: rgba(255,255,255,0.5);
+        }
+        
+        .month-display {
+            font-size: 24px;
+            font-weight: 600;
+            min-width: 250px;
+            text-align: center;
+            background-color: rgba(255,255,255,0.1);
+            padding: 10px 20px;
+            border-radius: var(--border-radius);
+        }
+        
+        /* Calendar Container */
+        .calendar-container {
+            background-color: white;
+            border-radius: var(--border-radius);
+            padding: 30px;
+            box-shadow: var(--box-shadow);
+            margin-bottom: 30px;
+        }
+        
+        .calendar-header {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 10px;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+        
+        .day-header {
+            font-weight: 600;
+            padding: 15px;
+            background-color: var(--primary);
+            color: white;
+            border-radius: var(--border-radius);
+        }
+        
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 10px;
+        }
+        
+        .calendar-day {
+            min-height: 120px;
+            border: 1px solid var(--gray-light);
+            border-radius: var(--border-radius);
+            padding: 10px;
+            background-color: white;
+            transition: var(--transition);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .calendar-day:hover {
             background-color: #f8f9fa;
-            border: 1px solid #dee2e6;
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        
+        .calendar-day.empty {
+            background-color: #f8f9fa;
+            border: 1px dashed #dee2e6;
+            opacity: 0.5;
+        }
+        
+        .calendar-day.today {
+            background-color: rgba(67, 97, 238, 0.1);
+            border: 2px solid var(--primary);
+        }
+        
+        .day-number {
+            font-weight: 600;
+            font-size: 18px;
+            margin-bottom: 8px;
+            color: var(--dark);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .day-events {
+            max-height: 80px;
+            overflow-y: auto;
+            padding-right: 5px;
+        }
+        
+        .day-events::-webkit-scrollbar {
+            width: 4px;
+        }
+        
+        .day-events::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+        
+        .day-events::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 10px;
+        }
+        
+        .event-badge {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            background-color: var(--warning);
+            color: white;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        
+        .event-item {
+            background-color: var(--primary);
+            color: white;
+            padding: 6px 8px;
+            border-radius: 6px;
+            margin-bottom: 5px;
+            font-size: 12px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            cursor: pointer;
+            transition: var(--transition);
+            border-left: 3px solid var(--secondary);
+        }
+        
+        .event-item:hover {
+            opacity: 0.9;
+            transform: translateX(3px);
+            padding-right: 12px;
+        }
+        
+        /* Filters Section */
+        .filters-section {
+            background-color: white;
+            border-radius: var(--border-radius);
+            padding: 25px;
+            box-shadow: var(--box-shadow);
+            margin-bottom: 30px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            align-items: center;
+        }
+        
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            min-width: 200px;
+        }
+        
+        .filter-label {
+            font-weight: 600;
+            color: var(--gray);
+            font-size: 14px;
+        }
+        
+        .filter-select {
+            padding: 12px 15px;
+            border-radius: var(--border-radius);
+            border: 1px solid var(--gray-light);
+            font-family: 'Roboto', 'Kanit', sans-serif;
+            font-size: 16px;
+            transition: var(--transition);
+            background-color: white;
+            width: 100%;
+        }
+        
+        .filter-select:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.1);
+        }
+        
+        /* Stats Section */
+        .stats-section {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .stat-card {
+            background-color: white;
             border-radius: var(--border-radius);
             padding: 20px;
-            margin-bottom: 20px;
-            font-family: monospace;
+            box-shadow: var(--box-shadow);
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .stat-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            color: white;
+        }
+        
+        .stat-icon.reservations {
+            background-color: var(--primary);
+        }
+        
+        .stat-icon.vehicles {
+            background-color: var(--success);
+        }
+        
+        .stat-icon.departments {
+            background-color: var(--warning);
+        }
+        
+        .stat-content {
+            flex-grow: 1;
+        }
+        
+        .stat-value {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+        
+        .stat-label {
             font-size: 14px;
+            color: var(--gray);
+        }
+        
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            animation: fadeIn 0.3s ease;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        .modal-content {
+            background-color: white;
+            border-radius: var(--border-radius);
+            padding: 30px;
+            width: 90%;
+            max-width: 800px;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: var(--box-shadow);
+            animation: slideUp 0.3s ease;
+        }
+        
+        @keyframes slideUp {
+            from { transform: translateY(50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid var(--gray-light);
+        }
+        
+        .modal-title {
+            font-size: 24px;
+            font-weight: 600;
+            color: var(--primary);
+        }
+        
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 28px;
+            cursor: pointer;
+            color: var(--gray);
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: var(--transition);
+        }
+        
+        .modal-close:hover {
+            background-color: var(--gray-light);
+            color: var(--dark);
+        }
+        
+        /* Event Details */
+        .event-list {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        
+        .event-detail {
+            background-color: #f8f9fa;
+            border-radius: var(--border-radius);
+            padding: 20px;
+            border-left: 4px solid var(--primary);
+            transition: var(--transition);
+        }
+        
+        .event-detail:hover {
+            background-color: #e9ecef;
+            transform: translateX(5px);
+        }
+        
+        .event-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .event-vehicle {
+            font-size: 20px;
+            font-weight: 600;
+            color: var(--primary);
+        }
+        
+        .event-status {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 500;
+        }
+        
+        .status-active {
+            background-color: rgba(46, 204, 113, 0.2);
+            color: #27ae60;
+        }
+        
+        .status-pending {
+            background-color: rgba(241, 196, 15, 0.2);
+            color: #f39c12;
+        }
+        
+        .status-completed {
+            background-color: rgba(52, 152, 219, 0.2);
+            color: #2980b9;
+        }
+        
+        .event-details {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+        
+        .event-detail-item {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .event-detail-label {
+            font-weight: 600;
+            color: var(--gray);
+            font-size: 14px;
+            margin-bottom: 5px;
+        }
+        
+        .event-detail-value {
+            font-size: 16px;
+        }
+        
+        /* Legend */
+        .legend-section {
+            background-color: white;
+            border-radius: var(--border-radius);
+            padding: 20px;
+            box-shadow: var(--box-shadow);
+        }
+        
+        .legend-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: var(--dark);
+        }
+        
+        .legend-items {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 12px;
+            background-color: #f8f9fa;
+            border-radius: var(--border-radius);
+        }
+        
+        .legend-color {
+            width: 15px;
+            height: 15px;
+            border-radius: 3px;
+        }
+        
+        /* Footer */
+        .footer {
+            text-align: center;
+            padding: 20px;
+            color: var(--gray);
+            font-size: 14px;
+            margin-top: 30px;
+            border-top: 1px solid var(--gray-light);
+        }
+        
+        /* Responsive */
+        @media (max-width: 1200px) {
+            .calendar-day {
+                min-height: 100px;
+            }
+        }
+        
+        @media (max-width: 992px) {
+            .calendar-day {
+                min-height: 90px;
+                padding: 8px;
+            }
+            
+            .day-number {
+                font-size: 16px;
+            }
+            
+            .event-item {
+                font-size: 11px;
+                padding: 4px 6px;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .header {
+                flex-direction: column;
+                text-align: center;
+            }
+            
+            .header-controls {
+                justify-content: center;
+            }
+            
+            .calendar-day {
+                min-height: 80px;
+            }
+            
+            .calendar-header {
+                gap: 5px;
+            }
+            
+            .day-header {
+                padding: 10px 5px;
+                font-size: 14px;
+            }
+            
+            .event-item {
+                display: none;
+            }
+            
+            .event-badge {
+                width: 20px;
+                height: 20px;
+                font-size: 10px;
+            }
+            
+            .stats-section {
+                grid-template-columns: 1fr;
+            }
+            
+            .filters-section {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .filter-group {
+                width: 100%;
+            }
+        }
+        
+        @media (max-width: 576px) {
+            body {
+                padding: 10px;
+            }
+            
+            .header-title {
+                font-size: 22px;
+            }
+            
+            .month-display {
+                font-size: 20px;
+                min-width: 200px;
+            }
+            
+            .calendar-day {
+                min-height: 70px;
+                padding: 5px;
+            }
+            
+            .day-number {
+                font-size: 14px;
+                margin-bottom: 4px;
+            }
+        }
+        
+        /* Loading */
+        .loading {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 200px;
+            font-size: 18px;
+            color: var(--gray);
+            flex-direction: column;
+            gap: 15px;
+        }
+        
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid rgba(67, 97, 238, 0.2);
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        /* Message */
+        .message {
+            padding: 15px 20px;
+            border-radius: var(--border-radius);
+            margin-bottom: 20px;
             display: none;
         }
         
-        .debug-toggle {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            background-color: var(--warning);
-            color: white;
-            border: none;
-            border-radius: 50%;
+        .message.success {
+            background-color: rgba(46, 204, 113, 0.1);
+            border-left: 5px solid #27ae60;
+            color: #27ae60;
+        }
+        
+        .message.error {
+            background-color: rgba(231, 76, 60, 0.1);
+            border-left: 5px solid #e74c3c;
+            color: #e74c3c;
+        }
+        
+        /* Status */
+        .status-section {
+            background-color: white;
+            border-radius: var(--border-radius);
+            padding: 15px;
+            margin-bottom: 20px;
+            box-shadow: var(--box-shadow);
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .status-icon {
             width: 50px;
             height: 50px;
-            cursor: pointer;
+            border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
             font-size: 20px;
-            z-index: 1000;
-            box-shadow: var(--box-shadow);
         }
         
-        .debug-log {
-            background-color: white;
-            border: 1px solid #dee2e6;
-            border-radius: var(--border-radius);
-            padding: 10px;
-            margin-bottom: 5px;
-            font-size: 12px;
-            max-height: 200px;
-            overflow-y: auto;
+        .status-icon.success {
+            background-color: rgba(46, 204, 113, 0.1);
+            color: #27ae60;
         }
         
-        .debug-log.success {
-            border-left: 4px solid #28a745;
+        .status-icon.error {
+            background-color: rgba(231, 76, 60, 0.1);
+            color: #e74c3c;
         }
         
-        .debug-log.error {
-            border-left: 4px solid #dc3545;
-        }
-        
-        .debug-log.warning {
-            border-left: 4px solid #ffc107;
-        }
-        
-        .debug-log.info {
-            border-left: 4px solid #17a2b8;
+        .status-icon.warning {
+            background-color: rgba(241, 196, 15, 0.1);
+            color: #f39c12;
         }
     </style>
 </head>
@@ -130,41 +753,22 @@
                 <button class="btn btn-primary" id="refreshBtn">
                     <i class="fas fa-sync-alt"></i> รีเฟรช
                 </button>
-                <button class="btn btn-outline" id="testConnectionBtn">
-                    <i class="fas fa-wifi"></i> ทดสอบเชื่อมต่อ
-                </button>
             </div>
         </div>
         
-        <!-- Debug Section -->
-        <div class="debug-section" id="debugSection">
-            <h3 style="margin-bottom: 10px; color: var(--warning);">
-                <i class="fas fa-bug"></i> Debug Information
-            </h3>
-            <div id="debugLogs"></div>
-            <div style="margin-top: 10px;">
-                <button class="btn btn-outline" id="clearLogsBtn" style="padding: 5px 10px; font-size: 12px;">
-                    <i class="fas fa-trash"></i> ล้าง Logs
-                </button>
-                <button class="btn btn-outline" id="copyLogsBtn" style="padding: 5px 10px; font-size: 12px;">
-                    <i class="fas fa-copy"></i> คัดลอก Logs
-                </button>
+        <!-- Status Section -->
+        <div class="status-section" id="statusSection" style="display: none;">
+            <div class="status-icon" id="statusIcon">
+                <i class="fas fa-spinner fa-spin"></i>
+            </div>
+            <div>
+                <div><strong id="statusTitle">สถานะ</strong></div>
+                <div id="statusMessage">กำลังโหลดข้อมูล...</div>
             </div>
         </div>
         
         <!-- Message -->
         <div class="message" id="message"></div>
-        
-        <!-- Connection Status -->
-        <div class="connection-status" id="connectionStatus" style="display: none;">
-            <div style="display: flex; align-items: center; gap: 10px; padding: 10px; background-color: #fff3cd; border-radius: var(--border-radius); margin-bottom: 20px;">
-                <i class="fas fa-exclamation-triangle" style="color: #856404;"></i>
-                <div>
-                    <strong>สถานะการเชื่อมต่อ:</strong>
-                    <span id="statusText">กำลังตรวจสอบ...</span>
-                </div>
-            </div>
-        </div>
         
         <!-- Filters -->
         <div class="filters-section">
@@ -241,10 +845,7 @@
             <div class="calendar-grid" id="calendarGrid">
                 <div class="loading">
                     <div class="spinner"></div>
-                    <div>กำลังเชื่อมต่อกับ Google Sheets...</div>
-                    <div style="font-size: 14px; margin-top: 10px; color: var(--gray);" id="loadingMessage">
-                        หากใช้เวลานานเกินไป โปรแกรมจะเปลี่ยนไปใช้ข้อมูลตัวอย่าง
-                    </div>
+                    <div>กำลังโหลดปฏิทิน...</div>
                 </div>
             </div>
         </div>
@@ -260,12 +861,12 @@
             </div>
         </div>
         
-        <!-- Data Source Info -->
-        <div class="data-source-info" style="background-color: white; border-radius: var(--border-radius); padding: 15px; margin-top: 20px; box-shadow: var(--box-shadow);">
-            <div style="display: flex; justify-content: space-between; align-items: center;">
+        <!-- Data Info -->
+        <div class="data-info" style="background-color: white; border-radius: var(--border-radius); padding: 15px; margin-top: 20px; box-shadow: var(--box-shadow);">
+            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
                 <div>
                     <strong>แหล่งข้อมูล:</strong>
-                    <span id="dataSource">กำลังตรวจสอบ...</span>
+                    <span id="dataSource">ไม่ทราบ</span>
                 </div>
                 <div>
                     <strong>จำนวนข้อมูล:</strong>
@@ -274,6 +875,10 @@
                 <div>
                     <strong>อัพเดทล่าสุด:</strong>
                     <span id="lastUpdated">--</span>
+                </div>
+                <div>
+                    <strong>เดือนที่แสดง:</strong>
+                    <span id="currentMonthInfo">--</span>
                 </div>
             </div>
         </div>
@@ -284,11 +889,6 @@
             <p>Google Sheet ID: 1-5izB7N6ldxHAa3ca0RNhGP8Z36vuA0mw9Wi_xR_Lj4</p>
         </div>
     </div>
-    
-    <!-- Debug Toggle Button -->
-    <button class="debug-toggle" id="debugToggle">
-        <i class="fas fa-bug"></i>
-    </button>
     
     <!-- Event Details Modal -->
     <div class="modal" id="eventModal">
@@ -304,15 +904,6 @@
     </div>
 
     <script>
-        // Configuration
-        const CONFIG = {
-            SCRIPT_URL: 'https://script.google.com/macros/s/AKfycbzcMdFcpQkAxIbb0iEJJfZ8fD0YgiGUetRkkw1UyMv7uY3tlza345UoL1uNrNbOUKRx/exec',
-            SHEET_ID: '1-5izB7N6ldxHAa3ca0RNhGP8Z36vuA0mw9Wi_xR_Lj4',
-            FALLBACK_DATA: true, // ใช้ข้อมูลตัวอย่างถ้าเชื่อมต่อไม่ได้
-            TIMEOUT: 10000, // 10 วินาที timeout
-            RETRY_COUNT: 3
-        };
-
         // ข้อมูลตัวอย่าง
         const sampleData = [
             {
@@ -330,7 +921,66 @@
                 "endTime": "17:00",
                 "reason": "นำลูกค้าทัวร์โรงงาน"
             },
-            // ... (ข้อมูลตัวอย่างเพิ่มเติม)
+            {
+                "timestamp": "2026-01-14",
+                "code": "EMP002",
+                "name": "สุภาพร สุขสวัสดิ์",
+                "section": "ฝ่ายบุคคล",
+                "department": "ทรัพยากรบุคคล",
+                "position": "หัวหน้าแผนก",
+                "contact": "082-345-6789",
+                "choose": "ฮอนด้า ซีวิค",
+                "rentStartdate": "2026-01-17",
+                "rentEnddate": "2026-01-17",
+                "startTime": "08:30",
+                "endTime": "16:30",
+                "reason": "ไปสัมมนาที่โรงแรม"
+            },
+            {
+                "timestamp": "2026-01-13",
+                "code": "EMP003",
+                "name": "วิชัย ตั้งใจเรียน",
+                "section": "ฝ่ายผลิต",
+                "department": "ผลิตภัณฑ์",
+                "position": "วิศวกร",
+                "contact": "083-456-7890",
+                "choose": "โตโยต้า ไฮลักซ์",
+                "rentStartdate": "2026-01-20",
+                "rentEnddate": "2026-01-22",
+                "startTime": "07:00",
+                "endTime": "18:00",
+                "reason": "ขนส่งอุปกรณ์ไปสาขา"
+            },
+            {
+                "timestamp": "2026-01-12",
+                "code": "EMP004",
+                "name": "อรุณี สดใส",
+                "section": "ฝ่ายบัญชี",
+                "department": "การเงิน",
+                "position": "นักบัญชี",
+                "contact": "084-567-8901",
+                "choose": "โตโยต้า ฟอร์จูนเนอร์",
+                "rentStartdate": "2026-01-25",
+                "rentEnddate": "2026-01-26",
+                "startTime": "10:00",
+                "endTime": "15:00",
+                "reason": "ไปธนาคารและสรรพากร"
+            },
+            {
+                "timestamp": "2026-01-11",
+                "code": "EMP005",
+                "name": "บดินทร์ แข็งแรง",
+                "section": "ฝ่ายขนส่ง",
+                "department": "โลจิสติกส์",
+                "position": "หัวหน้าขนส่ง",
+                "contact": "085-678-9012",
+                "choose": "อิซูซุ ดีแมคซ์",
+                "rentStartdate": "2026-01-19",
+                "rentEnddate": "2026-01-21",
+                "startTime": "06:00",
+                "endTime": "20:00",
+                "reason": "ขนสินค้าให้ลูกค้า"
+            }
         ];
 
         // Global variables
@@ -341,8 +991,6 @@
         let selectedDepartment = 'all';
         let selectedStatus = 'all';
         let dataSource = 'unknown';
-        let debugMode = false;
-        let retryCount = 0;
 
         // DOM Elements
         const elements = {
@@ -352,7 +1000,6 @@
             nextMonthBtn: document.getElementById('nextMonth'),
             todayBtn: document.getElementById('todayBtn'),
             refreshBtn: document.getElementById('refreshBtn'),
-            testConnectionBtn: document.getElementById('testConnectionBtn'),
             vehicleFilter: document.getElementById('vehicleFilter'),
             departmentFilter: document.getElementById('departmentFilter'),
             statusFilter: document.getElementById('statusFilter'),
@@ -366,28 +1013,24 @@
             legendItems: document.getElementById('legendItems'),
             lastUpdated: document.getElementById('lastUpdated'),
             message: document.getElementById('message'),
-            connectionStatus: document.getElementById('connectionStatus'),
-            statusText: document.getElementById('statusText'),
             dataSource: document.getElementById('dataSource'),
             dataCount: document.getElementById('dataCount'),
-            debugSection: document.getElementById('debugSection'),
-            debugLogs: document.getElementById('debugLogs'),
-            debugToggle: document.getElementById('debugToggle'),
-            clearLogsBtn: document.getElementById('clearLogsBtn'),
-            copyLogsBtn: document.getElementById('copyLogsBtn'),
-            loadingMessage: document.getElementById('loadingMessage')
+            currentMonthInfo: document.getElementById('currentMonthInfo'),
+            statusSection: document.getElementById('statusSection'),
+            statusIcon: document.getElementById('statusIcon'),
+            statusTitle: document.getElementById('statusTitle'),
+            statusMessage: document.getElementById('statusMessage')
         };
 
         // เริ่มต้นโปรแกรม
         document.addEventListener('DOMContentLoaded', function() {
             initCalendar();
             setupEventListeners();
-            testGoogleSheetsConnection();
+            loadData();
         });
 
         function initCalendar() {
             updateCalendarDisplay();
-            showLoading('กำลังเชื่อมต่อกับ Google Sheets...');
         }
 
         function setupEventListeners() {
@@ -396,7 +1039,6 @@
             elements.nextMonthBtn.addEventListener('click', goToNextMonth);
             elements.todayBtn.addEventListener('click', goToToday);
             elements.refreshBtn.addEventListener('click', loadData);
-            elements.testConnectionBtn.addEventListener('click', testGoogleSheetsConnection);
             
             // ฟิลเตอร์
             elements.vehicleFilter.addEventListener('change', function() {
@@ -425,15 +1067,9 @@
                 }
             });
             
-            // Debug
-            elements.debugToggle.addEventListener('click', toggleDebugMode);
-            elements.clearLogsBtn.addEventListener('click', clearDebugLogs);
-            elements.copyLogsBtn.addEventListener('click', copyDebugLogs);
-            
             // Keyboard shortcuts
             document.addEventListener('keydown', function(e) {
                 if (e.key === 'Escape') closeEventModal();
-                if (e.key === 'F12') toggleDebugMode();
                 if (e.ctrlKey && e.key === 'r') {
                     e.preventDefault();
                     loadData();
@@ -441,235 +1077,171 @@
             });
         }
 
-        function testGoogleSheetsConnection() {
-            logDebug('เริ่มทดสอบการเชื่อมต่อกับ Google Sheets...', 'info');
-            showConnectionStatus('กำลังทดสอบการเชื่อมต่อ...', 'warning');
-            
-            // ตรวจสอบหลายวิธี
-            checkScriptURL()
-                .then(isScriptWorking => {
-                    if (isScriptWorking) {
-                        logDebug('Google Apps Script ทำงานได้ปกติ', 'success');
-                        loadData();
-                    } else {
-                        logDebug('Google Apps Script ไม่สามารถเชื่อมต่อได้', 'error');
-                        checkSheetAccess()
-                            .then(isSheetAccessible => {
-                                if (isSheetAccessible) {
-                                    logDebug('Google Sheet สามารถเข้าถึงได้', 'success');
-                                    loadDataViaCSV();
-                                } else {
-                                    logDebug('Google Sheet ไม่สามารถเข้าถึงได้', 'error');
-                                    useFallbackData();
-                                }
-                            })
-                            .catch(() => useFallbackData());
-                    }
-                })
-                .catch(() => useFallbackData());
-        }
-
-        async function checkScriptURL() {
-            try {
-                const timestamp = new Date().getTime();
-                const testUrl = `${CONFIG.SCRIPT_URL}?t=${timestamp}`;
-                
-                logDebug(`กำลังทดสอบ URL: ${testUrl}`, 'info');
-                
-                const response = await fetch(testUrl, {
-                    method: 'GET',
-                    mode: 'cors',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    }
-                });
-                
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-                
-                const data = await response.json();
-                logDebug('Response received:', 'success', data);
-                return true;
-                
-            } catch (error) {
-                logDebug(`Error testing script URL: ${error.message}`, 'error');
-                return false;
-            }
-        }
-
-        async function checkSheetAccess() {
-            try {
-                // ใช้ CSV export URL
-                const csvUrl = `https://docs.google.com/spreadsheets/d/${CONFIG.SHEET_ID}/export?format=csv`;
-                
-                logDebug(`กำลังทดสอบ Sheet access: ${csvUrl}`, 'info');
-                
-                const response = await fetch(csvUrl);
-                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-                
-                return true;
-            } catch (error) {
-                logDebug(`Error checking sheet access: ${error.message}`, 'error');
-                return false;
-            }
-        }
-
         function loadData() {
-            showLoading('กำลังโหลดข้อมูลจาก Google Sheets...');
-            showConnectionStatus('กำลังโหลดข้อมูล...', 'info');
+            showLoading();
+            showStatus('กำลังโหลดข้อมูล...', 'info');
             
-            fetchFromGoogleSheets()
+            // ลองโหลดจาก Google Sheets ผ่าน CSV export
+            fetchFromGoogleSheetsCSV()
                 .then(data => {
                     if (data && data.length > 0) {
                         reservationsData = data;
-                        dataSource = 'google-sheets';
-                        showMessage('โหลดข้อมูลจาก Google Sheets สำเร็จ', 'success');
-                        showConnectionStatus('เชื่อมต่อสำเร็จ', 'success');
-                        logDebug(`โหลดข้อมูลสำเร็จ: ${data.length} รายการ`, 'success');
-                        
+                        dataSource = 'google-sheets-csv';
+                        showMessage(`โหลดข้อมูลสำเร็จ: ${data.length} รายการ`, 'success');
+                        showStatus('โหลดข้อมูลสำเร็จ', 'success');
                         updateUI();
                     } else {
                         throw new Error('ไม่พบข้อมูลจาก Google Sheets');
                     }
                 })
                 .catch(error => {
-                    logDebug(`Error loading data: ${error.message}`, 'error');
+                    console.log('Error loading from Google Sheets:', error.message);
                     
-                    if (retryCount < CONFIG.RETRY_COUNT) {
-                        retryCount++;
-                        logDebug(`ลองใหม่ครั้งที่ ${retryCount}...`, 'warning');
-                        setTimeout(loadData, 2000);
-                    } else {
-                        useFallbackData();
-                    }
-                });
-        }
-
-        async function fetchFromGoogleSheets() {
-            return new Promise(async (resolve, reject) => {
-                try {
-                    const timestamp = new Date().getTime();
-                    const url = `${CONFIG.SCRIPT_URL}?t=${timestamp}`;
-                    
-                    logDebug(`Fetching from: ${url}`, 'info');
-                    
-                    const controller = new AbortController();
-                    const timeoutId = setTimeout(() => controller.abort(), CONFIG.TIMEOUT);
-                    
-                    const response = await fetch(url, {
-                        signal: controller.signal,
-                        method: 'GET',
-                        mode: 'cors',
-                        headers: {
-                            'Accept': 'application/json'
-                        }
-                    });
-                    
-                    clearTimeout(timeoutId);
-                    
-                    if (!response.ok) {
-                        throw new Error(`HTTP error! status: ${response.status}`);
-                    }
-                    
-                    const result = await response.json();
-                    logDebug('Raw response:', 'info', result);
-                    
-                    if (result.status === 'success' && Array.isArray(result.data)) {
-                        resolve(result.data);
-                    } else if (Array.isArray(result)) {
-                        resolve(result);
-                    } else {
-                        throw new Error('รูปแบบข้อมูลไม่ถูกต้อง');
-                    }
-                    
-                } catch (error) {
-                    logDebug(`Fetch error: ${error.message}`, 'error');
-                    reject(error);
-                }
-            });
-        }
-
-        function loadDataViaCSV() {
-            logDebug('กำลังโหลดข้อมูลผ่าน CSV...', 'info');
-            
-            const csvUrl = `https://docs.google.com/spreadsheets/d/${CONFIG.SHEET_ID}/export?format=csv`;
-            
-            fetch(csvUrl)
-                .then(response => response.text())
-                .then(csvText => {
-                    const data = parseCSV(csvText);
-                    if (data.length > 0) {
-                        reservationsData = data;
-                        dataSource = 'csv-export';
-                        showMessage('โหลดข้อมูลผ่าน CSV สำเร็จ', 'success');
-                        showConnectionStatus('เชื่อมต่อสำเร็จ (CSV)', 'success');
-                        updateUI();
-                    } else {
-                        throw new Error('ไม่พบข้อมูลใน CSV');
-                    }
-                })
-                .catch(error => {
-                    logDebug(`CSV error: ${error.message}`, 'error');
+                    // ใช้ข้อมูลตัวอย่าง
                     useFallbackData();
                 });
         }
 
-        function parseCSV(csvText) {
-            const lines = csvText.split('\n');
-            if (lines.length < 2) return [];
-            
-            const headers = lines[0].split(',').map(h => h.trim().toLowerCase());
-            const data = [];
-            
-            for (let i = 1; i < lines.length; i++) {
-                const line = lines[i].trim();
-                if (!line) continue;
+        async function fetchFromGoogleSheetsCSV() {
+            try {
+                const SHEET_ID = '1-5izB7N6ldxHAa3ca0RNhGP8Z36vuA0mw9Wi_xR_Lj4';
+                const csvUrl = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv`;
                 
-                const values = line.split(',').map(v => v.trim());
-                const obj = {};
+                console.log('Fetching CSV from:', csvUrl);
                 
-                headers.forEach((header, index) => {
-                    obj[header] = values[index] || '';
+                const response = await fetch(csvUrl);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const csvText = await response.text();
+                console.log('CSV received, length:', csvText.length);
+                
+                // แปลง CSV เป็น array
+                const lines = csvText.split('\n');
+                if (lines.length < 2) {
+                    throw new Error('CSV file is empty');
+                }
+                
+                // อ่าน header
+                const headers = lines[0].split(',').map(h => h.trim());
+                console.log('CSV Headers:', headers);
+                
+                // อ่าน data rows
+                const rows = lines.slice(1).filter(line => line.trim() !== '');
+                console.log('Number of rows:', rows.length);
+                
+                // แปลง CSV เป็น object array
+                const data = rows.map((line, index) => {
+                    // แยกค่าโดยคำนึงถึง commas ในค่า
+                    const values = [];
+                    let currentValue = '';
+                    let inQuotes = false;
+                    
+                    for (let i = 0; i < line.length; i++) {
+                        const char = line[i];
+                        
+                        if (char === '"' && (i === 0 || line[i-1] !== '\\')) {
+                            inQuotes = !inQuotes;
+                        } else if (char === ',' && !inQuotes) {
+                            values.push(currentValue.trim());
+                            currentValue = '';
+                        } else {
+                            currentValue += char;
+                        }
+                    }
+                    values.push(currentValue.trim());
+                    
+                    // สร้าง object
+                    const obj = {};
+                    headers.forEach((header, i) => {
+                        if (i < values.length) {
+                            // ลบ quotes ถ้ามี
+                            let value = values[i];
+                            if (value.startsWith('"') && value.endsWith('"')) {
+                                value = value.substring(1, value.length - 1);
+                            }
+                            
+                            // แปลงชื่อคอลัมน์เป็น lowercase และ camelCase
+                            const key = header.toLowerCase().replace(/\s+(.)/g, (match, group1) => group1.toUpperCase());
+                            obj[key] = value || '';
+                        }
+                    });
+                    
+                    // เพิ่ม code ถ้าไม่มี
+                    if (!obj.code || obj.code.trim() === '') {
+                        obj.code = `EMP${String(index + 1).padStart(3, '0')}`;
+                    }
+                    
+                    return obj;
+                }).filter(item => {
+                    // กรองแถวว่าง
+                    return item.name && item.name.trim() !== '';
                 });
                 
-                // เติมข้อมูลที่จำเป็น
-                if (!obj.code) obj.code = `EMP${i.toString().padStart(3, '0')}`;
+                console.log('Processed data:', data);
+                return data;
                 
-                data.push(obj);
+            } catch (error) {
+                console.error('Error in fetchFromGoogleSheetsCSV:', error);
+                throw error;
             }
-            
-            return data.filter(item => item.name && item.name.trim() !== '');
         }
 
         function useFallbackData() {
-            logDebug('เปลี่ยนไปใช้ข้อมูลตัวอย่าง', 'warning');
             reservationsData = sampleData;
             dataSource = 'sample-data';
             
-            showMessage('ใช้ข้อมูลตัวอย่าง (Google Sheets ไม่สามารถเชื่อมต่อได้)', 'error');
-            showConnectionStatus('ใช้ข้อมูลตัวอย่าง', 'warning');
+            showMessage('ใช้ข้อมูลตัวอย่าง', 'warning');
+            showStatus('ใช้ข้อมูลตัวอย่าง', 'warning');
             
             updateUI();
         }
 
         function updateUI() {
+            // อัพเดทฟิลเตอร์
             updateFilters();
+            
+            // อัพเดทสถิติ
             updateStats();
+            
+            // อัพเดทคำอธิบายสีรถ
             updateLegend();
+            
+            // อัพเดทปฏิทิน
             renderCalendar();
+            
+            // อัพเดทเวลาล่าสุด
             updateLastUpdated();
+            
+            // อัพเดทข้อมูลแหล่งที่มา
             updateDataSourceInfo();
+            
+            // อัพเดทข้อมูลเดือน
+            updateCurrentMonthInfo();
+            
+            // ซ่อน loading
             hideLoading();
+            hideStatus();
         }
 
         function updateDataSourceInfo() {
             elements.dataSource.textContent = 
-                dataSource === 'google-sheets' ? 'Google Sheets' :
-                dataSource === 'csv-export' ? 'CSV Export' :
+                dataSource === 'google-sheets-csv' ? 'Google Sheets (CSV)' :
                 dataSource === 'sample-data' ? 'ข้อมูลตัวอย่าง' : 'ไม่ทราบ';
             
             elements.dataCount.textContent = reservationsData.length;
+        }
+
+        function updateCurrentMonthInfo() {
+            const monthNames = [
+                'มกราคม', 'กุมภาพันธ์', 'มีนาคม', 'เมษายน', 'พฤษภาคม', 'มิถุนายน',
+                'กรกฎาคม', 'สิงหาคม', 'กันยายน', 'ตุลาคม', 'พฤศจิกายน', 'ธันวาคม'
+            ];
+            
+            elements.currentMonthInfo.textContent = 
+                `${monthNames[currentMonth]} ${currentYear + 543}`;
         }
 
         function updateCalendarDisplay() {
@@ -683,11 +1255,14 @@
         }
 
         function renderCalendar() {
-            if (reservationsData.length === 0) {
+            if (!reservationsData || reservationsData.length === 0) {
                 elements.calendarGrid.innerHTML = `
                     <div style="grid-column: 1 / -1; text-align: center; padding: 40px;">
                         <i class="fas fa-database" style="font-size: 48px; color: var(--gray); margin-bottom: 15px;"></i>
                         <div style="color: var(--gray); font-size: 18px;">ไม่พบข้อมูลการจองรถ</div>
+                        <button class="btn btn-primary" onclick="loadData()" style="margin-top: 15px;">
+                            <i class="fas fa-redo"></i> โหลดข้อมูลใหม่
+                        </button>
                     </div>
                 `;
                 return;
@@ -700,8 +1275,9 @@
             const lastDay = new Date(currentYear, currentMonth + 1, 0);
             const daysInMonth = lastDay.getDate();
             
-            // วันแรกของเดือน
+            // วันแรกของเดือน (0 = อาทิตย์, 1 = จันทร์, ...)
             let firstDayOfWeek = firstDay.getDay();
+            // ปรับให้วันจันทร์เป็นวันแรก
             firstDayOfWeek = firstDayOfWeek === 0 ? 6 : firstDayOfWeek - 1;
             
             // วันนี้
@@ -745,11 +1321,11 @@
                     eventBadge.title = `${dayReservations.length} การจอง`;
                     dayElement.appendChild(eventBadge);
                     
-                    // แสดงรายการจอง
+                    // แสดงรายการจอง (สูงสุด 2 รายการ)
                     const eventsContainer = document.createElement('div');
                     eventsContainer.className = 'day-events';
                     
-                    dayReservations.slice(0, 3).forEach(reservation => {
+                    dayReservations.slice(0, 2).forEach(reservation => {
                         const eventItem = document.createElement('div');
                         eventItem.className = 'event-item';
                         eventItem.style.backgroundColor = getVehicleColor(reservation.choose);
@@ -803,17 +1379,12 @@
                 }
                 
                 // ตรวจสอบว่าอยู่ในช่วงวันที่จองหรือไม่
-                const startDate = reservation.rentStartdate || reservation.rentStartDate;
-                const endDate = reservation.rentEnddate || reservation.rentEndDate;
+                const startDate = normalizeDate(reservation.rentStartdate);
+                const endDate = normalizeDate(reservation.rentEnddate);
                 
                 if (!startDate || !endDate) return false;
                 
-                // แปลงวันที่ให้เป็นรูปแบบมาตรฐาน
-                const normStart = normalizeDate(startDate);
-                const normEnd = normalizeDate(endDate);
-                const normDate = normalizeDate(dateStr);
-                
-                return normDate >= normStart && normDate <= normEnd;
+                return dateStr >= startDate && dateStr <= endDate;
             });
         }
 
@@ -821,42 +1392,41 @@
             if (!dateStr) return '';
             
             try {
-                // แปลงรูปแบบวันที่ต่างๆ เป็น YYYY-MM-DD
-                let str = dateStr.toString().trim();
+                // ลองแปลงวันที่หลายๆ รูปแบบ
+                let date;
                 
-                // แทนที่ตัวแบ่งวันที่
-                str = str.replace(/\./g, '-').replace(/\//g, '-');
-                
-                // แยกส่วน
-                const parts = str.split('-');
-                if (parts.length === 3) {
-                    let day = parts[0];
-                    let month = parts[1];
-                    let year = parts[2];
+                if (dateStr instanceof Date) {
+                    date = dateStr;
+                } else if (typeof dateStr === 'string') {
+                    // ลอง parse หลายรูปแบบ
+                    date = new Date(dateStr);
                     
-                    // ถ้าปีเป็น 2 หลัก
-                    if (year.length === 2) {
-                        year = `20${year}`;
+                    if (isNaN(date.getTime())) {
+                        // ลองรูปแบบ DD/MM/YYYY
+                        const parts = dateStr.split(/[/-]/);
+                        if (parts.length === 3) {
+                            const day = parts[0];
+                            const month = parts[1];
+                            const year = parts[2].length === 2 ? '20' + parts[2] : parts[2];
+                            date = new Date(year, month - 1, day);
+                        }
                     }
-                    
-                    // สลับวันและเดือนถ้าจำเป็น
-                    if (day.length > 2) {
-                        [day, month] = [month, day];
-                    }
-                    
-                    return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
                 }
                 
-                return str;
+                if (date && !isNaN(date.getTime())) {
+                    return date.toISOString().split('T')[0]; // YYYY-MM-DD
+                }
+                
+                return dateStr.toString();
             } catch (e) {
-                return dateStr;
+                return dateStr.toString();
             }
         }
 
         function getReservationStatus(reservation, dateStr) {
             const today = new Date().toISOString().split('T')[0];
-            const startDate = normalizeDate(reservation.rentStartdate || reservation.rentStartDate);
-            const endDate = normalizeDate(reservation.rentEnddate || reservation.rentEndDate);
+            const startDate = normalizeDate(reservation.rentStartdate);
+            const endDate = normalizeDate(reservation.rentEnddate);
             
             if (!startDate || !endDate) return 'pending';
             
@@ -924,7 +1494,7 @@
         function updateStats() {
             // คำนวณการจองในเดือนนี้
             const monthReservations = reservationsData.filter(reservation => {
-                const startDate = normalizeDate(reservation.rentStartdate || reservation.rentStartDate);
+                const startDate = normalizeDate(reservation.rentStartdate);
                 if (!startDate) return false;
                 
                 try {
@@ -941,7 +1511,7 @@
             // คำนวณรถที่ถูกจองในเดือนนี้
             const monthVehicles = new Set();
             reservationsData.forEach(reservation => {
-                const startDate = normalizeDate(reservation.rentStartdate || reservation.rentStartDate);
+                const startDate = normalizeDate(reservation.rentStartdate);
                 if (!startDate) return;
                 
                 try {
@@ -960,7 +1530,7 @@
             // คำนวณแผนกที่ใช้งานในเดือนนี้
             const monthDepartments = new Set();
             reservationsData.forEach(reservation => {
-                const startDate = normalizeDate(reservation.rentStartdate || reservation.rentStartDate);
+                const startDate = normalizeDate(reservation.rentStartdate);
                 if (!startDate) return;
                 
                 try {
@@ -1035,8 +1605,8 @@
                     const statusText = status === 'active' ? 'กำลังใช้งาน' : 
                                      status === 'pending' ? 'รออนุมัติ' : 'เสร็จสิ้น';
                     
-                    const startDate = normalizeDate(reservation.rentStartdate || reservation.rentStartDate);
-                    const endDate = normalizeDate(reservation.rentEnddate || reservation.rentEndDate);
+                    const startDate = normalizeDate(reservation.rentStartdate);
+                    const endDate = normalizeDate(reservation.rentEnddate);
                     
                     const eventDetail = document.createElement('div');
                     eventDetail.className = 'event-detail';
@@ -1054,7 +1624,7 @@
                             </div>
                             <div class="event-detail-item">
                                 <span class="event-detail-label">รหัสพนักงาน</span>
-                                <span class="event-detail-value">${reservation.code || reservation.Code || '-'}</span>
+                                <span class="event-detail-value">${reservation.code || '-'}</span>
                             </div>
                             <div class="event-detail-item">
                                 <span class="event-detail-label">แผนก</span>
@@ -1103,6 +1673,7 @@
             updateCalendarDisplay();
             updateStats();
             renderCalendar();
+            updateCurrentMonthInfo();
         }
 
         function goToNextMonth() {
@@ -1114,6 +1685,7 @@
             updateCalendarDisplay();
             updateStats();
             renderCalendar();
+            updateCurrentMonthInfo();
         }
 
         function goToToday() {
@@ -1123,6 +1695,7 @@
             updateCalendarDisplay();
             updateStats();
             renderCalendar();
+            updateCurrentMonthInfo();
         }
 
         function formatDate(dateStr) {
@@ -1151,16 +1724,17 @@
             elements.lastUpdated.textContent = `${dateString} ${timeString}`;
         }
 
-        function showLoading(message = 'กำลังโหลด...') {
-            elements.calendarGrid.innerHTML = `
+        function showLoading() {
+            const loadingHTML = `
                 <div class="loading">
                     <div class="spinner"></div>
-                    <div>${message}</div>
-                    ${elements.loadingMessage ? `<div style="font-size: 14px; margin-top: 10px; color: var(--gray);" id="loadingMessage">
-                        หากใช้เวลานานเกินไป โปรแกรมจะเปลี่ยนไปใช้ข้อมูลตัวอย่าง
-                    </div>` : ''}
+                    <div>กำลังโหลดข้อมูลจาก Google Sheets...</div>
                 </div>
             `;
+            
+            if (elements.calendarGrid) {
+                elements.calendarGrid.innerHTML = loadingHTML;
+            }
         }
 
         function hideLoading() {
@@ -1168,6 +1742,29 @@
             if (loading) {
                 loading.style.display = 'none';
             }
+        }
+
+        function showStatus(message, type = 'info') {
+            elements.statusSection.style.display = 'flex';
+            elements.statusMessage.textContent = message;
+            
+            // ตั้งค่าสไตล์ตามประเภท
+            const icon = elements.statusIcon.querySelector('i');
+            icon.className = 
+                type === 'success' ? 'fas fa-check-circle' :
+                type === 'error' ? 'fas fa-exclamation-circle' :
+                type === 'warning' ? 'fas fa-exclamation-triangle' :
+                'fas fa-spinner fa-spin';
+            
+            elements.statusIcon.className = `status-icon ${type}`;
+            elements.statusTitle.textContent = 
+                type === 'success' ? 'สำเร็จ' :
+                type === 'error' ? 'ข้อผิดพลาด' :
+                type === 'warning' ? 'คำเตือน' : 'สถานะ';
+        }
+
+        function hideStatus() {
+            elements.statusSection.style.display = 'none';
         }
 
         function showMessage(text, type) {
@@ -1178,72 +1775,6 @@
             setTimeout(() => {
                 elements.message.style.display = 'none';
             }, 5000);
-        }
-
-        function showConnectionStatus(text, type) {
-            elements.connectionStatus.style.display = 'block';
-            elements.statusText.textContent = text;
-            elements.statusText.style.color = 
-                type === 'success' ? '#28a745' :
-                type === 'warning' ? '#ffc107' :
-                type === 'error' ? '#dc3545' : '#17a2b8';
-        }
-
-        // Debug Functions
-        function logDebug(message, type = 'info', data = null) {
-            if (!debugMode) return;
-            
-            const timestamp = new Date().toLocaleTimeString();
-            const logDiv = document.createElement('div');
-            logDiv.className = `debug-log ${type}`;
-            
-            let logMessage = `[${timestamp}] ${message}`;
-            if (data) {
-                logMessage += `\n${JSON.stringify(data, null, 2)}`;
-            }
-            
-            logDiv.textContent = logMessage;
-            elements.debugLogs.appendChild(logDiv);
-            
-            // จำกัดจำนวน logs
-            const logs = elements.debugLogs.querySelectorAll('.debug-log');
-            if (logs.length > 50) {
-                logs[0].remove();
-            }
-            
-            // Scroll to bottom
-            elements.debugLogs.scrollTop = elements.debugLogs.scrollHeight;
-            
-            console.log(`[DEBUG] ${type.toUpperCase()}:`, message, data || '');
-        }
-
-        function toggleDebugMode() {
-            debugMode = !debugMode;
-            elements.debugSection.style.display = debugMode ? 'block' : 'none';
-            elements.debugToggle.innerHTML = debugMode ? 
-                '<i class="fas fa-times"></i>' : 
-                '<i class="fas fa-bug"></i>';
-            
-            if (debugMode) {
-                logDebug('Debug mode enabled', 'info');
-            }
-        }
-
-        function clearDebugLogs() {
-            elements.debugLogs.innerHTML = '';
-            logDebug('Logs cleared', 'info');
-        }
-
-        function copyDebugLogs() {
-            const logs = elements.debugLogs.textContent;
-            navigator.clipboard.writeText(logs)
-                .then(() => {
-                    logDebug('Logs copied to clipboard', 'success');
-                    showMessage('คัดลอก logs เรียบร้อยแล้ว', 'success');
-                })
-                .catch(err => {
-                    logDebug('Failed to copy logs: ' + err.message, 'error');
-                });
         }
     </script>
 </body>
