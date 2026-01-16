@@ -1051,34 +1051,50 @@
             renderCalendar();
         }
 
-        function loadData() {
-            showLoading();
-            showMessage('กำลังโหลดข้อมูล...', 'info');
+        async function loadData() {
+    showLoading('กำลังโหลดข้อมูล...');
+    
+    try {
+        // ใช้ CSV export (ทำงานได้แน่นอน)
+        const csvUrl = `https://docs.google.com/spreadsheets/d/1-5izB7N6ldxHAa3ca0RNhGP8Z36vuA0mw9Wi_xR_Lj4/export?format=csv`;
+        
+        console.log('Fetching CSV from:', csvUrl);
+        
+        const response = await fetch(csvUrl);
+        const csvText = await response.text();
+        
+        // แปลง CSV เป็น array
+        const lines = csvText.split('\n');
+        const headers = lines[0].split(',').map(h => h.trim());
+        const rows = lines.slice(1).filter(line => line.trim() !== '');
+        
+        reservationsData = rows.map((line, index) => {
+            const values = line.split(',').map(v => v.trim());
+            const obj = {};
             
-            // พยายามโหลดจาก Google Sheets ก่อน
-            fetchFromGoogleSheets()
-                .then(data => {
-                    if (data && data.length > 0) {
-                        reservationsData = data;
-                        showMessage('โหลดข้อมูลจาก Google Sheets สำเร็จ', 'success');
-                    } else {
-                        throw new Error('ไม่พบข้อมูลจาก Google Sheets');
-                    }
-                })
-                .catch(error => {
-                    console.log('ใช้ข้อมูลตัวอย่าง:', error.message);
-                    reservationsData = sampleData;
-                    showMessage('ใช้ข้อมูลตัวอย่าง (Google Sheets ไม่สามารถเชื่อมต่อได้)', 'error');
-                })
-                .finally(() => {
-                    updateFilters();
-                    updateStats();
-                    updateLegend();
-                    renderCalendar();
-                    updateLastUpdated();
-                    hideLoading();
-                });
-        }
+            headers.forEach((header, i) => {
+                const key = header.toLowerCase().replace(/\s+(.)/g, (match, group1) => group1.toUpperCase());
+                obj[key] = values[i] || '';
+            });
+            
+            if (!obj.code || obj.code.trim() === '') {
+                obj.code = `EMP${String(index + 1).padStart(3, '0')}`;
+            }
+            
+            return obj;
+        }).filter(item => item.name && item.name.trim() !== '');
+        
+        console.log('Loaded data:', reservationsData.length, 'rows');
+        
+        dataSource = 'csv-export';
+        showMessage(`โหลดข้อมูลสำเร็จ: ${reservationsData.length} รายการ`, 'success');
+        updateUI();
+        
+    } catch (error) {
+        console.error('Error loading CSV:', error);
+        useFallbackData();
+    }
+}
 
         async function fetchFromGoogleSheets() {
             // URL ของ Google Apps Script
