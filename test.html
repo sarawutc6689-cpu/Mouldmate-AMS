@@ -1,0 +1,1250 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ปฏิทินการจองรถ</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600&family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
+    <style>
+        /* CSS เหมือนเดิม (ใส่ทั้งหมดจากโค้ดก่อนหน้า) */
+        :root {
+            --primary: #4361ee;
+            --primary-light: #4895ef;
+            --secondary: #3f37c9;
+            --success: #4cc9f0;
+            --warning: #f72585;
+            --light: #f8f9fa;
+            --dark: #212529;
+            --gray: #6c757d;
+            --gray-light: #e9ecef;
+            --border-radius: 12px;
+            --box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+            --transition: all 0.3s ease;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Roboto', 'Kanit', sans-serif;
+            background-color: #f5f7fb;
+            color: var(--dark);
+            line-height: 1.6;
+            padding: 20px;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        /* ... (ใส่ CSS ทั้งหมดจากโค้ดก่อนหน้า) ... */
+        
+        /* Debug Section */
+        .debug-section {
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: var(--border-radius);
+            padding: 20px;
+            margin-bottom: 20px;
+            font-family: monospace;
+            font-size: 14px;
+            display: none;
+        }
+        
+        .debug-toggle {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background-color: var(--warning);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            z-index: 1000;
+            box-shadow: var(--box-shadow);
+        }
+        
+        .debug-log {
+            background-color: white;
+            border: 1px solid #dee2e6;
+            border-radius: var(--border-radius);
+            padding: 10px;
+            margin-bottom: 5px;
+            font-size: 12px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        
+        .debug-log.success {
+            border-left: 4px solid #28a745;
+        }
+        
+        .debug-log.error {
+            border-left: 4px solid #dc3545;
+        }
+        
+        .debug-log.warning {
+            border-left: 4px solid #ffc107;
+        }
+        
+        .debug-log.info {
+            border-left: 4px solid #17a2b8;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <div class="header-title">
+                <i class="fas fa-calendar-alt"></i>
+                <div>
+                    <div>ปฏิทินการจองรถ</div>
+                    <div style="font-size: 16px; font-weight: 300; opacity: 0.9;">ระบบจัดการตารางการใช้รถยนต์บริษัท</div>
+                </div>
+            </div>
+            
+            <div class="header-controls">
+                <button class="btn btn-outline" id="prevMonth">
+                    <i class="fas fa-chevron-left"></i>
+                </button>
+                <button class="btn btn-outline" id="todayBtn">
+                    <i class="fas fa-calendar-day"></i> วันนี้
+                </button>
+                <button class="btn btn-outline" id="nextMonth">
+                    <i class="fas fa-chevron-right"></i>
+                </button>
+                <div class="month-display" id="currentMonth"></div>
+                <button class="btn btn-primary" id="refreshBtn">
+                    <i class="fas fa-sync-alt"></i> รีเฟรช
+                </button>
+                <button class="btn btn-outline" id="testConnectionBtn">
+                    <i class="fas fa-wifi"></i> ทดสอบเชื่อมต่อ
+                </button>
+            </div>
+        </div>
+        
+        <!-- Debug Section -->
+        <div class="debug-section" id="debugSection">
+            <h3 style="margin-bottom: 10px; color: var(--warning);">
+                <i class="fas fa-bug"></i> Debug Information
+            </h3>
+            <div id="debugLogs"></div>
+            <div style="margin-top: 10px;">
+                <button class="btn btn-outline" id="clearLogsBtn" style="padding: 5px 10px; font-size: 12px;">
+                    <i class="fas fa-trash"></i> ล้าง Logs
+                </button>
+                <button class="btn btn-outline" id="copyLogsBtn" style="padding: 5px 10px; font-size: 12px;">
+                    <i class="fas fa-copy"></i> คัดลอก Logs
+                </button>
+            </div>
+        </div>
+        
+        <!-- Message -->
+        <div class="message" id="message"></div>
+        
+        <!-- Connection Status -->
+        <div class="connection-status" id="connectionStatus" style="display: none;">
+            <div style="display: flex; align-items: center; gap: 10px; padding: 10px; background-color: #fff3cd; border-radius: var(--border-radius); margin-bottom: 20px;">
+                <i class="fas fa-exclamation-triangle" style="color: #856404;"></i>
+                <div>
+                    <strong>สถานะการเชื่อมต่อ:</strong>
+                    <span id="statusText">กำลังตรวจสอบ...</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Filters -->
+        <div class="filters-section">
+            <div class="filter-group">
+                <div class="filter-label">เลือกดูตามรถ</div>
+                <select class="filter-select" id="vehicleFilter">
+                    <option value="all">รถทั้งหมด</option>
+                </select>
+            </div>
+            
+            <div class="filter-group">
+                <div class="filter-label">เลือกดูตามแผนก</div>
+                <select class="filter-select" id="departmentFilter">
+                    <option value="all">ทุกแผนก</option>
+                </select>
+            </div>
+            
+            <div class="filter-group">
+                <div class="filter-label">เลือกดูตามสถานะ</div>
+                <select class="filter-select" id="statusFilter">
+                    <option value="all">ทุกสถานะ</option>
+                    <option value="active">กำลังใช้งาน</option>
+                    <option value="pending">รออนุมัติ</option>
+                    <option value="completed">เสร็จสิ้น</option>
+                </select>
+            </div>
+        </div>
+        
+        <!-- Stats -->
+        <div class="stats-section">
+            <div class="stat-card">
+                <div class="stat-icon reservations">
+                    <i class="fas fa-calendar-check"></i>
+                </div>
+                <div class="stat-content">
+                    <div class="stat-value" id="totalReservations">0</div>
+                    <div class="stat-label">การจองทั้งหมดในเดือนนี้</div>
+                </div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-icon vehicles">
+                    <i class="fas fa-car"></i>
+                </div>
+                <div class="stat-content">
+                    <div class="stat-value" id="activeVehicles">0</div>
+                    <div class="stat-label">รถที่ถูกจองในเดือนนี้</div>
+                </div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-icon departments">
+                    <i class="fas fa-building"></i>
+                </div>
+                <div class="stat-content">
+                    <div class="stat-value" id="activeDepartments">0</div>
+                    <div class="stat-label">แผนกที่ใช้งานในเดือนนี้</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Calendar -->
+        <div class="calendar-container">
+            <div class="calendar-header">
+                <div class="day-header">จันทร์</div>
+                <div class="day-header">อังคาร</div>
+                <div class="day-header">พุธ</div>
+                <div class="day-header">พฤหัสบดี</div>
+                <div class="day-header">ศุกร์</div>
+                <div class="day-header">เสาร์</div>
+                <div class="day-header">อาทิตย์</div>
+            </div>
+            
+            <div class="calendar-grid" id="calendarGrid">
+                <div class="loading">
+                    <div class="spinner"></div>
+                    <div>กำลังเชื่อมต่อกับ Google Sheets...</div>
+                    <div style="font-size: 14px; margin-top: 10px; color: var(--gray);" id="loadingMessage">
+                        หากใช้เวลานานเกินไป โปรแกรมจะเปลี่ยนไปใช้ข้อมูลตัวอย่าง
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Legend -->
+        <div class="legend-section">
+            <div class="legend-title">คำอธิบายสีรถ</div>
+            <div class="legend-items" id="legendItems">
+                <div class="legend-item">
+                    <div class="legend-color" style="background-color: #4361ee;"></div>
+                    <span>กำลังโหลด...</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Data Source Info -->
+        <div class="data-source-info" style="background-color: white; border-radius: var(--border-radius); padding: 15px; margin-top: 20px; box-shadow: var(--box-shadow);">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                    <strong>แหล่งข้อมูล:</strong>
+                    <span id="dataSource">กำลังตรวจสอบ...</span>
+                </div>
+                <div>
+                    <strong>จำนวนข้อมูล:</strong>
+                    <span id="dataCount">0</span> รายการ
+                </div>
+                <div>
+                    <strong>อัพเดทล่าสุด:</strong>
+                    <span id="lastUpdated">--</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Footer -->
+        <div class="footer">
+            <p>ระบบปฏิทินการจองรถ | บริษัท TokaiSolidtire จำกัด</p>
+            <p>Google Sheet ID: 1-5izB7N6ldxHAa3ca0RNhGP8Z36vuA0mw9Wi_xR_Lj4</p>
+        </div>
+    </div>
+    
+    <!-- Debug Toggle Button -->
+    <button class="debug-toggle" id="debugToggle">
+        <i class="fas fa-bug"></i>
+    </button>
+    
+    <!-- Event Details Modal -->
+    <div class="modal" id="eventModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title" id="modalTitle">รายละเอียดการจอง</div>
+                <button class="modal-close" id="closeModal">&times;</button>
+            </div>
+            <div id="eventList" class="event-list">
+                <!-- Event details will be populated here -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Configuration
+        const CONFIG = {
+            SCRIPT_URL: 'https://script.google.com/macros/s/AKfycbzcMdFcpQkAxIbb0iEJJfZ8fD0YgiGUetRkkw1UyMv7uY3tlza345UoL1uNrNbOUKRx/exec',
+            SHEET_ID: '1-5izB7N6ldxHAa3ca0RNhGP8Z36vuA0mw9Wi_xR_Lj4',
+            FALLBACK_DATA: true, // ใช้ข้อมูลตัวอย่างถ้าเชื่อมต่อไม่ได้
+            TIMEOUT: 10000, // 10 วินาที timeout
+            RETRY_COUNT: 3
+        };
+
+        // ข้อมูลตัวอย่าง
+        const sampleData = [
+            {
+                "timestamp": "2026-01-15",
+                "code": "EMP001",
+                "name": "สมชาย ใจดี",
+                "section": "ฝ่ายขาย",
+                "department": "การตลาด",
+                "position": "พนักงานขาย",
+                "contact": "081-234-5678",
+                "choose": "โตโยต้า ฟอร์จูนเนอร์",
+                "rentStartdate": "2026-01-16",
+                "rentEnddate": "2026-01-18",
+                "startTime": "09:00",
+                "endTime": "17:00",
+                "reason": "นำลูกค้าทัวร์โรงงาน"
+            },
+            // ... (ข้อมูลตัวอย่างเพิ่มเติม)
+        ];
+
+        // Global variables
+        let reservationsData = [];
+        let currentMonth = new Date().getMonth();
+        let currentYear = new Date().getFullYear();
+        let selectedVehicle = 'all';
+        let selectedDepartment = 'all';
+        let selectedStatus = 'all';
+        let dataSource = 'unknown';
+        let debugMode = false;
+        let retryCount = 0;
+
+        // DOM Elements
+        const elements = {
+            currentMonth: document.getElementById('currentMonth'),
+            calendarGrid: document.getElementById('calendarGrid'),
+            prevMonthBtn: document.getElementById('prevMonth'),
+            nextMonthBtn: document.getElementById('nextMonth'),
+            todayBtn: document.getElementById('todayBtn'),
+            refreshBtn: document.getElementById('refreshBtn'),
+            testConnectionBtn: document.getElementById('testConnectionBtn'),
+            vehicleFilter: document.getElementById('vehicleFilter'),
+            departmentFilter: document.getElementById('departmentFilter'),
+            statusFilter: document.getElementById('statusFilter'),
+            eventModal: document.getElementById('eventModal'),
+            modalTitle: document.getElementById('modalTitle'),
+            eventList: document.getElementById('eventList'),
+            closeModal: document.getElementById('closeModal'),
+            totalReservations: document.getElementById('totalReservations'),
+            activeVehicles: document.getElementById('activeVehicles'),
+            activeDepartments: document.getElementById('activeDepartments'),
+            legendItems: document.getElementById('legendItems'),
+            lastUpdated: document.getElementById('lastUpdated'),
+            message: document.getElementById('message'),
+            connectionStatus: document.getElementById('connectionStatus'),
+            statusText: document.getElementById('statusText'),
+            dataSource: document.getElementById('dataSource'),
+            dataCount: document.getElementById('dataCount'),
+            debugSection: document.getElementById('debugSection'),
+            debugLogs: document.getElementById('debugLogs'),
+            debugToggle: document.getElementById('debugToggle'),
+            clearLogsBtn: document.getElementById('clearLogsBtn'),
+            copyLogsBtn: document.getElementById('copyLogsBtn'),
+            loadingMessage: document.getElementById('loadingMessage')
+        };
+
+        // เริ่มต้นโปรแกรม
+        document.addEventListener('DOMContentLoaded', function() {
+            initCalendar();
+            setupEventListeners();
+            testGoogleSheetsConnection();
+        });
+
+        function initCalendar() {
+            updateCalendarDisplay();
+            showLoading('กำลังเชื่อมต่อกับ Google Sheets...');
+        }
+
+        function setupEventListeners() {
+            // ปุ่มควบคุมปฏิทิน
+            elements.prevMonthBtn.addEventListener('click', goToPreviousMonth);
+            elements.nextMonthBtn.addEventListener('click', goToNextMonth);
+            elements.todayBtn.addEventListener('click', goToToday);
+            elements.refreshBtn.addEventListener('click', loadData);
+            elements.testConnectionBtn.addEventListener('click', testGoogleSheetsConnection);
+            
+            // ฟิลเตอร์
+            elements.vehicleFilter.addEventListener('change', function() {
+                selectedVehicle = this.value;
+                updateStats();
+                renderCalendar();
+            });
+            
+            elements.departmentFilter.addEventListener('change', function() {
+                selectedDepartment = this.value;
+                updateStats();
+                renderCalendar();
+            });
+            
+            elements.statusFilter.addEventListener('change', function() {
+                selectedStatus = this.value;
+                updateStats();
+                renderCalendar();
+            });
+            
+            // Modal
+            elements.closeModal.addEventListener('click', closeEventModal);
+            elements.eventModal.addEventListener('click', function(e) {
+                if (e.target === elements.eventModal) {
+                    closeEventModal();
+                }
+            });
+            
+            // Debug
+            elements.debugToggle.addEventListener('click', toggleDebugMode);
+            elements.clearLogsBtn.addEventListener('click', clearDebugLogs);
+            elements.copyLogsBtn.addEventListener('click', copyDebugLogs);
+            
+            // Keyboard shortcuts
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape') closeEventModal();
+                if (e.key === 'F12') toggleDebugMode();
+                if (e.ctrlKey && e.key === 'r') {
+                    e.preventDefault();
+                    loadData();
+                }
+            });
+        }
+
+        function testGoogleSheetsConnection() {
+            logDebug('เริ่มทดสอบการเชื่อมต่อกับ Google Sheets...', 'info');
+            showConnectionStatus('กำลังทดสอบการเชื่อมต่อ...', 'warning');
+            
+            // ตรวจสอบหลายวิธี
+            checkScriptURL()
+                .then(isScriptWorking => {
+                    if (isScriptWorking) {
+                        logDebug('Google Apps Script ทำงานได้ปกติ', 'success');
+                        loadData();
+                    } else {
+                        logDebug('Google Apps Script ไม่สามารถเชื่อมต่อได้', 'error');
+                        checkSheetAccess()
+                            .then(isSheetAccessible => {
+                                if (isSheetAccessible) {
+                                    logDebug('Google Sheet สามารถเข้าถึงได้', 'success');
+                                    loadDataViaCSV();
+                                } else {
+                                    logDebug('Google Sheet ไม่สามารถเข้าถึงได้', 'error');
+                                    useFallbackData();
+                                }
+                            })
+                            .catch(() => useFallbackData());
+                    }
+                })
+                .catch(() => useFallbackData());
+        }
+
+        async function checkScriptURL() {
+            try {
+                const timestamp = new Date().getTime();
+                const testUrl = `${CONFIG.SCRIPT_URL}?t=${timestamp}`;
+                
+                logDebug(`กำลังทดสอบ URL: ${testUrl}`, 'info');
+                
+                const response = await fetch(testUrl, {
+                    method: 'GET',
+                    mode: 'cors',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                logDebug('Response received:', 'success', data);
+                return true;
+                
+            } catch (error) {
+                logDebug(`Error testing script URL: ${error.message}`, 'error');
+                return false;
+            }
+        }
+
+        async function checkSheetAccess() {
+            try {
+                // ใช้ CSV export URL
+                const csvUrl = `https://docs.google.com/spreadsheets/d/${CONFIG.SHEET_ID}/export?format=csv`;
+                
+                logDebug(`กำลังทดสอบ Sheet access: ${csvUrl}`, 'info');
+                
+                const response = await fetch(csvUrl);
+                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                
+                return true;
+            } catch (error) {
+                logDebug(`Error checking sheet access: ${error.message}`, 'error');
+                return false;
+            }
+        }
+
+        function loadData() {
+            showLoading('กำลังโหลดข้อมูลจาก Google Sheets...');
+            showConnectionStatus('กำลังโหลดข้อมูล...', 'info');
+            
+            fetchFromGoogleSheets()
+                .then(data => {
+                    if (data && data.length > 0) {
+                        reservationsData = data;
+                        dataSource = 'google-sheets';
+                        showMessage('โหลดข้อมูลจาก Google Sheets สำเร็จ', 'success');
+                        showConnectionStatus('เชื่อมต่อสำเร็จ', 'success');
+                        logDebug(`โหลดข้อมูลสำเร็จ: ${data.length} รายการ`, 'success');
+                        
+                        updateUI();
+                    } else {
+                        throw new Error('ไม่พบข้อมูลจาก Google Sheets');
+                    }
+                })
+                .catch(error => {
+                    logDebug(`Error loading data: ${error.message}`, 'error');
+                    
+                    if (retryCount < CONFIG.RETRY_COUNT) {
+                        retryCount++;
+                        logDebug(`ลองใหม่ครั้งที่ ${retryCount}...`, 'warning');
+                        setTimeout(loadData, 2000);
+                    } else {
+                        useFallbackData();
+                    }
+                });
+        }
+
+        async function fetchFromGoogleSheets() {
+            return new Promise(async (resolve, reject) => {
+                try {
+                    const timestamp = new Date().getTime();
+                    const url = `${CONFIG.SCRIPT_URL}?t=${timestamp}`;
+                    
+                    logDebug(`Fetching from: ${url}`, 'info');
+                    
+                    const controller = new AbortController();
+                    const timeoutId = setTimeout(() => controller.abort(), CONFIG.TIMEOUT);
+                    
+                    const response = await fetch(url, {
+                        signal: controller.signal,
+                        method: 'GET',
+                        mode: 'cors',
+                        headers: {
+                            'Accept': 'application/json'
+                        }
+                    });
+                    
+                    clearTimeout(timeoutId);
+                    
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    
+                    const result = await response.json();
+                    logDebug('Raw response:', 'info', result);
+                    
+                    if (result.status === 'success' && Array.isArray(result.data)) {
+                        resolve(result.data);
+                    } else if (Array.isArray(result)) {
+                        resolve(result);
+                    } else {
+                        throw new Error('รูปแบบข้อมูลไม่ถูกต้อง');
+                    }
+                    
+                } catch (error) {
+                    logDebug(`Fetch error: ${error.message}`, 'error');
+                    reject(error);
+                }
+            });
+        }
+
+        function loadDataViaCSV() {
+            logDebug('กำลังโหลดข้อมูลผ่าน CSV...', 'info');
+            
+            const csvUrl = `https://docs.google.com/spreadsheets/d/${CONFIG.SHEET_ID}/export?format=csv`;
+            
+            fetch(csvUrl)
+                .then(response => response.text())
+                .then(csvText => {
+                    const data = parseCSV(csvText);
+                    if (data.length > 0) {
+                        reservationsData = data;
+                        dataSource = 'csv-export';
+                        showMessage('โหลดข้อมูลผ่าน CSV สำเร็จ', 'success');
+                        showConnectionStatus('เชื่อมต่อสำเร็จ (CSV)', 'success');
+                        updateUI();
+                    } else {
+                        throw new Error('ไม่พบข้อมูลใน CSV');
+                    }
+                })
+                .catch(error => {
+                    logDebug(`CSV error: ${error.message}`, 'error');
+                    useFallbackData();
+                });
+        }
+
+        function parseCSV(csvText) {
+            const lines = csvText.split('\n');
+            if (lines.length < 2) return [];
+            
+            const headers = lines[0].split(',').map(h => h.trim().toLowerCase());
+            const data = [];
+            
+            for (let i = 1; i < lines.length; i++) {
+                const line = lines[i].trim();
+                if (!line) continue;
+                
+                const values = line.split(',').map(v => v.trim());
+                const obj = {};
+                
+                headers.forEach((header, index) => {
+                    obj[header] = values[index] || '';
+                });
+                
+                // เติมข้อมูลที่จำเป็น
+                if (!obj.code) obj.code = `EMP${i.toString().padStart(3, '0')}`;
+                
+                data.push(obj);
+            }
+            
+            return data.filter(item => item.name && item.name.trim() !== '');
+        }
+
+        function useFallbackData() {
+            logDebug('เปลี่ยนไปใช้ข้อมูลตัวอย่าง', 'warning');
+            reservationsData = sampleData;
+            dataSource = 'sample-data';
+            
+            showMessage('ใช้ข้อมูลตัวอย่าง (Google Sheets ไม่สามารถเชื่อมต่อได้)', 'error');
+            showConnectionStatus('ใช้ข้อมูลตัวอย่าง', 'warning');
+            
+            updateUI();
+        }
+
+        function updateUI() {
+            updateFilters();
+            updateStats();
+            updateLegend();
+            renderCalendar();
+            updateLastUpdated();
+            updateDataSourceInfo();
+            hideLoading();
+        }
+
+        function updateDataSourceInfo() {
+            elements.dataSource.textContent = 
+                dataSource === 'google-sheets' ? 'Google Sheets' :
+                dataSource === 'csv-export' ? 'CSV Export' :
+                dataSource === 'sample-data' ? 'ข้อมูลตัวอย่าง' : 'ไม่ทราบ';
+            
+            elements.dataCount.textContent = reservationsData.length;
+        }
+
+        function updateCalendarDisplay() {
+            const monthNames = [
+                'มกราคม', 'กุมภาพันธ์', 'มีนาคม', 'เมษายน', 'พฤษภาคม', 'มิถุนายน',
+                'กรกฎาคม', 'สิงหาคม', 'กันยายน', 'ตุลาคม', 'พฤศจิกายน', 'ธันวาคม'
+            ];
+            
+            elements.currentMonth.textContent = 
+                `${monthNames[currentMonth]} ${currentYear + 543}`;
+        }
+
+        function renderCalendar() {
+            if (reservationsData.length === 0) {
+                elements.calendarGrid.innerHTML = `
+                    <div style="grid-column: 1 / -1; text-align: center; padding: 40px;">
+                        <i class="fas fa-database" style="font-size: 48px; color: var(--gray); margin-bottom: 15px;"></i>
+                        <div style="color: var(--gray); font-size: 18px;">ไม่พบข้อมูลการจองรถ</div>
+                    </div>
+                `;
+                return;
+            }
+            
+            elements.calendarGrid.innerHTML = '';
+            
+            // วันแรกและวันสุดท้ายของเดือน
+            const firstDay = new Date(currentYear, currentMonth, 1);
+            const lastDay = new Date(currentYear, currentMonth + 1, 0);
+            const daysInMonth = lastDay.getDate();
+            
+            // วันแรกของเดือน
+            let firstDayOfWeek = firstDay.getDay();
+            firstDayOfWeek = firstDayOfWeek === 0 ? 6 : firstDayOfWeek - 1;
+            
+            // วันนี้
+            const today = new Date();
+            const isTodayMonth = today.getMonth() === currentMonth && today.getFullYear() === currentYear;
+            
+            // เพิ่มช่องว่างก่อนวันที่ 1
+            for (let i = 0; i < firstDayOfWeek; i++) {
+                const emptyDay = document.createElement('div');
+                emptyDay.className = 'calendar-day empty';
+                elements.calendarGrid.appendChild(emptyDay);
+            }
+            
+            // เพิ่มวันในเดือน
+            for (let day = 1; day <= daysInMonth; day++) {
+                const dayElement = document.createElement('div');
+                dayElement.className = 'calendar-day';
+                
+                // ตรวจสอบว่าเป็นวันนี้หรือไม่
+                if (isTodayMonth && day === today.getDate()) {
+                    dayElement.classList.add('today');
+                }
+                
+                // หมายเลขวัน
+                const dayNumber = document.createElement('div');
+                dayNumber.className = 'day-number';
+                dayNumber.textContent = day;
+                dayElement.appendChild(dayNumber);
+                
+                // วันที่ในรูปแบบ YYYY-MM-DD
+                const dateStr = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                
+                // ดึงการจองสำหรับวันนี้
+                const dayReservations = getReservationsForDate(dateStr);
+                
+                // แสดงจำนวนการจอง
+                if (dayReservations.length > 0) {
+                    const eventBadge = document.createElement('div');
+                    eventBadge.className = 'event-badge';
+                    eventBadge.textContent = dayReservations.length;
+                    eventBadge.title = `${dayReservations.length} การจอง`;
+                    dayElement.appendChild(eventBadge);
+                    
+                    // แสดงรายการจอง
+                    const eventsContainer = document.createElement('div');
+                    eventsContainer.className = 'day-events';
+                    
+                    dayReservations.slice(0, 3).forEach(reservation => {
+                        const eventItem = document.createElement('div');
+                        eventItem.className = 'event-item';
+                        eventItem.style.backgroundColor = getVehicleColor(reservation.choose);
+                        
+                        // แสดงชื่อรถและชื่อคนจองแบบย่อ
+                        const shortVehicle = reservation.choose ? reservation.choose.split(' ')[0] : 'รถ';
+                        const shortName = reservation.name ? reservation.name.split(' ')[0] : 'ไม่ระบุ';
+                        eventItem.textContent = `${shortVehicle}: ${shortName}`;
+                        
+                        eventItem.title = `${reservation.name || 'ไม่ระบุชื่อ'}\n${reservation.choose || 'ไม่ระบุรถ'}\n${formatTime(reservation.startTime)}-${formatTime(reservation.endTime)}`;
+                        
+                        eventItem.addEventListener('click', (e) => {
+                            e.stopPropagation();
+                            showEventDetails(dateStr, dayReservations);
+                        });
+                        
+                        eventsContainer.appendChild(eventItem);
+                    });
+                    
+                    dayElement.appendChild(eventsContainer);
+                }
+                
+                // คลิกที่วันเพื่อดูรายละเอียดทั้งหมด
+                dayElement.addEventListener('click', () => {
+                    if (dayReservations.length > 0) {
+                        showEventDetails(dateStr, dayReservations);
+                    }
+                });
+                
+                elements.calendarGrid.appendChild(dayElement);
+            }
+        }
+
+        function getReservationsForDate(dateStr) {
+            return reservationsData.filter(reservation => {
+                // ตรวจสอบฟิลเตอร์
+                if (selectedVehicle !== 'all' && reservation.choose !== selectedVehicle) {
+                    return false;
+                }
+                
+                if (selectedDepartment !== 'all' && reservation.department !== selectedDepartment) {
+                    return false;
+                }
+                
+                // ตรวจสอบสถานะ
+                if (selectedStatus !== 'all') {
+                    const status = getReservationStatus(reservation, dateStr);
+                    if (status !== selectedStatus) {
+                        return false;
+                    }
+                }
+                
+                // ตรวจสอบว่าอยู่ในช่วงวันที่จองหรือไม่
+                const startDate = reservation.rentStartdate || reservation.rentStartDate;
+                const endDate = reservation.rentEnddate || reservation.rentEndDate;
+                
+                if (!startDate || !endDate) return false;
+                
+                // แปลงวันที่ให้เป็นรูปแบบมาตรฐาน
+                const normStart = normalizeDate(startDate);
+                const normEnd = normalizeDate(endDate);
+                const normDate = normalizeDate(dateStr);
+                
+                return normDate >= normStart && normDate <= normEnd;
+            });
+        }
+
+        function normalizeDate(dateStr) {
+            if (!dateStr) return '';
+            
+            try {
+                // แปลงรูปแบบวันที่ต่างๆ เป็น YYYY-MM-DD
+                let str = dateStr.toString().trim();
+                
+                // แทนที่ตัวแบ่งวันที่
+                str = str.replace(/\./g, '-').replace(/\//g, '-');
+                
+                // แยกส่วน
+                const parts = str.split('-');
+                if (parts.length === 3) {
+                    let day = parts[0];
+                    let month = parts[1];
+                    let year = parts[2];
+                    
+                    // ถ้าปีเป็น 2 หลัก
+                    if (year.length === 2) {
+                        year = `20${year}`;
+                    }
+                    
+                    // สลับวันและเดือนถ้าจำเป็น
+                    if (day.length > 2) {
+                        [day, month] = [month, day];
+                    }
+                    
+                    return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+                }
+                
+                return str;
+            } catch (e) {
+                return dateStr;
+            }
+        }
+
+        function getReservationStatus(reservation, dateStr) {
+            const today = new Date().toISOString().split('T')[0];
+            const startDate = normalizeDate(reservation.rentStartdate || reservation.rentStartDate);
+            const endDate = normalizeDate(reservation.rentEnddate || reservation.rentEndDate);
+            
+            if (!startDate || !endDate) return 'pending';
+            
+            if (today > endDate) {
+                return 'completed';
+            } else if (today >= startDate && today <= endDate) {
+                return 'active';
+            } else {
+                return 'pending';
+            }
+        }
+
+        function getVehicleColor(vehicleName) {
+            const colors = [
+                '#4361ee', '#3f37c9', '#4cc9f0', '#f72585',
+                '#7209b7', '#3a0ca3', '#06d6a0', '#ffd166',
+                '#ef476f', '#118ab2', '#073b4c', '#ff9e00'
+            ];
+            
+            if (!vehicleName) return colors[0];
+            
+            // สร้างสีจากชื่อรถ
+            let hash = 0;
+            for (let i = 0; i < vehicleName.length; i++) {
+                hash = vehicleName.charCodeAt(i) + ((hash << 5) - hash);
+            }
+            
+            const index = Math.abs(hash) % colors.length;
+            return colors[index];
+        }
+
+        function updateFilters() {
+            // อัพเดทตัวเลือกรถ
+            const vehicles = [...new Set(reservationsData.map(item => item.choose).filter(Boolean))];
+            const vehicleFilter = elements.vehicleFilter;
+            
+            // รักษาตัวเลือกแรก (รถทั้งหมด)
+            while (vehicleFilter.options.length > 1) {
+                vehicleFilter.remove(1);
+            }
+            
+            vehicles.forEach(vehicle => {
+                const option = document.createElement('option');
+                option.value = vehicle;
+                option.textContent = vehicle;
+                vehicleFilter.appendChild(option);
+            });
+            
+            // อัพเดทตัวเลือกแผนก
+            const departments = [...new Set(reservationsData.map(item => item.department).filter(Boolean))];
+            const departmentFilter = elements.departmentFilter;
+            
+            while (departmentFilter.options.length > 1) {
+                departmentFilter.remove(1);
+            }
+            
+            departments.forEach(dept => {
+                const option = document.createElement('option');
+                option.value = dept;
+                option.textContent = dept;
+                departmentFilter.appendChild(option);
+            });
+        }
+
+        function updateStats() {
+            // คำนวณการจองในเดือนนี้
+            const monthReservations = reservationsData.filter(reservation => {
+                const startDate = normalizeDate(reservation.rentStartdate || reservation.rentStartDate);
+                if (!startDate) return false;
+                
+                try {
+                    const reservationDate = new Date(startDate);
+                    return reservationDate.getMonth() === currentMonth && 
+                           reservationDate.getFullYear() === currentYear;
+                } catch (e) {
+                    return false;
+                }
+            }).length;
+            
+            elements.totalReservations.textContent = monthReservations;
+            
+            // คำนวณรถที่ถูกจองในเดือนนี้
+            const monthVehicles = new Set();
+            reservationsData.forEach(reservation => {
+                const startDate = normalizeDate(reservation.rentStartdate || reservation.rentStartDate);
+                if (!startDate) return;
+                
+                try {
+                    const reservationDate = new Date(startDate);
+                    if (reservationDate.getMonth() === currentMonth && 
+                        reservationDate.getFullYear() === currentYear) {
+                        monthVehicles.add(reservation.choose);
+                    }
+                } catch (e) {
+                    // ข้ามข้อมูลที่ไม่ถูกต้อง
+                }
+            });
+            
+            elements.activeVehicles.textContent = monthVehicles.size;
+            
+            // คำนวณแผนกที่ใช้งานในเดือนนี้
+            const monthDepartments = new Set();
+            reservationsData.forEach(reservation => {
+                const startDate = normalizeDate(reservation.rentStartdate || reservation.rentStartDate);
+                if (!startDate) return;
+                
+                try {
+                    const reservationDate = new Date(startDate);
+                    if (reservationDate.getMonth() === currentMonth && 
+                        reservationDate.getFullYear() === currentYear) {
+                        monthDepartments.add(reservation.department);
+                    }
+                } catch (e) {
+                    // ข้ามข้อมูลที่ไม่ถูกต้อง
+                }
+            });
+            
+            elements.activeDepartments.textContent = monthDepartments.size;
+        }
+
+        function updateLegend() {
+            const vehicles = [...new Set(reservationsData.map(item => item.choose).filter(Boolean))].slice(0, 8);
+            elements.legendItems.innerHTML = '';
+            
+            if (vehicles.length === 0) {
+                const noData = document.createElement('div');
+                noData.className = 'legend-item';
+                noData.innerHTML = `
+                    <div class="legend-color" style="background-color: #6c757d;"></div>
+                    <span>ไม่มีข้อมูลรถ</span>
+                `;
+                elements.legendItems.appendChild(noData);
+                return;
+            }
+            
+            vehicles.forEach(vehicle => {
+                const legendItem = document.createElement('div');
+                legendItem.className = 'legend-item';
+                
+                const colorBox = document.createElement('div');
+                colorBox.className = 'legend-color';
+                colorBox.style.backgroundColor = getVehicleColor(vehicle);
+                
+                const label = document.createElement('span');
+                label.textContent = vehicle || 'ไม่ระบุ';
+                
+                legendItem.appendChild(colorBox);
+                legendItem.appendChild(label);
+                elements.legendItems.appendChild(legendItem);
+            });
+        }
+
+        function showEventDetails(dateStr, reservations) {
+            const date = new Date(dateStr);
+            const formattedDate = date.toLocaleDateString('th-TH', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+                weekday: 'long'
+            });
+            
+            elements.modalTitle.textContent = `การจองรถวันที่ ${formattedDate}`;
+            elements.eventList.innerHTML = '';
+            
+            if (reservations.length === 0) {
+                elements.eventList.innerHTML = `
+                    <div style="text-align: center; padding: 40px; color: var(--gray);">
+                        <i class="fas fa-calendar-times" style="font-size: 48px; margin-bottom: 15px;"></i>
+                        <div>ไม่มีการจองรถในวันนี้</div>
+                    </div>
+                `;
+            } else {
+                reservations.forEach(reservation => {
+                    const status = getReservationStatus(reservation, dateStr);
+                    const statusClass = `status-${status}`;
+                    const statusText = status === 'active' ? 'กำลังใช้งาน' : 
+                                     status === 'pending' ? 'รออนุมัติ' : 'เสร็จสิ้น';
+                    
+                    const startDate = normalizeDate(reservation.rentStartdate || reservation.rentStartDate);
+                    const endDate = normalizeDate(reservation.rentEnddate || reservation.rentEndDate);
+                    
+                    const eventDetail = document.createElement('div');
+                    eventDetail.className = 'event-detail';
+                    eventDetail.style.borderLeftColor = getVehicleColor(reservation.choose);
+                    
+                    eventDetail.innerHTML = `
+                        <div class="event-header">
+                            <div class="event-vehicle">${reservation.choose || 'ไม่ระบุรถ'}</div>
+                            <span class="event-status ${statusClass}">${statusText}</span>
+                        </div>
+                        <div class="event-details">
+                            <div class="event-detail-item">
+                                <span class="event-detail-label">ผู้จอง</span>
+                                <span class="event-detail-value">${reservation.name || '-'}</span>
+                            </div>
+                            <div class="event-detail-item">
+                                <span class="event-detail-label">รหัสพนักงาน</span>
+                                <span class="event-detail-value">${reservation.code || reservation.Code || '-'}</span>
+                            </div>
+                            <div class="event-detail-item">
+                                <span class="event-detail-label">แผนก</span>
+                                <span class="event-detail-value">${reservation.department || '-'}</span>
+                            </div>
+                            <div class="event-detail-item">
+                                <span class="event-detail-label">ตำแหน่ง</span>
+                                <span class="event-detail-value">${reservation.position || '-'}</span>
+                            </div>
+                            <div class="event-detail-item">
+                                <span class="event-detail-label">วันที่จอง</span>
+                                <span class="event-detail-value">${formatDate(startDate)} - ${formatDate(endDate)}</span>
+                            </div>
+                            <div class="event-detail-item">
+                                <span class="event-detail-label">เวลา</span>
+                                <span class="event-detail-value">${formatTime(reservation.startTime)} - ${formatTime(reservation.endTime)}</span>
+                            </div>
+                            <div class="event-detail-item">
+                                <span class="event-detail-label">เหตุผล</span>
+                                <span class="event-detail-value">${reservation.reason || '-'}</span>
+                            </div>
+                            <div class="event-detail-item">
+                                <span class="event-detail-label">ติดต่อ</span>
+                                <span class="event-detail-value">${reservation.contact || '-'}</span>
+                            </div>
+                        </div>
+                    `;
+                    
+                    elements.eventList.appendChild(eventDetail);
+                });
+            }
+            
+            elements.eventModal.style.display = 'flex';
+        }
+
+        function closeEventModal() {
+            elements.eventModal.style.display = 'none';
+        }
+
+        function goToPreviousMonth() {
+            currentMonth--;
+            if (currentMonth < 0) {
+                currentMonth = 11;
+                currentYear--;
+            }
+            updateCalendarDisplay();
+            updateStats();
+            renderCalendar();
+        }
+
+        function goToNextMonth() {
+            currentMonth++;
+            if (currentMonth > 11) {
+                currentMonth = 0;
+                currentYear++;
+            }
+            updateCalendarDisplay();
+            updateStats();
+            renderCalendar();
+        }
+
+        function goToToday() {
+            const today = new Date();
+            currentMonth = today.getMonth();
+            currentYear = today.getFullYear();
+            updateCalendarDisplay();
+            updateStats();
+            renderCalendar();
+        }
+
+        function formatDate(dateStr) {
+            if (!dateStr) return '-';
+            
+            try {
+                const date = new Date(dateStr);
+                const day = date.getDate().toString().padStart(2, '0');
+                const month = (date.getMonth() + 1).toString().padStart(2, '0');
+                const year = (date.getFullYear() + 543).toString().slice(-2);
+                return `${day}/${month}/${year}`;
+            } catch (e) {
+                return dateStr;
+            }
+        }
+
+        function formatTime(timeStr) {
+            if (!timeStr) return '-';
+            return timeStr.replace(/:\d+$/, ''); // ลบวินาทีออกถ้ามี
+        }
+
+        function updateLastUpdated() {
+            const now = new Date();
+            const timeString = now.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' });
+            const dateString = now.toLocaleDateString('th-TH');
+            elements.lastUpdated.textContent = `${dateString} ${timeString}`;
+        }
+
+        function showLoading(message = 'กำลังโหลด...') {
+            elements.calendarGrid.innerHTML = `
+                <div class="loading">
+                    <div class="spinner"></div>
+                    <div>${message}</div>
+                    ${elements.loadingMessage ? `<div style="font-size: 14px; margin-top: 10px; color: var(--gray);" id="loadingMessage">
+                        หากใช้เวลานานเกินไป โปรแกรมจะเปลี่ยนไปใช้ข้อมูลตัวอย่าง
+                    </div>` : ''}
+                </div>
+            `;
+        }
+
+        function hideLoading() {
+            const loading = elements.calendarGrid.querySelector('.loading');
+            if (loading) {
+                loading.style.display = 'none';
+            }
+        }
+
+        function showMessage(text, type) {
+            elements.message.textContent = text;
+            elements.message.className = `message ${type}`;
+            elements.message.style.display = 'block';
+            
+            setTimeout(() => {
+                elements.message.style.display = 'none';
+            }, 5000);
+        }
+
+        function showConnectionStatus(text, type) {
+            elements.connectionStatus.style.display = 'block';
+            elements.statusText.textContent = text;
+            elements.statusText.style.color = 
+                type === 'success' ? '#28a745' :
+                type === 'warning' ? '#ffc107' :
+                type === 'error' ? '#dc3545' : '#17a2b8';
+        }
+
+        // Debug Functions
+        function logDebug(message, type = 'info', data = null) {
+            if (!debugMode) return;
+            
+            const timestamp = new Date().toLocaleTimeString();
+            const logDiv = document.createElement('div');
+            logDiv.className = `debug-log ${type}`;
+            
+            let logMessage = `[${timestamp}] ${message}`;
+            if (data) {
+                logMessage += `\n${JSON.stringify(data, null, 2)}`;
+            }
+            
+            logDiv.textContent = logMessage;
+            elements.debugLogs.appendChild(logDiv);
+            
+            // จำกัดจำนวน logs
+            const logs = elements.debugLogs.querySelectorAll('.debug-log');
+            if (logs.length > 50) {
+                logs[0].remove();
+            }
+            
+            // Scroll to bottom
+            elements.debugLogs.scrollTop = elements.debugLogs.scrollHeight;
+            
+            console.log(`[DEBUG] ${type.toUpperCase()}:`, message, data || '');
+        }
+
+        function toggleDebugMode() {
+            debugMode = !debugMode;
+            elements.debugSection.style.display = debugMode ? 'block' : 'none';
+            elements.debugToggle.innerHTML = debugMode ? 
+                '<i class="fas fa-times"></i>' : 
+                '<i class="fas fa-bug"></i>';
+            
+            if (debugMode) {
+                logDebug('Debug mode enabled', 'info');
+            }
+        }
+
+        function clearDebugLogs() {
+            elements.debugLogs.innerHTML = '';
+            logDebug('Logs cleared', 'info');
+        }
+
+        function copyDebugLogs() {
+            const logs = elements.debugLogs.textContent;
+            navigator.clipboard.writeText(logs)
+                .then(() => {
+                    logDebug('Logs copied to clipboard', 'success');
+                    showMessage('คัดลอก logs เรียบร้อยแล้ว', 'success');
+                })
+                .catch(err => {
+                    logDebug('Failed to copy logs: ' + err.message, 'error');
+                });
+        }
+    </script>
+</body>
+</html>
