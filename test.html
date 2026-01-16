@@ -1869,6 +1869,61 @@
                 elements.message.style.display = 'none';
             }, 5000);
         }
+
+        async function loadFromGoogleSheets() {
+    console.log('กำลังโหลดข้อมูลจาก Google Sheets...');
+    
+    try {
+        // วิธีที่ 1: ใช้ CSV export
+        const csvUrl = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv`;
+        console.log('URL ที่ใช้โหลด:', csvUrl);
+        
+        const response = await fetch(csvUrl);
+        
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const csvText = await response.text();
+        console.log('ข้อมูลดิบที่ได้ (200 ตัวแรก):', csvText.substring(0, 200));
+        
+        const data = parseCSVData(csvText);
+        console.log('ข้อมูลที่แปลงแล้ว:', data);
+        
+        if (data.length === 0) {
+            throw new Error('ไม่พบข้อมูลในไฟล์');
+        }
+        
+        return data;
+        
+    } catch (error) {
+        console.error('Error loading from Google Sheets:', error);
+        
+        // ลองวิธีที่ 2: ใช้ Apps Script
+        try {
+            console.log('ลองใช้ Apps Script...');
+            const scriptUrl = 'https://script.google.com/macros/s/AKfycbzcMdFcpQkAxIbb0iEJJfZ8fD0YgiGUetRkkw1UyMv7uY3tlza345UoL1uNrNbOUKRx/exec';
+            const response = await fetch(`${scriptUrl}?action=getAllData`);
+            
+            if (!response.ok) {
+                throw new Error(`Apps Script HTTP error: ${response.status}`);
+            }
+            
+            const result = await response.json();
+            console.log('Apps Script result:', result);
+            
+            if (result.success && result.data) {
+                return result.data;
+            } else {
+                throw new Error('Invalid Apps Script response');
+            }
+            
+        } catch (scriptError) {
+            console.error('Apps Script failed:', scriptError);
+            throw new Error('ไม่สามารถโหลดข้อมูลได้จากทั้งสองวิธี');
+        }
+    }
+}
     </script>
 </body>
 </html>
