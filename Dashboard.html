@@ -575,6 +575,10 @@
                 width: 100%;
             }
         }
+        .status.rejected {
+    background-color: rgba(231, 76, 60, 0.2);
+    color: #c0392b;
+}
     </style>
 </head>
 <body>
@@ -1008,52 +1012,51 @@
         }
         
         // Process raw data from Google Sheets
-        function processData(rawData) {
-            updateDebugInfo(`Processing ${rawData.length} raw records...`);
+        // Process raw data from Google Sheets
+function processData(rawData) {
+    updateDebugInfo(`Processing ${rawData.length} raw records...`);
+    
+    const processed = rawData.map((item, index) => {
+        // Try to extract data using different property names
+        const processedItem = {
+            Timestamp: item.Timestamp || item.timestamp || item['Timestamp'] || item['timestamp'] || item[0] || '',
+            Code: item.Code || item.code || item['Code'] || item['code'] || item[1] || `ROW${index + 2}`,
+            name: item.name || item.Name || item['name'] || item['Name'] || item[2] || '',
+            section: item.section || item.Section || item['section'] || item['Section'] || item[3] || '',
+            department: item.department || item.Department || item['department'] || item['Department'] || item[4] || '',
+            position: item.position || item.Position || item['position'] || item['Position'] || item[5] || '',
+            contact: item.contact || item.Contact || item['contact'] || item['Contact'] || item[6] || '',
+            choose: item.choose || item.Choose || item['choose'] || item['Choose'] || item[7] || '',
+            rentStartdate: item.rentStartdate || item.rentStartDate || item['rentStartdate'] || item['rentStartDate'] || item[8] || '',
+            rentEnddate: item.rentEnddate || item.rentEndDate || item['rentEnddate'] || item['rentEndDate'] || item[9] || '',
+            startTime: item.startTime || item['startTime'] || item[10] || '',
+            endTime: item.endTime || item['endTime'] || item[11] || '',
+            reason: item.reason || item.Reason || item['reason'] || item['Reason'] || item[12] || '',
+            // เพิ่มคอลัมน์ approval จากคอลัมน์ N
+            approval: item.approval || item.Approval || item['approval'] || item['Approval'] || item[13] || '',
             
-            const processed = rawData.map((item, index) => {
-                // Debug: Log the first few items
-                if (index < 3 && debugMode) {
-                    console.log(`Raw item ${index}:`, item);
-                }
-                
-                // Try to extract data using different property names
-                const processedItem = {
-                    // Try different possible property names for each field
-                    Timestamp: item.Timestamp || item.timestamp || item['Timestamp'] || item['timestamp'] || item[0] || '',
-                    Code: item.Code || item.code || item['Code'] || item['code'] || item[1] || `ROW${index + 2}`,
-                    name: item.name || item.Name || item['name'] || item['Name'] || item[2] || '',
-                    section: item.section || item.Section || item['section'] || item['Section'] || item[3] || '',
-                    department: item.department || item.Department || item['department'] || item['Department'] || item[4] || '',
-                    position: item.position || item.Position || item['position'] || item['Position'] || item[5] || '',
-                    contact: item.contact || item.Contact || item['contact'] || item['Contact'] || item[6] || '',
-                    choose: item.choose || item.Choose || item['choose'] || item['Choose'] || item[7] || '',
-                    rentStartdate: item.rentStartdate || item.rentStartDate || item['rentStartdate'] || item['rentStartDate'] || item[8] || '',
-                    rentEnddate: item.rentEnddate || item.rentEndDate || item['rentEnddate'] || item['rentEndDate'] || item[9] || '',
-                    startTime: item.startTime || item['startTime'] || item[10] || '',
-                    endTime: item.endTime || item['endTime'] || item[11] || '',
-                    reason: item.reason || item.Reason || item['reason'] || item['Reason'] || item[12] || '',
-                    // Store original for debugging
-                    _original: item
-                };
-                
-                // Clean up date formats
-                processedItem.rentStartdate = normalizeDateString(processedItem.rentStartdate);
-                processedItem.rentEnddate = normalizeDateString(processedItem.rentEnddate);
-                
-                return processedItem;
-            });
+            // Store original for debugging
+            _original: item
             
-            // Filter out empty rows (where all fields are empty)
-            const filtered = processed.filter(item => {
-                const hasData = item.name || item.department || item.choose || item.rentStartdate;
-                return hasData;
-            });
-            
-            updateDebugInfo(`After processing: ${filtered.length} valid records`);
-            
-            return filtered;
-        }
+        };
+        
+        // Clean up date formats
+        processedItem.rentStartdate = normalizeDateString(processedItem.rentStartdate);
+        processedItem.rentEnddate = normalizeDateString(processedItem.rentEnddate);
+        
+        return processedItem;
+    });
+    
+    // Filter out empty rows (where all fields are empty)
+    const filtered = processed.filter(item => {
+        const hasData = item.name || item.department || item.choose || item.rentStartdate;
+        return hasData;
+    });
+    
+    updateDebugInfo(`After processing: ${filtered.length} valid records`);
+    
+    return filtered;
+}
         
         // Normalize date string
         function normalizeDateString(dateStr) {
@@ -1097,67 +1100,90 @@
         }
         
         // Update dashboard stats
-        function updateDashboard(data) {
-            updateDebugInfo(`Updating dashboard with ${data.length} records`);
-            
-            // Update total reservations
-            totalReservations.textContent = data.length;
-            dataStats.textContent = `Data rows loaded: ${data.length}`;
-            
-            // Calculate active now (reservations happening today)
-            const today = new Date().toISOString().split('T')[0];
-            const activeCount = data.filter(item => {
-                try {
-                    const startDate = item.rentStartdate;
-                    const endDate = item.rentEnddate;
-                    
-                    if (!startDate || !endDate) return false;
-                    
-                    return today >= startDate && today <= endDate;
-                } catch (e) {
-                    return false;
-                }
-            }).length;
-            
-            activeNow.textContent = activeCount;
-            
-            // Calculate upcoming reservations (starting in the next 7 days)
-            const nextWeek = new Date();
-            nextWeek.setDate(nextWeek.getDate() + 7);
-            const nextWeekStr = nextWeek.toISOString().split('T')[0];
-            
-            const upcomingCount = data.filter(item => {
-                try {
-                    const startDate = item.rentStartdate;
-                    
-                    if (!startDate) return false;
-                    
-                    return startDate > today && startDate <= nextWeekStr;
-                } catch (e) {
-                    return false;
-                }
-            }).length;
-            
-            upcomingReservations.textContent = upcomingCount;
-            
-            // Calculate unique departments
-            const departments = [...new Set(data.map(item => item.department).filter(Boolean))];
-            totalDepartments.textContent = departments.length;
-            
-            // Update data info
-            dataCount.textContent = Math.min(15, data.length);
-            totalCount.textContent = data.length;
-            dataInfo.style.display = 'block';
-            
-            // Update stat change indicators
-            updateStatChanges(data);
-            
-            // Debug: Log sample data
-            if (debugMode && data.length > 0) {
-                console.log('Sample processed data:', data[0]);
-                console.log('All departments:', departments);
-            }
-        }
+       // Update dashboard stats
+// Update dashboard stats
+function updateDashboard(data) {
+    updateDebugInfo(`Updating dashboard with ${data.length} records`);
+    
+    // Update total reservations
+    totalReservations.textContent = data.length;
+    dataStats.textContent = `Data rows loaded: ${data.length}`;
+    
+    // ตรวจสอบค่าสถานะทั้งหมด (สำหรับ debug)
+    if (debugMode) {
+        const allApprovals = data.map(item => item.approval || '(empty)');
+        console.log('All approval values:', allApprovals);
+    }
+    
+    // นับจำนวนอนุมัติ (ต้องตรงกับ "อนุมัติ" เท่านั้น)
+    const approvedCount = data.filter(item => {
+        const approvalStatus = String(item.approval || '').toLowerCase().trim();
+        // ตรวจสอบหลายรูปแบบ
+        return approvalStatus === 'อนุมัติ' || 
+               approvalStatus === 'approved' ||
+               approvalStatus === 'ยืนยัน' ||
+               approvalStatus === 'yes' ||
+               approvalStatus === 'y';
+    }).length;
+    
+    activeNow.textContent = approvedCount;
+    
+    // นับจำนวนรออนุมัติ
+    const pendingCount = data.filter(item => {
+        const approvalStatus = String(item.approval || '').toLowerCase().trim();
+        // ตรวจสอบหลายรูปแบบ
+        return approvalStatus === 'รออนุมัติ' || 
+               approvalStatus === 'pending' ||
+               approvalStatus === 'รอ' ||
+               approvalStatus === 'waiting' ||
+               approvalStatus === '' || // ค่าว่างถือว่ารออนุมัติ
+               approvalStatus === '(empty)';
+    }).length;
+    
+    upcomingReservations.textContent = pendingCount;
+    
+    // นับจำนวนปฏิเสธ
+    const rejectedCount = data.filter(item => {
+        const approvalStatus = String(item.approval || '').toLowerCase().trim();
+        return approvalStatus === 'ปฏิเสธ' || 
+               approvalStatus === 'rejected' ||
+               approvalStatus === 'no' ||
+               approvalStatus === 'n';
+    }).length;
+    
+    // Calculate unique departments
+    const departments = [...new Set(data.map(item => item.department).filter(Boolean))];
+    totalDepartments.textContent = departments.length;
+    
+    // Update data info
+    dataCount.textContent = Math.min(15, data.length);
+    totalCount.textContent = data.length;
+    dataInfo.style.display = 'block';
+    
+    // Update stat change indicators
+    updateStatChanges(approvedCount, pendingCount, departments.length, data.length, rejectedCount);
+    
+    // Debug: Show approval statistics
+    if (debugMode) {
+        console.log(`Approved: ${approvedCount}, Pending: ${pendingCount}, Rejected: ${rejectedCount}, Total: ${data.length}`);
+    }
+}
+
+// แก้ไขฟังก์ชัน updateStatChanges
+function updateStatChanges(approved, pending, depts, total, rejected = 0) {
+    document.getElementById('totalChange').textContent = `${total} รายการ`;
+    document.getElementById('activeChange').textContent = `${approved} อนุมัติ`;
+    document.getElementById('upcomingChange').textContent = `${pending} รออนุมัติ`;
+    document.getElementById('deptChange').textContent = `${depts} แผนก`;
+}
+
+// แก้ไขฟังก์ชัน updateStatChanges
+function updateStatChanges(approved, pending, depts, total) {
+    document.getElementById('totalChange').textContent = `${total} total records`;
+    document.getElementById('activeChange').textContent = `${approved} approved`;
+    document.getElementById('upcomingChange').textContent = `${pending} pending`;
+    document.getElementById('deptChange').textContent = `${depts} departments`;
+}
         
         // Update stat change indicators
         function updateStatChanges(data) {
@@ -1334,92 +1360,97 @@
         }
         
         // Update table with data
-        function updateTable(data) {
-            updateDebugInfo(`Updating table with ${data.length} records`);
+  // Update table with data
+function updateTable(data) {
+    updateDebugInfo(`Updating table with ${data.length} records`);
+    
+    tableBody.innerHTML = '';
+    
+    if (data.length === 0) {
+        const row = document.createElement('tr');
+        row.innerHTML = `<td colspan="8" style="text-align: center; padding: 40px; color: var(--gray);">
+                            <i class="fas fa-database" style="font-size: 48px; margin-bottom: 15px; display: block;"></i>
+                            ไม่พบข้อมูลการจองรถ
+                        </td>`;
+        tableBody.appendChild(row);
+    } else {
+        // Sort by timestamp (newest first)
+        const sortedData = [...data].sort((a, b) => {
+            try {
+                const dateA = new Date(a.Timestamp || 0);
+                const dateB = new Date(b.Timestamp || 0);
+                return dateB - dateA;
+            } catch (e) {
+                return 0;
+            }
+        });
+        
+        // Show only recent 15 reservations
+        const displayData = sortedData.slice(0, 15);
+        
+        displayData.forEach((item, index) => {
+            const row = document.createElement('tr');
             
-            tableBody.innerHTML = '';
+            // ใช้สถานะจากคอลัมน์ approval เท่านั้น
+            const approvalStatus = String(item.approval || '').toLowerCase().trim();
             
-            if (data.length === 0) {
-                const row = document.createElement('tr');
-                row.innerHTML = `<td colspan="8" style="text-align: center; padding: 40px; color: var(--gray);">
-                                    <i class="fas fa-database" style="font-size: 48px; margin-bottom: 15px; display: block;"></i>
-                                    ไม่พบข้อมูลการจองรถ
-                                </td>`;
-                tableBody.appendChild(row);
-            } else {
-                // Sort by date (newest first)
-                const sortedData = [...data].sort((a, b) => {
-                    try {
-                        const dateA = new Date(a.rentStartdate || 0);
-                        const dateB = new Date(b.rentStartdate || 0);
-                        return dateB - dateA;
-                    } catch (e) {
-                        return 0;
-                    }
-                });
-                
-                // Show only recent 15 reservations
-                const displayData = sortedData.slice(0, 15);
-                
-                displayData.forEach((item, index) => {
-                    const row = document.createElement('tr');
-                    
-                    // Determine status
-                    const today = new Date();
-                    const todayStr = today.toISOString().split('T')[0];
-                    const startDate = item.rentStartdate;
-                    const endDate = item.rentEnddate;
-                    
-                    let status = 'pending';
-                    let statusText = 'Pending';
-                    
-                    if (startDate && endDate) {
-                        try {
-                            if (todayStr > endDate) {
-                                status = 'completed';
-                                statusText = 'Completed';
-                            } else if (todayStr >= startDate && todayStr <= endDate) {
-                                status = 'active';
-                                statusText = 'Active';
-                            }
-                        } catch (e) {
-                            // Keep as pending if date parsing fails
-                        }
-                    }
-                    
-                    // Format rental period
-                    let rentalPeriod = 'ไม่ระบุวันที่';
-                    if (startDate && endDate) {
-                        try {
-                            rentalPeriod = `${formatDisplayDate(startDate)} - ${formatDisplayDate(endDate)}`;
-                        } catch (e) {
-                            rentalPeriod = `${startDate} - ${endDate}`;
-                        }
-                    }
-                    
-                    row.innerHTML = `
-                        <td>${index + 1}</td>
-                        <td><strong>${item.Code || '-'}</strong></td>
-                        <td>${item.name || '-'}</td>
-                        <td>${item.department || '-'}</td>
-                        <td>${item.position || '-'}</td>
-                        <td>${item.choose || '-'}</td>
-                        <td>${rentalPeriod}</td>
-                        <td><span class="status ${status}">${statusText}</span></td>
-                    `;
-                    
-                    tableBody.appendChild(row);
-                });
+            // กำหนดสีและข้อความตามสถานะ
+            let statusClass = 'pending';
+            let statusText = 'รออนุมัติ';
+            
+           if (approvalStatus === 'อนุมัติ' || approvalStatus === 'approved' || approvalStatus === 'ยืนยัน') {
+    statusClass = 'active';
+    statusText = 'อนุมัติ';
+} else if (approvalStatus === 'ปฏิเสธ' || approvalStatus === 'rejected') {
+    statusClass = 'rejected';  // ใช้คลาส rejected
+    statusText = 'ปฏิเสธ';
+} else if (approvalStatus === 'เสร็จสิ้น' || approvalStatus === 'completed') {
+    statusClass = 'completed';
+    statusText = 'เสร็จสิ้น';
+}
+            // ถ้าเป็นค่าว่างหรือ 'รออนุมัติ' ให้ใช้ค่า default ข้างต้น
+            
+            // Format rental period
+            let rentalPeriod = 'ไม่ระบุวันที่';
+            if (item.rentStartdate && item.rentEnddate) {
+                try {
+                    rentalPeriod = `${formatDisplayDate(item.rentStartdate)} - ${formatDisplayDate(item.rentEnddate)}`;
+                } catch (e) {
+                    rentalPeriod = `${item.rentStartdate} - ${item.rentEnddate}`;
+                }
             }
             
-            tableLoading.style.display = 'none';
-            reservationsTable.style.display = 'table';
+            row.innerHTML = `
+                <td>${index + 1}</td>
+                <td><strong>${item.Code || '-'}</strong></td>
+                <td>${item.name || '-'}</td>
+                <td>${item.department || '-'}</td>
+                <td>${item.position || '-'}</td>
+                <td>${item.choose || '-'}</td>
+                <td>${rentalPeriod}</td>
+                <td><span class="status ${statusClass}">${statusText}</span></td>
+            `;
             
-            // Debug: Log first few items
-            if (debugMode && data.length > 0) {
-                console.log('First 3 table items:', data.slice(0, 3));
+            // เพิ่ม tooltip เพื่อแสดงค่าจริงจากคอลัมน์ N (สำหรับ debug)
+            if (debugMode) {
+                row.querySelector('.status').title = `ค่าจากคอลัมน์ N: "${item.approval || '(empty)'}"`;
             }
-        }
+            
+            tableBody.appendChild(row);
+        });
+    }
+    
+    tableLoading.style.display = 'none';
+    reservationsTable.style.display = 'table';
+    
+    // Debug: Log approval status of displayed items
+    if (debugMode && displayData) {
+        console.log('Approval statuses in table:');
+        displayData.forEach((item, idx) => {
+            console.log(`${idx+1}. ${item.name} - Approval: "${item.approval}"`);
+        });
+    }
+}
         
         // Format date for display
         function formatDisplayDate(dateString) {
