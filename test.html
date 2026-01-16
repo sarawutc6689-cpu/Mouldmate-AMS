@@ -579,14 +579,16 @@
             </div>
             
             <div class="header-controls">
-    <div class="month-display" id="currentMonth" style="background-color: rgba(255,255,255,0.1); color: white;">
-        รายงานการจองรถ
-    </div>
-    <button class="btn btn-primary" onclick="window.location.href='Carlendar.html'" 
-            style="background: linear-gradient(135deg, #fff 0%, #f8f9fa 100%); color: var(--primary); border: none;">
-        <i class="fas fa-calendar-alt"></i> ไปปฏิทิน
-    </button>
-</div>
+                <button class="btn btn-outline" onclick="window.history.back()">
+                    <i class="fas fa-arrow-left"></i> ย้อนกลับ
+                </button>
+                <button class="btn btn-primary" id="refreshReport">
+                    <i class="fas fa-sync-alt"></i> รีเฟรชรายงาน
+                </button>
+                <button class="btn btn-primary" onclick="window.location.href='Carlendar.html'">
+                    <i class="fas fa-calendar-alt"></i> ไปที่ปฏิทิน
+                </button>
+            </div>
         </div>
         
         <!-- Message -->
