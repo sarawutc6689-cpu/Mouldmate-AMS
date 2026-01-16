@@ -575,15 +575,18 @@
                 </div>
             </div>
             
-          <div class="header-controls">
-    <div class="month-display" id="currentMonth" style="background-color: rgba(255,255,255,0.1); color: white; border: none;">
-        <i class="fas fa-chart-bar" style="margin-right: 10px;"></i>
-        รายงานการจองรถ
-    </div>
-    <button class="btn btn-primary" onclick="window.location.href='Carlendar.html'">
-        <i class="fas fa-calendar-alt"></i> ปฏิทินการจอง
-    </button>
-</div>
+            <div class="header-controls">
+                <button class="btn btn-outline" onclick="window.history.back()">
+                    <i class="fas fa-arrow-left"></i> ย้อนกลับ
+                </button>
+                <button class="btn btn-primary" id="refreshReport">
+                    <i class="fas fa-sync-alt"></i> รีเฟรชรายงาน
+                </button>
+                <button class="btn btn-primary" onclick="window.location.href='Carlendar.html'">
+                    <i class="fas fa-calendar-alt"></i> ไปที่ปฏิทิน
+                </button>
+            </div>
+        </div>
         
         <!-- Message -->
         <div class="message" id="message"></div>
@@ -871,17 +874,12 @@
         };
 
         // เริ่มต้น
-      // เริ่มต้น
-document.addEventListener('DOMContentLoaded', function() {
-    console.log('Report page loaded');
-    initReport();
-    setupEventListeners();
-    
-    // โหลดข้อมูลโดยอัตโนมัติ
-    setTimeout(() => {
-        loadReportData();
-    }, 100);
-});
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('Report page loaded');
+            initReport();
+            setupEventListeners();
+            loadReportData();
+        });
 
         function initReport() {
             // ตั้งค่าวันเริ่มต้นและสิ้นสุด (เดือนนี้)
@@ -897,28 +895,18 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         function setupEventListeners() {
-    // เพิ่ม event listeners อย่างปลอดภัย
-    addSafeEventListener('timeRange', 'change', handleTimeRangeChange);
-    addSafeEventListener('startDate', 'change', applyFilters);
-    addSafeEventListener('endDate', 'change', applyFilters);
-    addSafeEventListener('departmentFilter', 'change', applyFilters);
-    addSafeEventListener('statusFilter', 'change', applyFilters);
-    addSafeEventListener('chartYear', 'change', updateMonthlyChart);
-    
-    // ปุ่ม refreshReport (ถ้ามี)
-    const refreshBtn = document.getElementById('refreshReport');
-    if (refreshBtn) {
-        refreshBtn.addEventListener('click', loadReportData);
-    }
-}
-
-// ฟังก์ชันช่วย
-function addSafeEventListener(elementId, eventType, handler) {
-    const element = document.getElementById(elementId);
-    if (element && handler) {
-        element.addEventListener(eventType, handler);
-    }
-}
+            elements.timeRange.addEventListener('change', handleTimeRangeChange);
+            elements.startDate.addEventListener('change', applyFilters);
+            elements.endDate.addEventListener('change', applyFilters);
+            elements.departmentFilter.addEventListener('change', applyFilters);
+            elements.statusFilter.addEventListener('change', applyFilters);
+            
+            document.getElementById('refreshReport').addEventListener('click', function() {
+                loadReportData();
+            });
+            
+            document.getElementById('chartYear').addEventListener('change', updateMonthlyChart);
+        }
 
         function handleTimeRangeChange() {
             const value = elements.timeRange.value;
