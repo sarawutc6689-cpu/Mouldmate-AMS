@@ -3,10 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard-ระบบจองรถ</title>
+    <title>Dasboard-ระบบจองรถ</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600&family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
     <style>
         :root {
             --primary: #4361ee;
@@ -402,7 +403,7 @@
             display: inline-block;
         }
         
-        .status.approved {
+        .status.active {
             background-color: rgba(46, 204, 113, 0.2);
             color: #27ae60;
         }
@@ -412,28 +413,9 @@
             color: #f39c12;
         }
         
-        .status.rejected {
-            background-color: rgba(231, 76, 60, 0.2);
-            color: #c0392b;
-        }
-        
-        /* Demo Data Toggle */
-        .demo-toggle {
-            text-align: center;
-            margin-top: 20px;
-            padding: 15px;
-            background-color: #f8f9fa;
-            border-radius: var(--border-radius);
-            border: 1px dashed #dee2e6;
-        }
-        
-        .demo-data {
-            background-color: #fff3cd;
-            border: 1px solid #ffeaa7;
-            border-radius: var(--border-radius);
-            padding: 15px;
-            margin-bottom: 20px;
-            display: none;
+        .status.completed {
+            background-color: rgba(52, 152, 219, 0.2);
+            color: #2980b9;
         }
         
         /* Footer */
@@ -479,14 +461,25 @@
             color: #c0392b;
         }
         
-        /* Success Message */
-        .success-message {
-            background-color: #d4edda;
-            border-left: 5px solid #28a745;
-            padding: 15px;
+        /* Debug Info */
+        .debug-info {
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
             border-radius: var(--border-radius);
+            padding: 15px;
             margin-bottom: 20px;
-            color: #155724;
+            font-size: 14px;
+            font-family: monospace;
+        }
+        
+        .debug-toggle {
+            background-color: #e9ecef;
+            border: none;
+            padding: 8px 15px;
+            border-radius: var(--border-radius);
+            font-size: 12px;
+            cursor: pointer;
+            margin-bottom: 10px;
         }
         
         /* Responsive */
@@ -606,27 +599,17 @@
                     <div class="nav-text">Dashboard</div>
                 </div>
                 <div class="nav-item" onclick="window.location.href='https://sarawutc6689-cpu.github.io/Mouldmate-AMS/Carlendar.html'">
-                    <div class="nav-icon">
-                        <i class="fas fa-calendar-alt"></i>
-                    </div>
+                 <div class="nav-icon">
+                 <i class="fas fa-calendar-alt"></i>
+                  </div>
                     <div class="nav-text">ตารางการจองรถ</div>
-                </div>
-                <div class="nav-item" onclick="window.location.href='https://sarawutc6689-cpu.github.io/Mouldmate-AMS/Report.html'">
-                    <div class="nav-icon">
-                        <i class="fas fa-chart-bar"></i>
-                    </div>
-                    <div class="nav-text">รายงาน</div>
-                </div>
             </div>
-            
-            <div class="user-info">
-                <div class="user-avatar">
-                    <i class="fas fa-user"></i>
-                </div>
-                <div>
-                    <div class="user-name">ผู้ดูแลระบบ</div>
-                    <div class="user-role">Admin</div>
-                </div>
+                <div class="nav-item" onclick="window.location.href='https://sarawutc6689-cpu.github.io/Mouldmate-AMS/Report.html'">
+                 <div class="nav-icon">
+                   <i class="fas fa-chart-bar"></i>
+                 </div>
+                <div class="nav-text">รายงาน</div>
+             </div>
             </div>
         </div>
         
@@ -641,28 +624,21 @@
                         รีเฟรชข้อมูล
                     </button>
                     <a href="https://sarawutc6689-cpu.github.io/Mouldmate-AMS/Home.html" class="btn btn-primary" id="addReservationBtn">
-                        <i class="fas fa-plus"></i>
+                    <i class="fas fa-plus"></i>
                         เข้าระบบจองรถ
                     </a>
-                    <button class="btn btn-outline" id="demoBtn">
-                        <i class="fas fa-database"></i>
-                        ข้อมูลตัวอย่าง
+                    <button class="btn btn-outline" id="debugToggle" style="padding: 8px 15px; font-size: 14px; display: none;">
+                        <i class="fas fa-bug"></i>
+                        Debug
                     </button>
                 </div>
-            </div>
-            
-            <!-- Demo Data Info -->
-            <div id="demoDataInfo" class="demo-data">
-                <strong><i class="fas fa-info-circle"></i> กำลังใช้ข้อมูลตัวอย่าง</strong>
-                <p>เนื่องจากไม่สามารถเชื่อมต่อกับ Google Sheets ได้ในขณะนี้ ระบบกำลังแสดงข้อมูลตัวอย่างสำหรับการทดสอบ</p>
-                <p>ข้อมูลจริงจะแสดงเมื่อสามารถเชื่อมต่อกับ Google Sheets ได้</p>
             </div>
             
             <!-- Error Message Area -->
             <div id="errorMessage" style="display: none;"></div>
             
-            <!-- Success Message Area -->
-            <div id="successMessage" style="display: none;"></div>
+            <!-- Debug Info Area -->
+            <div id="debugInfo" style="display: none;"></div>
             
             <!-- Stats Cards -->
             <div class="stats-cards">
@@ -674,47 +650,51 @@
                         </div>
                     </div>
                     <div class="stat-value" id="totalReservations">0</div>
-                    <div class="stat-change">
-                        <span id="totalChange">กำลังโหลด...</span>
+                    <div class="stat-change positive">
+                        <i class="fas fa-arrow-up"></i>
+                        <span id="totalChange">Loading...</span>
                     </div>
                 </div>
                 
                 <div class="stat-card warning">
+                    <div class="stat-header">
+                        <div class="stat-title">อนุมัติ</div>
+                        <div class="stat-icon">
+                            <i class="fas fa-car"></i>
+                        </div>
+                    </div>
+                    <div class="stat-value" id="activeNow">0</div>
+                    <div class="stat-change positive">
+                        <i class="fas fa-arrow-up"></i>
+                        <span id="activeChange">Loading...</span>
+                    </div>
+                </div>
+                
+                <div class="stat-card success">
                     <div class="stat-header">
                         <div class="stat-title">รออนุมัติ</div>
                         <div class="stat-icon">
                             <i class="fas fa-clock"></i>
                         </div>
                     </div>
-                    <div class="stat-value" id="pendingReservations">0</div>
-                    <div class="stat-change">
-                        <span id="pendingChange">กำลังโหลด...</span>
-                    </div>
-                </div>
-                
-                <div class="stat-card success">
-                    <div class="stat-header">
-                        <div class="stat-title">อนุมัติแล้ว</div>
-                        <div class="stat-icon">
-                            <i class="fas fa-check-circle"></i>
-                        </div>
-                    </div>
-                    <div class="stat-value" id="approvedReservations">0</div>
-                    <div class="stat-change">
-                        <span id="approvedChange">กำลังโหลด...</span>
+                    <div class="stat-value" id="upcomingReservations">0</div>
+                    <div class="stat-change negative">
+                        <i class="fas fa-arrow-down"></i>
+                        <span id="upcomingChange">Loading...</span>
                     </div>
                 </div>
                 
                 <div class="stat-card secondary">
                     <div class="stat-header">
-                        <div class="stat-title">ไม่อนุมัติ</div>
+                        <div class="stat-title">แผนก</div>
                         <div class="stat-icon">
-                            <i class="fas fa-times-circle"></i>
+                            <i class="fas fa-building"></i>
                         </div>
                     </div>
-                    <div class="stat-value" id="rejectedReservations">0</div>
-                    <div class="stat-change">
-                        <span id="rejectedChange">กำลังโหลด...</span>
+                    <div class="stat-value" id="totalDepartments">0</div>
+                    <div class="stat-change positive">
+                        <i class="fas fa-arrow-up"></i>
+                        <span id="deptChange">Loading...</span>
                     </div>
                 </div>
             </div>
@@ -723,17 +703,17 @@
             <div class="charts-section">
                 <div class="chart-card">
                     <div class="chart-header">
-                        <div class="chart-title">สถิติการจองรถแยกตามสถานะ</div>
+                        <div class="chart-title">สถิติการจองรถ</div>
                         <div>
                             <select id="timeRange" class="search-input" style="width: auto; padding: 8px 15px;">
-                                <option value="all">ทั้งหมด</option>
-                                <option value="month" selected>30 วันที่ผ่านมา</option>
                                 <option value="week">7 วันที่ผ่านมา</option>
+                                <option value="month" selected>30 วันที่ผ่านมา</option>
+                                <option value="quarter">ย้อนหลัง 3 เดือน</option>
                             </select>
                         </div>
                     </div>
                     <div class="chart-container">
-                        <canvas id="statusChart"></canvas>
+                        <canvas id="reservationsChart"></canvas>
                     </div>
                 </div>
                 
@@ -760,18 +740,18 @@
                 <div class="table-responsive">
                     <div class="loading" id="tableLoading">
                         <div class="spinner"></div>
-                        <div>กำลังโหลดข้อมูล...</div>
+                        <div>กำลังโหลดข้อมูลจาก Google Sheets...</div>
                     </div>
                     <table id="reservationsTable" style="display: none;">
                         <thead>
                             <tr>
                                 <th>ลำดับ</th>
-                                <th>รหัสพนักงาน</th>
+                                <th>รหัสพนังาน</th>
                                 <th>ชื่อ-สกุล</th>
                                 <th>แผนก</th>
                                 <th>ตำแหน่ง</th>
                                 <th>รถที่จอง</th>
-                                <th>วันที่จอง</th>
+                                <th>ระยะเวลาจอง</th>
                                 <th>สถานะ</th>
                             </tr>
                         </thead>
@@ -782,14 +762,6 @@
                     <div id="dataInfo" style="margin-top: 15px; font-size: 14px; color: var(--gray); display: none;">
                         แสดงข้อมูล <span id="dataCount">0</span> รายการ จากทั้งหมด <span id="totalCount">0</span> รายการ
                     </div>
-                    <div class="demo-toggle">
-                        <button id="loadDemoBtn" class="btn btn-outline">
-                            <i class="fas fa-play-circle"></i> โหลดข้อมูลตัวอย่าง
-                        </button>
-                        <p style="margin-top: 10px; font-size: 12px; color: #666;">
-                            ใช้สำหรับทดสอบเมื่อไม่สามารถเชื่อมต่อกับ Google Sheets ได้
-                        </p>
-                    </div>
                 </div>
             </div>
             
@@ -798,68 +770,55 @@
                 <p>ระบบขอจองรถใช้งานบริษัท - แผนกยานยนต์ | © 2026 บริษัท TokaiSolidtire จำกัด</p>
                 <p>ออกแบบและพัฒนาโดย Sarawut.C</p>
                 <p id="lastUpdated">อัพเดทครั้งล่าสุด : --</p>
+                <p id="dataStats" style="font-size: 12px; margin-top: 5px;">Data rows loaded: 0</p>
             </div>
         </div>
     </div>
 
     <script>
-        // Google Apps Script URL (ต้อง deploy เป็น web app และตั้งค่า CORS)
-        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzReRwQHdUTdit1HMRCVVNlsGwpdvZMFG4fhsv5yh5nLpOE28NFuV2y_1OXPHU0DPkM/exec';
-        
-        // สำหรับใช้ CORS proxy หากจำเป็น
-        const CORS_PROXY = 'https://api.allorigins.win/raw?url=';
+        // Google Apps Script URL
+        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzcMdFcpQkAxIbb0iEJJfZ8fD0YgiGUetRkkw1UyMv7uY3tlza345UoL1uNrNbOUKRx/exec';
+        const SHEET_ID = '1-5izB7N6ldxHAa3ca0RNhGP8Z36vuA0mw9Wi_xR_Lj4';
         
         // Global data variable
         let reservationsData = [];
-        let isDemoMode = false;
+        let allData = [];
+        let debugMode = false;
         
         // DOM Elements
         const refreshBtn = document.getElementById('refreshBtn');
-        const demoBtn = document.getElementById('demoBtn');
-        const loadDemoBtn = document.getElementById('loadDemoBtn');
         const searchInput = document.getElementById('searchInput');
         const tableBody = document.getElementById('tableBody');
         const tableLoading = document.getElementById('tableLoading');
         const reservationsTable = document.getElementById('reservationsTable');
         const totalReservations = document.getElementById('totalReservations');
-        const pendingReservations = document.getElementById('pendingReservations');
-        const approvedReservations = document.getElementById('approvedReservations');
-        const rejectedReservations = document.getElementById('rejectedReservations');
+        const activeNow = document.getElementById('activeNow');
+        const upcomingReservations = document.getElementById('upcomingReservations');
+        const totalDepartments = document.getElementById('totalDepartments');
         const errorMessage = document.getElementById('errorMessage');
-        const successMessage = document.getElementById('successMessage');
-        const demoDataInfo = document.getElementById('demoDataInfo');
         const lastUpdated = document.getElementById('lastUpdated');
+        const dataStats = document.getElementById('dataStats');
+        const debugInfo = document.getElementById('debugInfo');
+        const debugToggle = document.getElementById('debugToggle');
         const dataInfo = document.getElementById('dataInfo');
         const dataCount = document.getElementById('dataCount');
         const totalCount = document.getElementById('totalCount');
         
         // Chart variables
-        let statusChart, vehicleChart;
+        let reservationsChart, vehicleChart;
         
         // Initialize the dashboard
         document.addEventListener('DOMContentLoaded', function() {
-            // Try to load real data first
             loadData();
             
             // Set up event listeners
             refreshBtn.addEventListener('click', loadData);
-            demoBtn.addEventListener('click', loadDemoData);
-            loadDemoBtn.addEventListener('click', loadDemoData);
             searchInput.addEventListener('input', filterTable);
             document.getElementById('timeRange').addEventListener('change', updateCharts);
+            debugToggle.addEventListener('click', toggleDebugMode);
             
             // Initialize charts with empty data
             initCharts();
-            
-            // Add click event to navigation items
-            document.querySelectorAll('.nav-item').forEach(item => {
-                item.addEventListener('click', function() {
-                    document.querySelectorAll('.nav-item').forEach(nav => {
-                        nav.classList.remove('active');
-                    });
-                    this.classList.add('active');
-                });
-            });
         });
         
         // Load data from Google Sheets
@@ -867,350 +826,363 @@
             try {
                 showLoading();
                 clearError();
-                clearSuccess();
-                isDemoMode = false;
-                demoDataInfo.style.display = 'none';
+                updateDebugInfo('Starting data load...');
                 
-                console.log('กำลังโหลดข้อมูลจาก Google Sheets...');
-                
-                // ลองใช้หลายวิธีเพื่อหลีกเลี่ยง CORS
-                let data = null;
-                
-                // วิธีที่ 1: ใช้ CORS proxy
-                try {
-                    const proxyUrl = CORS_PROXY + encodeURIComponent(SCRIPT_URL);
-                    const response = await fetch(proxyUrl);
-                    
-                    if (!response.ok) {
-                        throw new Error(`Proxy error: ${response.status}`);
-                    }
-                    
-                    const result = await response.json();
-                    
-                    if (result && result.status === 'success' && result.data) {
-                        data = result.data;
-                        console.log('โหลดข้อมูลผ่าน Proxy สำเร็จ:', data.length, 'รายการ');
-                    }
-                } catch (proxyError) {
-                    console.log('Proxy method failed:', proxyError.message);
-                    
-                    // วิธีที่ 2: ลองใช้ JSONP (ถ้า Apps Script รองรับ)
-                    try {
-                        data = await loadWithJSONP();
-                    } catch (jsonpError) {
-                        console.log('JSONP method failed:', jsonpError.message);
-                        
-                        // วิธีที่ 3: ลองเรียกตรงๆ (อาจจะได้ถ้า Apps Script ตั้งค่า CORS ถูกต้อง)
-                        try {
-                            const timestamp = new Date().getTime();
-                            const response = await fetch(`${SCRIPT_URL}?t=${timestamp}`, {
-                                mode: 'cors',
-                                headers: {
-                                    'Accept': 'application/json'
-                                }
-                            });
-                            
-                            if (response.ok) {
-                                const result = await response.json();
-                                if (result && result.data) {
-                                    data = result.data;
-                                }
-                            }
-                        } catch (directError) {
-                            console.log('Direct fetch failed:', directError.message);
-                            throw new Error('ไม่สามารถเชื่อมต่อกับ Google Sheets ได้');
-                        }
-                    }
-                }
+                // Try multiple methods to get complete data
+                const data = await tryAllDataMethods();
                 
                 if (data && data.length > 0) {
+                    allData = data;
                     reservationsData = processData(data);
+                    
+                    updateDebugInfo(`Loaded ${reservationsData.length} records after processing`);
                     updateDashboard(reservationsData);
                     updateCharts();
                     updateTable(reservationsData);
                     updateLastUpdated();
-                    showSuccess(`โหลดข้อมูลสำเร็จ: ${reservationsData.length} รายการ`);
+                    showSuccess(`Data loaded successfully: ${reservationsData.length} records`);
                 } else {
-                    // ถ้าโหลดข้อมูลจริงไม่ได้ ให้แสดงข้อความและแนะนำให้ใช้ข้อมูลตัวอย่าง
-                    showError('ไม่สามารถโหลดข้อมูลจาก Google Sheets ได้ในขณะนี้');
-                    showInfoMessage('กรุณากดปุ่ม "ข้อมูลตัวอย่าง" เพื่อทดสอบระบบ');
+                    throw new Error('No data received from any method');
                 }
             } catch (error) {
                 console.error('Error loading data:', error);
                 showError(`ไม่สามารถโหลดข้อมูลได้: ${error.message}`);
-                showInfoMessage('กรุณากดปุ่ม "ข้อมูลตัวอย่าง" เพื่อทดสอบระบบ');
+                updateDebugInfo(`Error: ${error.message}`);
             }
         }
         
-        // Load data using JSONP (for CORS bypass)
-        function loadWithJSONP() {
-            return new Promise((resolve, reject) => {
-                // Create a unique callback name
-                const callbackName = 'jsonp_callback_' + Math.round(100000 * Math.random());
-                
-                // Create script element
-                const script = document.createElement('script');
-                script.src = `${SCRIPT_URL}?callback=${callbackName}`;
-                
-                // Define the callback function
-                window[callbackName] = function(data) {
-                    delete window[callbackName];
-                    document.body.removeChild(script);
-                    resolve(data);
-                };
-                
-                // Error handling
-                script.onerror = function() {
-                    delete window[callbackName];
-                    document.body.removeChild(script);
-                    reject(new Error('JSONP load failed'));
-                };
-                
-                // Add script to document
-                document.body.appendChild(script);
-                
-                // Timeout after 10 seconds
-                setTimeout(() => {
-                    if (window[callbackName]) {
-                        delete window[callbackName];
-                        document.body.removeChild(script);
-                        reject(new Error('JSONP timeout'));
+        // Try multiple methods to get data
+        async function tryAllDataMethods() {
+            let data = [];
+            
+            // Method 1: Try Google Apps Script
+            updateDebugInfo('Trying Method 1: Google Apps Script...');
+            try {
+                const scriptData = await fetchFromGoogleAppsScript();
+                if (scriptData && scriptData.length > 0) {
+                    updateDebugInfo(`Method 1: Got ${scriptData.length} records`);
+                    data = scriptData;
+                }
+            } catch (e) {
+                updateDebugInfo(`Method 1 failed: ${e.message}`);
+            }
+            
+            // Method 2: Try Google Sheets API directly
+            if (data.length === 0) {
+                updateDebugInfo('Trying Method 2: Google Sheets API...');
+                try {
+                    const apiData = await fetchFromGoogleSheetsAPI();
+                    if (apiData && apiData.length > 0) {
+                        updateDebugInfo(`Method 2: Got ${apiData.length} records`);
+                        data = apiData;
                     }
-                }, 10000);
+                } catch (e) {
+                    updateDebugInfo(`Method 2 failed: ${e.message}`);
+                }
+            }
+            
+            // Method 3: Try CSV export
+            if (data.length === 0) {
+                updateDebugInfo('Trying Method 3: CSV export...');
+                try {
+                    const csvData = await fetchFromCSV();
+                    if (csvData && csvData.length > 0) {
+                        updateDebugInfo(`Method 3: Got ${csvData.length} records`);
+                        data = csvData;
+                    }
+                } catch (e) {
+                    updateDebugInfo(`Method 3 failed: ${e.message}`);
+                }
+            }
+            
+            return data;
+        }
+        
+        // Method 1: Fetch from Google Apps Script
+        async function fetchFromGoogleAppsScript() {
+            const timestamp = new Date().getTime();
+            const response = await fetch(`${SCRIPT_URL}?t=${timestamp}`);
+            
+            if (!response.ok) {
+                throw new Error(`HTTP error! Status: ${response.status}`);
+            }
+            
+            const result = await response.json();
+            
+            if (result && result.status === 'success' && result.data) {
+                return result.data;
+            } else {
+                throw new Error('Invalid response format from Google Apps Script');
+            }
+        }
+        
+        // Method 2: Fetch from Google Sheets API
+        async function fetchFromGoogleSheetsAPI() {
+            // Using Google Sheets API v4 with public access
+            const apiKey = 'AIzaSyD-9tSrke72PouQMnMX-a7eZSW0jkFMBWY'; // This is a sample key, may not work
+            const range = 'A:M'; // All columns
+            const url = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/Sheet1!${range}?key=${apiKey}`;
+            
+            try {
+                const response = await fetch(url);
+                if (!response.ok) {
+                    throw new Error(`API error: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                return processSheetValues(data.values);
+            } catch (e) {
+                // Try without API key for public sheets
+                const publicUrl = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/Sheet1!${range}`;
+                const publicResponse = await fetch(publicUrl);
+                
+                if (!publicResponse.ok) {
+                    throw new Error(`Public API also failed: ${publicResponse.status}`);
+                }
+                
+                const publicData = await publicResponse.json();
+                return processSheetValues(publicData.values);
+            }
+        }
+        
+        // Method 3: Fetch from CSV export
+        async function fetchFromCSV() {
+            const csvUrl = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=Sheet1`;
+            const response = await fetch(csvUrl);
+            const csvText = await response.text();
+            
+            return processCSVData(csvText);
+        }
+        
+        // Process sheet values into objects
+        function processSheetValues(values) {
+            if (!values || values.length < 2) return [];
+            
+            const headers = values[0];
+            const rows = values.slice(1);
+            
+            return rows.map((row, index) => {
+                const obj = {};
+                headers.forEach((header, colIndex) => {
+                    const key = header.trim();
+                    const value = row[colIndex] || '';
+                    obj[key] = value;
+                });
+                
+                // Add index if no code
+                if (!obj.Code && obj.Code === '') {
+                    obj.Code = `ROW${index + 2}`;
+                }
+                
+                return obj;
             });
         }
         
-        // Load demo data
-        function loadDemoData() {
-            showLoading();
-            clearError();
-            clearSuccess();
-            isDemoMode = true;
-            demoDataInfo.style.display = 'block';
+        // Process CSV data
+        function processCSVData(csvText) {
+            const lines = csvText.split('\n');
+            if (lines.length < 2) return [];
             
-            console.log('กำลังโหลดข้อมูลตัวอย่าง...');
+            const headers = lines[0].split(',').map(h => h.trim().replace(/"/g, ''));
+            const data = [];
             
-            // สร้างข้อมูลตัวอย่าง
-            const demoData = generateDemoData();
-            reservationsData = processData(demoData);
-            
-            updateDashboard(reservationsData);
-            updateCharts();
-            updateTable(reservationsData);
-            updateLastUpdated();
-            showSuccess(`โหลดข้อมูลตัวอย่างสำเร็จ: ${reservationsData.length} รายการ`);
-        }
-        
-        // Generate demo data
-        function generateDemoData() {
-            const departments = ['ยานยนต์', 'ซ่อมบำรุง', 'บุคคล', 'การเงิน', 'ไอที', 'ขาย'];
-            const positions = ['พนักงาน', 'หัวหน้า', 'ผู้จัดการ', 'วิศวกร', 'นักพัฒนา'];
-            const vehicles = ['รถยนต์โตโยต้า', 'รถตู้ฮอนด้า', 'รถบรรทุกเล็ก', 'รถกระบะ', 'รถมอเตอร์ไซค์'];
-            const names = [
-                'สมชาย ใจดี', 'สุนิสา เก่งงาน', 'ประวิทย์ สุขใจ', 'พัชราภรณ์ ทำงานดี',
-                'อนุชา เร็วไว', 'รัตนา แข็งแรง', 'วิษณุ ใจเย็น', 'กัลยา ตรงเวลา',
-                'ธีรพงศ์ มีน้ำใจ', 'สุภาพร รับผิดชอบ'
-            ];
-            
-            const demoData = [];
-            const statuses = ['อนุมัติ', 'รออนุมัติ', 'ไม่อนุมัติ'];
-            
-            for (let i = 1; i <= 25; i++) {
-                const dept = departments[Math.floor(Math.random() * departments.length)];
-                const name = names[Math.floor(Math.random() * names.length)];
-                const status = statuses[Math.floor(Math.random() * statuses.length)];
+            for (let i = 1; i < lines.length; i++) {
+                if (lines[i].trim() === '') continue;
                 
-                // สร้างวันที่แบบสุ่มในช่วง 30 วันที่ผ่านมา
-                const daysAgo = Math.floor(Math.random() * 30);
-                const startDate = new Date();
-                startDate.setDate(startDate.getDate() - daysAgo);
+                const values = lines[i].split(',').map(v => v.trim().replace(/"/g, ''));
+                const obj = {};
                 
-                const endDate = new Date(startDate);
-                endDate.setDate(endDate.getDate() + Math.floor(Math.random() * 5) + 1);
-                
-                demoData.push({
-                    Timestamp: startDate.toISOString(),
-                    Code: `EMP${1000 + i}`,
-                    Name: name,
-                    Section: 'ส่วนงานหลัก',
-                    Department: dept,
-                    Position: positions[Math.floor(Math.random() * positions.length)],
-                    Contact: `08${Math.floor(Math.random() * 90000000) + 10000000}`,
-                    Choose: vehicles[Math.floor(Math.random() * vehicles.length)],
-                    rentStartdate: formatDate(startDate),
-                    rentEnddate: formatDate(endDate),
-                    startTime: '09:00',
-                    endTime: '17:00',
-                    Reason: 'เดินทางไปพบลูกค้า',
-                    Approval: status
+                headers.forEach((header, index) => {
+                    obj[header] = values[index] || '';
                 });
+                
+                // Add index if no code
+                if (!obj.Code && obj.Code === '') {
+                    obj.Code = `ROW${i + 1}`;
+                }
+                
+                data.push(obj);
             }
             
-            return demoData;
-        }
-        
-        // Helper function to format date
-        function formatDate(date) {
-            const day = String(date.getDate()).padStart(2, '0');
-            const month = String(date.getMonth() + 1).padStart(2, '0');
-            const year = date.getFullYear();
-            return `${day}/${month}/${year}`;
+            return data;
         }
         
         // Process raw data from Google Sheets
-        function processData(rawData) {
-            console.log('Processing data:', rawData);
-            
-            const processed = rawData.map((item, index) => {
-                // Create processed item with all necessary fields
-                const processedItem = {
-                    timestamp: item.Timestamp || item.timestamp || '',
-                    code: item.Code || item.code || `EMP${index + 1000}`,
-                    name: item.name || item.Name || '',
-                    section: item.section || item.Section || '',
-                    department: item.department || item.Department || '',
-                    position: item.position || item.Position || '',
-                    contact: item.contact || item.Contact || '',
-                    vehicle: item.choose || item.Choose || item.vehicle || '',
-                    rentStartDate: item.rentStartdate || item.rentStartDate || '',
-                    rentEndDate: item.rentEnddate || item.rentEndDate || '',
-                    startTime: item.startTime || '',
-                    endTime: item.endTime || '',
-                    reason: item.reason || item.Reason || '',
-                    approval: item.approval || item.Approval || 'รออนุมัติ'
-                };
-                
-                // Clean up approval status
-                processedItem.approval = cleanApprovalStatus(processedItem.approval);
-                
-                // Format dates
-                if (processedItem.rentStartDate) {
-                    processedItem.formattedStartDate = formatDateForDisplay(processedItem.rentStartDate);
-                }
-                
-                return processedItem;
-            });
-            
-            // Filter out empty rows
-            const filtered = processed.filter(item => {
-                return item.name && item.name.trim() !== '';
-            });
-            
-            console.log('Processed data:', filtered);
-            return filtered;
-        }
+        // Process raw data from Google Sheets
+function processData(rawData) {
+    updateDebugInfo(`Processing ${rawData.length} raw records...`);
+    
+    const processed = rawData.map((item, index) => {
+        // Try to extract data using different property names
+        const processedItem = {
+            Timestamp: item.Timestamp || item.timestamp || item['Timestamp'] || item['timestamp'] || item[0] || '',
+            Code: item.Code || item.code || item['Code'] || item['code'] || item[1] || `ROW${index + 2}`,
+            name: item.name || item.Name || item['name'] || item['Name'] || item[2] || '',
+            section: item.section || item.Section || item['section'] || item['Section'] || item[3] || '',
+            department: item.department || item.Department || item['department'] || item['Department'] || item[4] || '',
+            position: item.position || item.Position || item['position'] || item['Position'] || item[5] || '',
+            contact: item.contact || item.Contact || item['contact'] || item['Contact'] || item[6] || '',
+            choose: item.choose || item.Choose || item['choose'] || item['Choose'] || item[7] || '',
+            rentStartdate: item.rentStartdate || item.rentStartDate || item['rentStartdate'] || item['rentStartDate'] || item[8] || '',
+            rentEnddate: item.rentEnddate || item.rentEndDate || item['rentEnddate'] || item['rentEndDate'] || item[9] || '',
+            startTime: item.startTime || item['startTime'] || item[10] || '',
+            endTime: item.endTime || item['endTime'] || item[11] || '',
+            reason: item.reason || item.Reason || item['reason'] || item['Reason'] || item[12] || '',
+            // เพิ่มคอลัมน์ approval จากคอลัมน์ N
+            approval: item.approval || item.Approval || item['approval'] || item['Approval'] || item[13] || '',
+            // Store original for debugging
+            _original: item
+        };
         
-        // Clean approval status
-        function cleanApprovalStatus(status) {
-            if (!status) return 'รออนุมัติ';
+        // Clean up date formats
+        processedItem.rentStartdate = normalizeDateString(processedItem.rentStartdate);
+        processedItem.rentEnddate = normalizeDateString(processedItem.rentEnddate);
+        
+        return processedItem;
+    });
+    
+    // Filter out empty rows (where all fields are empty)
+    const filtered = processed.filter(item => {
+        const hasData = item.name || item.department || item.choose || item.rentStartdate;
+        return hasData;
+    });
+    
+    updateDebugInfo(`After processing: ${filtered.length} valid records`);
+    
+    return filtered;
+}
+        
+        // Normalize date string
+        function normalizeDateString(dateStr) {
+            if (!dateStr || dateStr.trim() === '') return '';
             
-            const statusStr = status.toString().trim().toLowerCase();
+            let str = dateStr.toString().trim();
             
-            if (statusStr.includes('อนุมัติ') && !statusStr.includes('ไม่อนุมัติ')) {
-                return 'อนุมัติ';
-            } else if (statusStr.includes('ไม่อนุมัติ')) {
-                return 'ไม่อนุมัติ';
-            } else if (statusStr.includes('pending') || statusStr.includes('waiting')) {
-                return 'รออนุมัติ';
-            } else if (statusStr.includes('approved')) {
-                return 'อนุมัติ';
-            } else if (statusStr.includes('rejected')) {
-                return 'ไม่อนุมัติ';
+            // Remove time part if present
+            if (str.includes(' ')) {
+                str = str.split(' ')[0];
             }
             
-            return 'รออนุมัติ';
-        }
-        
-        // Format date for display
-        function formatDateForDisplay(dateString) {
-            if (!dateString) return '-';
+            // Handle different date separators
+            str = str.replace(/\./g, '-').replace(/\//g, '-');
             
+            // Try to parse and reformat
             try {
-                // Try to parse the date
-                const date = new Date(dateString);
+                const date = new Date(str);
                 if (isNaN(date.getTime())) {
-                    // If parsing fails, try to parse Thai date format (DD/MM/YYYY)
-                    const parts = dateString.split(/[/\-.]/);
+                    // Try parsing DD-MM-YYYY
+                    const parts = str.split('-');
                     if (parts.length === 3) {
-                        const day = parseInt(parts[0]);
-                        const month = parseInt(parts[1]) - 1;
-                        const year = parseInt(parts[2]);
+                        const day = parts[0];
+                        const month = parts[1];
+                        const year = parts[2];
                         
-                        if (year < 100) {
-                            year += 2000;
-                        }
+                        // Check if year is 2-digit
+                        const fullYear = year.length === 2 ? `20${year}` : year;
                         
-                        const thaiDate = new Date(year, month, day);
-                        if (!isNaN(thaiDate.getTime())) {
-                            return thaiDate.toLocaleDateString('th-TH', {
-                                day: '2-digit',
-                                month: '2-digit',
-                                year: 'numeric'
-                            });
-                        }
+                        // Reformat to YYYY-MM-DD
+                        return `${fullYear}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
                     }
-                    return dateString; // Return original if can't parse
+                    return str; // Return original if can't parse
                 }
                 
-                return date.toLocaleDateString('th-TH', {
-                    day: '2-digit',
-                    month: '2-digit',
-                    year: 'numeric'
-                });
+                // Format as YYYY-MM-DD
+                return date.toISOString().split('T')[0];
             } catch (e) {
-                return dateString;
+                return str; // Return original if error
             }
         }
         
         // Update dashboard stats
-        function updateDashboard(data) {
-            console.log('Updating dashboard with:', data);
+       // Update dashboard stats
+function updateDashboard(data) {
+    updateDebugInfo(`Updating dashboard with ${data.length} records`);
+    
+    // Update total reservations
+    totalReservations.textContent = data.length;
+    dataStats.textContent = `Data rows loaded: ${data.length}`;
+    
+    // คำนวณอนุมัติ (ดึงจากคอลัมน์ approval)
+    const approvedCount = data.filter(item => {
+        const approvalStatus = (item.approval || '').toLowerCase().trim();
+        return approvalStatus === 'approved' || approvalStatus === 'อนุมัติ' || approvalStatus === 'ยืนยัน';
+    }).length;
+    
+    activeNow.textContent = approvedCount;
+    
+    // คำนวณรออนุมัติ
+    const pendingCount = data.filter(item => {
+        const approvalStatus = (item.approval || '').toLowerCase().trim();
+        return approvalStatus === '' || 
+               approvalStatus === 'pending' || 
+               approvalStatus === 'รออนุมัติ' || 
+               approvalStatus === 'รอยืนยัน';
+    }).length;
+    
+    upcomingReservations.textContent = pendingCount;
+    
+    // Calculate unique departments
+    const departments = [...new Set(data.map(item => item.department).filter(Boolean))];
+    totalDepartments.textContent = departments.length;
+    
+    // Update data info
+    dataCount.textContent = Math.min(15, data.length);
+    totalCount.textContent = data.length;
+    dataInfo.style.display = 'block';
+    
+    // Update stat change indicators
+    updateStatChanges(approvedCount, pendingCount, departments.length, data.length);
+    
+    // Debug: Log approval statuses
+    if (debugMode) {
+        const approvalStats = data.reduce((acc, item) => {
+            const status = (item.approval || 'empty').toLowerCase();
+            acc[status] = (acc[status] || 0) + 1;
+            return acc;
+        }, {});
+        console.log('Approval status distribution:', approvalStats);
+    }
+}
+
+// แก้ไขฟังก์ชัน updateStatChanges
+function updateStatChanges(approved, pending, depts, total) {
+    document.getElementById('totalChange').textContent = `${total} total records`;
+    document.getElementById('activeChange').textContent = `${approved} approved`;
+    document.getElementById('upcomingChange').textContent = `${pending} pending`;
+    document.getElementById('deptChange').textContent = `${depts} departments`;
+}
+        
+        // Update stat change indicators
+        function updateStatChanges(data) {
+            // Simple implementation - calculate based on data
+            const total = data.length;
+            const active = parseInt(activeNow.textContent) || 0;
+            const upcoming = parseInt(upcomingReservations.textContent) || 0;
+            const depts = parseInt(totalDepartments.textContent) || 0;
             
-            // Update total reservations
-            totalReservations.textContent = data.length;
-            document.getElementById('totalChange').textContent = `ทั้งหมด ${data.length} รายการ`;
-            
-            // Count by status
-            const pendingCount = data.filter(item => item.approval === 'รออนุมัติ').length;
-            const approvedCount = data.filter(item => item.approval === 'อนุมัติ').length;
-            const rejectedCount = data.filter(item => item.approval === 'ไม่อนุมัติ').length;
-            
-            pendingReservations.textContent = pendingCount;
-            approvedReservations.textContent = approvedCount;
-            rejectedReservations.textContent = rejectedCount;
-            
-            document.getElementById('pendingChange').textContent = `${pendingCount} รายการ`;
-            document.getElementById('approvedChange').textContent = `${approvedCount} รายการ`;
-            document.getElementById('rejectedChange').textContent = `${rejectedCount} รายการ`;
-            
-            // Update data info
-            dataCount.textContent = Math.min(20, data.length);
-            totalCount.textContent = data.length;
-            dataInfo.style.display = 'block';
+            // Calculate simple trends
+            document.getElementById('totalChange').textContent = `${total} total records`;
+            document.getElementById('activeChange').textContent = `${active} active now`;
+            document.getElementById('upcomingChange').textContent = `${upcoming} upcoming`;
+            document.getElementById('deptChange').textContent = `${depts} departments`;
         }
         
         // Initialize charts
         function initCharts() {
-            // Status Chart
-            const statusCtx = document.getElementById('statusChart').getContext('2d');
-            statusChart = new Chart(statusCtx, {
-                type: 'bar',
+            // Reservations Trend Chart
+            const reservationsCtx = document.getElementById('reservationsChart').getContext('2d');
+            reservationsChart = new Chart(reservationsCtx, {
+                type: 'line',
                 data: {
-                    labels: ['รออนุมัติ', 'อนุมัติ', 'ไม่อนุมัติ'],
+                    labels: [],
                     datasets: [{
-                        label: 'จำนวนการจอง',
-                        data: [0, 0, 0],
-                        backgroundColor: [
-                            'rgba(241, 196, 15, 0.7)',
-                            'rgba(46, 204, 113, 0.7)',
-                            'rgba(231, 76, 60, 0.7)'
-                        ],
-                        borderColor: [
-                            'rgb(241, 196, 15)',
-                            'rgb(46, 204, 113)',
-                            'rgb(231, 76, 60)'
-                        ],
-                        borderWidth: 1
+                        label: 'Reservations',
+                        data: [],
+                        borderColor: '#4361ee',
+                        backgroundColor: 'rgba(67, 97, 238, 0.1)',
+                        borderWidth: 3,
+                        fill: true,
+                        tension: 0.4
                     }]
                 },
                 options: {
@@ -1219,13 +1191,6 @@
                     plugins: {
                         legend: {
                             display: false
-                        },
-                        tooltip: {
-                            callbacks: {
-                                label: function(context) {
-                                    return `จำนวน: ${context.raw} รายการ`;
-                                }
-                            }
                         }
                     },
                     scales: {
@@ -1235,24 +1200,19 @@
                                 color: 'rgba(0, 0, 0, 0.05)'
                             },
                             ticks: {
-                                stepSize: 1,
-                                callback: function(value) {
-                                    if (Number.isInteger(value)) {
-                                        return value;
-                                    }
-                                }
+                                stepSize: 1
                             }
                         },
                         x: {
                             grid: {
-                                display: false
+                                color: 'rgba(0, 0, 0, 0.05)'
                             }
                         }
                     }
                 }
             });
             
-            // Vehicle Chart
+            // Vehicle Usage Chart
             const vehicleCtx = document.getElementById('vehicleChart').getContext('2d');
             vehicleChart = new Chart(vehicleCtx, {
                 type: 'doughnut',
@@ -1266,9 +1226,7 @@
                             '#4cc9f0',
                             '#f72585',
                             '#7209b7',
-                            '#3a0ca3',
-                            '#f72585',
-                            '#4cc9f0'
+                            '#3a0ca3'
                         ],
                         borderWidth: 0
                     }]
@@ -1278,24 +1236,7 @@
                     maintainAspectRatio: false,
                     plugins: {
                         legend: {
-                            position: 'right',
-                            labels: {
-                                boxWidth: 12,
-                                font: {
-                                    size: 11
-                                }
-                            }
-                        },
-                        tooltip: {
-                            callbacks: {
-                                label: function(context) {
-                                    const label = context.label || '';
-                                    const value = context.raw || 0;
-                                    const total = context.dataset.data.reduce((a, b) => a + b, 0);
-                                    const percentage = Math.round((value / total) * 100);
-                                    return `${label}: ${value} รายการ (${percentage}%)`;
-                                }
-                            }
+                            position: 'right'
                         }
                     }
                 }
@@ -1305,34 +1246,80 @@
         // Update charts with data
         function updateCharts() {
             if (reservationsData.length === 0) {
+                updateDebugInfo('No data to update charts');
                 return;
             }
             
-            // Update status chart
-            const pendingCount = reservationsData.filter(item => item.approval === 'รออนุมัติ').length;
-            const approvedCount = reservationsData.filter(item => item.approval === 'อนุมัติ').length;
-            const rejectedCount = reservationsData.filter(item => item.approval === 'ไม่อนุมัติ').length;
+            updateDebugInfo(`Updating charts with ${reservationsData.length} records`);
             
-            statusChart.data.datasets[0].data = [pendingCount, approvedCount, rejectedCount];
-            statusChart.update();
+            const timeRange = document.getElementById('timeRange').value;
+            let days;
             
-            // Update vehicle chart
-            const vehicleCounts = {};
+            switch(timeRange) {
+                case 'week': days = 7; break;
+                case 'month': days = 30; break;
+                case 'quarter': days = 90; break;
+                default: days = 30;
+            }
             
+            // Update reservations trend chart
+            const dateLabels = [];
+            const dailyCounts = new Array(days).fill(0);
+            
+            // Generate date labels
+            for (let i = days - 1; i >= 0; i--) {
+                const d = new Date();
+                d.setDate(d.getDate() - i);
+                dateLabels.push(d.toLocaleDateString('th-TH', { day: 'numeric', month: 'short' }));
+            }
+            
+            // Count reservations per day
+            let dateCount = 0;
             reservationsData.forEach(item => {
-                const vehicle = item.vehicle || 'ไม่ระบุ';
-                if (vehicle && vehicle.trim() !== '') {
-                    vehicleCounts[vehicle] = (vehicleCounts[vehicle] || 0) + 1;
+                const startDate = item.rentStartdate;
+                if (!startDate) return;
+                
+                try {
+                    const today = new Date();
+                    const startPeriod = new Date();
+                    startPeriod.setDate(today.getDate() - days + 1);
+                    
+                    const reservationDate = new Date(startDate);
+                    
+                    if (reservationDate >= startPeriod && reservationDate <= today) {
+                        const dayIndex = Math.floor((reservationDate - startPeriod) / (1000 * 60 * 60 * 24));
+                        if (dayIndex >= 0 && dayIndex < days) {
+                            dailyCounts[dayIndex]++;
+                            dateCount++;
+                        }
+                    }
+                } catch (e) {
+                    // Skip invalid dates
                 }
             });
             
-            // Sort by count (descending)
-            const sortedVehicles = Object.entries(vehicleCounts)
-                .sort((a, b) => b[1] - a[1])
-                .slice(0, 8); // Show top 8 only
+            updateDebugInfo(`Chart: Processed ${dateCount} records with valid dates`);
             
-            const vehicles = sortedVehicles.map(v => v[0]);
-            const counts = sortedVehicles.map(v => v[1]);
+            reservationsChart.data.labels = dateLabels;
+            reservationsChart.data.datasets[0].data = dailyCounts;
+            reservationsChart.update();
+            
+            // Update vehicle usage chart
+            const vehicleCounts = {};
+            let vehicleCount = 0;
+            
+            reservationsData.forEach(item => {
+                const vehicle = item.choose || 'Unknown';
+                if (vehicle && vehicle.trim() !== '') {
+                    vehicleCounts[vehicle] = (vehicleCounts[vehicle] || 0) + 1;
+                    vehicleCount++;
+                }
+            });
+            
+            updateDebugInfo(`Chart: Found ${Object.keys(vehicleCounts).length} unique vehicles from ${vehicleCount} records`);
+            
+            const vehicles = Object.keys(vehicleCounts);
+            const counts = vehicles.map(vehicle => vehicleCounts[vehicle]);
             
             vehicleChart.data.labels = vehicles;
             vehicleChart.data.datasets[0].data = counts;
@@ -1340,66 +1327,103 @@
         }
         
         // Update table with data
-        function updateTable(data) {
-            tableBody.innerHTML = '';
+       // Update table with data
+function updateTable(data) {
+    updateDebugInfo(`Updating table with ${data.length} records`);
+    
+    tableBody.innerHTML = '';
+    
+    if (data.length === 0) {
+        const row = document.createElement('tr');
+        row.innerHTML = `<td colspan="8" style="text-align: center; padding: 40px; color: var(--gray);">
+                            <i class="fas fa-database" style="font-size: 48px; margin-bottom: 15px; display: block;"></i>
+                            ไม่พบข้อมูลการจองรถ
+                        </td>`;
+        tableBody.appendChild(row);
+    } else {
+        // Sort by date (newest first)
+        const sortedData = [...data].sort((a, b) => {
+            try {
+                const dateA = new Date(a.Timestamp || a.rentStartdate || 0);
+                const dateB = new Date(b.Timestamp || b.rentStartdate || 0);
+                return dateB - dateA;
+            } catch (e) {
+                return 0;
+            }
+        });
+        
+        // Show only recent 15 reservations
+        const displayData = sortedData.slice(0, 15);
+        
+        displayData.forEach((item, index) => {
+            const row = document.createElement('tr');
             
-            if (data.length === 0) {
-                const row = document.createElement('tr');
-                row.innerHTML = `<td colspan="8" style="text-align: center; padding: 40px; color: var(--gray);">
-                                    <i class="fas fa-database" style="font-size: 48px; margin-bottom: 15px; display: block;"></i>
-                                    ไม่พบข้อมูลการจองรถ
-                                </td>`;
-                tableBody.appendChild(row);
-            } else {
-                // Sort by date (newest first)
-                const sortedData = [...data].sort((a, b) => {
-                    try {
-                        const dateA = a.timestamp ? new Date(a.timestamp) : new Date(0);
-                        const dateB = b.timestamp ? new Date(b.timestamp) : new Date(0);
-                        return dateB - dateA;
-                    } catch (e) {
-                        return 0;
-                    }
-                });
-                
-                // Show only recent 20 reservations
-                const displayData = sortedData.slice(0, 20);
-                
-                displayData.forEach((item, index) => {
-                    const row = document.createElement('tr');
-                    
-                    // Get status class and text
-                    let statusClass = 'pending';
-                    let statusText = 'รออนุมัติ';
-                    
-                    if (item.approval === 'อนุมัติ') {
-                        statusClass = 'approved';
-                        statusText = 'อนุมัติ';
-                    } else if (item.approval === 'ไม่อนุมัติ') {
-                        statusClass = 'rejected';
-                        statusText = 'ไม่อนุมัติ';
-                    }
-                    
-                    // Format date
-                    const dateDisplay = item.formattedStartDate || formatDateForDisplay(item.rentStartDate) || '-';
-                    
-                    row.innerHTML = `
-                        <td>${index + 1}</td>
-                        <td><strong>${item.code || '-'}</strong></td>
-                        <td>${item.name || '-'}</td>
-                        <td>${item.department || '-'}</td>
-                        <td>${item.position || '-'}</td>
-                        <td>${item.vehicle || '-'}</td>
-                        <td>${dateDisplay}</td>
-                        <td><span class="status ${statusClass}">${statusText}</span></td>
-                    `;
-                    
-                    tableBody.appendChild(row);
-                });
+            // ใช้สถานะจากคอลัมน์ approval
+            const approvalStatus = (item.approval || '').toLowerCase().trim();
+            let status = 'pending';
+            let statusText = 'รออนุมัติ';
+            
+            // แปลงค่าสถานะ
+            if (approvalStatus.includes('approved') || approvalStatus.includes('อนุมัติ')) {
+                status = 'active';
+                statusText = 'อนุมัติ';
+            } else if (approvalStatus.includes('rejected') || approvalStatus.includes('ปฏิเสธ')) {
+                status = 'completed';
+                statusText = 'ปฏิเสธ';
+            } else if (approvalStatus.includes('completed') || approvalStatus.includes('เสร็จสิ้น')) {
+                status = 'completed';
+                statusText = 'เสร็จสิ้น';
             }
             
-            tableLoading.style.display = 'none';
-            reservationsTable.style.display = 'table';
+            // Format rental period
+            let rentalPeriod = 'ไม่ระบุวันที่';
+            if (item.rentStartdate && item.rentEnddate) {
+                try {
+                    rentalPeriod = `${formatDisplayDate(item.rentStartdate)} - ${formatDisplayDate(item.rentEnddate)}`;
+                } catch (e) {
+                    rentalPeriod = `${item.rentStartdate} - ${item.rentEnddate}`;
+                }
+            }
+            
+            row.innerHTML = `
+                <td>${index + 1}</td>
+                <td><strong>${item.Code || '-'}</strong></td>
+                <td>${item.name || '-'}</td>
+                <td>${item.department || '-'}</td>
+                <td>${item.position || '-'}</td>
+                <td>${item.choose || '-'}</td>
+                <td>${rentalPeriod}</td>
+                <td><span class="status ${status}">${statusText}</span></td>
+            `;
+            
+            tableBody.appendChild(row);
+        });
+    }
+    
+    tableLoading.style.display = 'none';
+    reservationsTable.style.display = 'table';
+}
+        
+        // Format date for display
+        function formatDisplayDate(dateString) {
+            if (!dateString) return '-';
+            
+            try {
+                const date = new Date(dateString);
+                if (isNaN(date.getTime())) {
+                    // If parsing fails, return original
+                    return dateString;
+                }
+                
+                // Format as DD/MM/YY
+                const day = date.getDate().toString().padStart(2, '0');
+                const month = (date.getMonth() + 1).toString().padStart(2, '0');
+                const year = date.getFullYear().toString().substring(2);
+                
+                return `${day}/${month}/${year}`;
+            } catch (e) {
+                return dateString;
+            }
         }
         
         // Filter table based on search input
@@ -1423,8 +1447,7 @@
             const now = new Date();
             const timeString = now.toLocaleTimeString('th-TH');
             const dateString = now.toLocaleDateString('th-TH');
-            const modeText = isDemoMode ? ' (ข้อมูลตัวอย่าง)' : '';
-            lastUpdated.textContent = `อัพเดทครั้งล่าสุด: ${dateString} ${timeString}${modeText}`;
+            lastUpdated.textContent = `Last updated: ${dateString} ${timeString}`;
         }
         
         // Show loading state
@@ -1435,9 +1458,10 @@
             
             // Update stats to show loading
             totalReservations.textContent = '...';
-            pendingReservations.textContent = '...';
-            approvedReservations.textContent = '...';
-            rejectedReservations.textContent = '...';
+            activeNow.textContent = '...';
+            upcomingReservations.textContent = '...';
+            totalDepartments.textContent = '...';
+            dataStats.textContent = 'Data rows loaded: loading...';
         }
         
         // Show error message
@@ -1446,43 +1470,50 @@
                 <div class="error-message">
                     <h3><i class="fas fa-exclamation-triangle"></i> เกิดข้อผิดพลาด</h3>
                     <p>${message}</p>
+                    <p><strong>ข้อมูลที่โหลดได้:</strong> ${reservationsData.length} รายการ</p>
                     <p style="margin-top: 10px; font-size: 14px;">
                         <strong>วิธีแก้ไขปัญหา:</strong>
                         <ol style="margin-left: 20px; margin-top: 5px;">
                             <li>ตรวจสอบการเชื่อมต่ออินเทอร์เน็ต</li>
-                            <li>ตรวจสอบว่า Google Apps Script ถูก deploy เป็นเว็บแอพแล้ว</li>
-                            <li>ลองกดปุ่ม "ข้อมูลตัวอย่าง" เพื่อทดสอบระบบก่อน</li>
-                            <li>ลองรีเฟรชหน้าหลังจาก 30 วินาที</li>
+                            <li>ตรวจสอบว่า Google Apps Script ถูก deploy แล้ว</li>
+                            <li>ลองกด Refresh อีกครั้ง</li>
+                            <li>เปิด Debug Mode เพื่อดูข้อมูลเพิ่มเติม</li>
                         </ol>
                     </p>
                 </div>
             `;
             errorMessage.style.display = 'block';
-        }
-        
-        // Show info message
-        function showInfoMessage(message) {
-            successMessage.innerHTML = `
-                <div class="success-message">
-                    <i class="fas fa-info-circle"></i> ${message}
+            
+            tableLoading.innerHTML = `
+                <div style="text-align: center;">
+                    <i class="fas fa-exclamation-circle" style="font-size: 48px; color: #e74c3c; margin-bottom: 15px;"></i>
+                    <div style="color: #c0392b; font-weight: 500;">ไม่สามารถโหลดข้อมูลได้ครบถ้วน</div>
+                    <div style="margin-top: 10px;">โหลดได้ ${reservationsData.length} รายการ</div>
+                    <button onclick="location.reload()" class="btn btn-outline" style="margin-top: 20px;">
+                        <i class="fas fa-redo"></i> โหลดใหม่
+                    </button>
                 </div>
             `;
-            successMessage.style.display = 'block';
         }
         
         // Show success message
         function showSuccess(message) {
-            successMessage.innerHTML = `
-                <div class="success-message">
-                    <i class="fas fa-check-circle"></i> ${message}
+            // Create a temporary success notification
+            const successDiv = document.createElement('div');
+            successDiv.innerHTML = `
+                <div style="position: fixed; top: 20px; right: 20px; background-color: #2ecc71; color: white; padding: 15px 20px; border-radius: var(--border-radius); box-shadow: var(--box-shadow); z-index: 1000; display: flex; align-items: center; gap: 10px;">
+                    <i class="fas fa-check-circle"></i>
+                    <span>${message}</span>
                 </div>
             `;
-            successMessage.style.display = 'block';
+            document.body.appendChild(successDiv);
             
-            // Auto hide after 5 seconds
+            // Remove after 3 seconds
             setTimeout(() => {
-                successMessage.style.display = 'none';
-            }, 5000);
+                if (successDiv.parentNode) {
+                    successDiv.parentNode.removeChild(successDiv);
+                }
+            }, 3000);
         }
         
         // Clear error message
@@ -1491,11 +1522,60 @@
             errorMessage.innerHTML = '';
         }
         
-        // Clear success message
-        function clearSuccess() {
-            successMessage.style.display = 'none';
-            successMessage.innerHTML = '';
+        // Toggle debug mode
+        function toggleDebugMode() {
+            debugMode = !debugMode;
+            debugToggle.innerHTML = debugMode ? 
+                '<i class="fas fa-bug"></i> Hide Debug' : 
+                '<i class="fas fa-bug"></i> Debug';
+            
+            debugInfo.style.display = debugMode ? 'block' : 'none';
+            
+            if (debugMode) {
+                updateDebugInfo('Debug mode enabled');
+                console.log('All loaded data:', reservationsData);
+                console.log('Raw data sample:', allData.slice(0, 3));
+            }
         }
+        
+        // Update debug information
+        function updateDebugInfo(message) {
+            if (!debugMode) return;
+            
+            const timestamp = new Date().toLocaleTimeString();
+            const debugDiv = document.createElement('div');
+            debugDiv.className = 'debug-info';
+            debugDiv.textContent = `[${timestamp}] ${message}`;
+            
+            debugInfo.appendChild(debugDiv);
+            
+            // Keep only last 10 messages
+            const messages = debugInfo.querySelectorAll('.debug-info');
+            if (messages.length > 10) {
+                messages[0].remove();
+            }
+            
+            // Scroll to bottom
+            debugInfo.scrollTop = debugInfo.scrollHeight;
+            
+            // Also log to console
+            console.log(`[DEBUG] ${message}`);
+        }
+        
+        // Add click event to navigation items
+        document.querySelectorAll('.nav-item').forEach(item => {
+            item.addEventListener('click', function() {
+                document.querySelectorAll('.nav-item').forEach(nav => {
+                    nav.classList.remove('active');
+                });
+                this.classList.add('active');
+            });
+        });
+        
+        // Add click event to Add Reservation button
+        document.getElementById('addReservationBtn').addEventListener('click', function() {
+            alert('ท่านกำลังเข้าสู่ระบบจองรถ\n\nกด OK ');
+        });
     </script>
 </body>
 </html>
