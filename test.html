@@ -564,10 +564,6 @@
                 height: 250px;
             }
         }
-        .status-pending {
-    background-color: rgba(255, 193, 7, 0.2);
-    color: #ffc107;
-}
     </style>
 </head>
 <body>
@@ -973,115 +969,87 @@
 
         // โหลดข้อมูลจาก Google Sheets
         async function loadFromGoogleSheets() {
-    console.log('กำลังโหลดข้อมูลจาก Google Sheets...');
-    
-    try {
-        // วิธีที่ 1: ใช้ CSV export
-        const csvUrl = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv`;
-        console.log('URL ที่ใช้โหลด:', csvUrl);
-        
-        const response = await fetch(csvUrl);
-        
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        
-        const csvText = await response.text();
-        console.log('ข้อมูลดิบที่ได้ (200 ตัวแรก):', csvText.substring(0, 200));
-        
-        const data = parseCSVData(csvText);
-        console.log('ข้อมูลที่แปลงแล้ว:', data);
-        
-        if (data.length === 0) {
-            throw new Error('ไม่พบข้อมูลในไฟล์');
-        }
-        
-        return data;
-        
-    } catch (error) {
-        console.error('Error loading from Google Sheets:', error);
-        
-        // ลองวิธีที่ 2: ใช้ Apps Script
-        try {
-            console.log('ลองใช้ Apps Script...');
-            const scriptUrl = 'https://script.google.com/macros/s/AKfycbzcMdFcpQkAxIbb0iEJJfZ8fD0YgiGUetRkkw1UyMv7uY3tlza345UoL1uNrNbOUKRx/exec';
-            const response = await fetch(`${scriptUrl}?action=getAllData`);
+            console.log('กำลังโหลดข้อมูลจาก Google Sheets...');
             
-            if (!response.ok) {
-                throw new Error(`Apps Script HTTP error: ${response.status}`);
+            // วิธีที่ 1: ใช้ CSV export
+            try {
+                const csvUrl = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv`;
+                console.log('กำลังโหลดจาก:', csvUrl);
+                
+                const response = await fetch(csvUrl);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const csvText = await response.text();
+                console.log('ได้รับ CSV text:', csvText.substring(0, 200));
+                
+                return parseCSVData(csvText);
+                
+            } catch (error) {
+                console.error('CSV method failed:', error);
+                
+                // วิธีที่ 2: ใช้ Google Apps Script
+                try {
+                    const scriptUrl = 'https://script.google.com/macros/s/AKfycbzcMdFcpQkAxIbb0iEJJfZ8fD0YgiGUetRkkw1UyMv7uY3tlza345UoL1uNrNbOUKRx/exec';
+                    const response = await fetch(`${scriptUrl}?action=getAllData`);
+                    
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    
+                    const result = await response.json();
+                    console.log('Apps Script result:', result);
+                    
+                    if (result.success && result.data) {
+                        return result.data;
+                    } else {
+                        throw new Error('Invalid response from Apps Script');
+                    }
+                    
+                } catch (scriptError) {
+                    console.error('Apps Script method failed:', scriptError);
+                    throw new Error('All data loading methods failed');
+                }
             }
-            
-            const result = await response.json();
-            console.log('Apps Script result:', result);
-            
-            if (result.success && result.data) {
-                return result.data;
-            } else {
-                throw new Error('Invalid Apps Script response');
-            }
-            
-        } catch (scriptError) {
-            console.error('Apps Script failed:', scriptError);
-            throw new Error('ไม่สามารถโหลดข้อมูลได้จากทั้งสองวิธี');
         }
-    }
-}
 
         // แปลง CSV เป็นข้อมูล
-       function parseCSVData(csvText) {
-    console.log('เริ่มแปลง CSV...');
-    
-    const lines = csvText.split('\n').filter(line => line.trim() !== '');
-    
-    if (lines.length < 2) {
-        console.log('CSV มีน้อยกว่า 2 บรรทัด');
-        return [];
-    }
-    
-    // หา header
-    const headerLine = lines[0];
-    console.log('Header line:', headerLine);
-    
-    // แยก header โดยใช้ regex ที่ดีกว่า
-    const headers = headerLine.match(/(".*?"|[^",]+)(?=\s*,|\s*$)/g) || [];
-    const cleanedHeaders = headers.map(h => h.trim().replace(/^"|"$/g, ''));
-    
-    console.log('Headers found:', cleanedHeaders);
-    
-    const result = [];
-    
-    // แปลงแต่ละแถวข้อมูล
-    for (let i = 1; i < lines.length; i++) {
-        try {
-            const line = lines[i];
-            if (line.trim() === '') continue;
+        function parseCSVData(csvText) {
+            const lines = csvText.split('\n').filter(line => line.trim() !== '');
             
-            // แยกค่าโดยใช้ regex เดียวกับ header
-            const values = line.match(/(".*?"|[^",]+)(?=\s*,|\s*$)/g) || [];
-            const cleanedValues = values.map(v => v.trim().replace(/^"|"$/g, ''));
-            
-            const row = {};
-            cleanedHeaders.forEach((header, index) => {
-                if (index < cleanedValues.length) {
-                    row[header] = cleanedValues[index];
-                } else {
-                    row[header] = '';
-                }
-            });
-            
-            // ตรวจสอบว่ามีข้อมูลหรือไม่
-            if (Object.values(row).some(value => value && value.trim() !== '')) {
-                result.push(row);
+            if (lines.length < 2) {
+                return [];
             }
             
-        } catch (error) {
-            console.error(`Error parsing line ${i}:`, error);
+            // แยก header
+            const headers = lines[0].split(',').map(h => h.trim().replace(/"/g, ''));
+            console.log('Headers:', headers);
+            
+            const result = [];
+            
+            // แปลงแต่ละแถว
+            for (let i = 1; i < lines.length; i++) {
+                const line = lines[i];
+                const values = parseCSVLine(line);
+                
+                const row = {};
+                headers.forEach((header, index) => {
+                    if (index < values.length) {
+                        row[header] = values[index] || '';
+                    }
+                });
+                
+                // ตรวจสอบว่ามีข้อมูลสำคัญหรือไม่
+                if (row['name'] || row['ชื่อ-สกุล'] || row['Name']) {
+                    result.push(row);
+                }
+            }
+            
+            console.log('Parsed data:', result);
+            return result;
         }
-    }
-    
-    console.log(`แปลงข้อมูลสำเร็จ: ${result.length} รายการ`);
-    return result;
-}
 
         // แยกค่าใน CSV line (รองรับค่าที่มี comma อยู่ใน quotes)
         function parseCSVLine(line) {
@@ -1109,47 +1077,26 @@
         }
 
         // แปลงข้อมูลดิบให้เป็นรูปแบบรายงาน
-       // แปลงข้อมูลดิบให้เป็นรูปแบบรายงาน
-function processRawData(rawData) {
-    console.log('Processing raw data with headers:', rawData.length > 0 ? Object.keys(rawData[0]) : 'No data');
-    
-    const processedData = [];
-    
-    rawData.forEach((item, index) => {
-        try {
-            // ดึงค่าจากคอลัมน์ต่างๆ ตามโครงสร้างจริง
-            const name = item.name || item['ชื่อ-สกุล'] || '';
-            const department = item.department || item.section || '';
-            const vehicle = item.choose || item.vehicle || '';
-            const startDate = item.rentStartdate || item.startdate || '';
-            const endDate = item.rentEnddate || item.enddate || '';
-            const startTime = item.startTime || '';
-            const endTime = item.endTime || '';
-            const reason = item.reason || '';
-            const position = item.position || '';
-            const contact = item.contact || '';
-            const approval = item.approval || '';
-            const code = item.code || '';
+        function processRawData(rawData) {
+            const processedData = [];
             
-            console.log(`Item ${index}:`, {
-                name, department, vehicle, startDate, endDate,
-                startTime, endTime, reason
-            });
-            
-            // แปลงวันที่
-            const formattedStartDate = parseDate(startDate);
-            const formattedEndDate = parseDate(endDate);
-            
-            // กำหนดสถานะตาม approval
-            let status = 'pending'; // รออนุมัติ
-            if (approval.toLowerCase() === 'อนุมัติ' || approval.toLowerCase() === 'approved') {
-                status = 'completed';
-            } else if (approval.toLowerCase() === 'ไม่อนุมัติ' || approval.toLowerCase() === 'rejected') {
-                status = 'cancelled';
-            }
-            
-            // หรือกำหนดสถานะตามวันที่
-            if (!approval || approval.trim() === '') {
+            rawData.forEach((item, index) => {
+                // ดึงค่าจากคอลัมน์ต่างๆ
+                const name = item.name || item['ชื่อ-สกุล'] || item['Name'] || item['ชื่อ'] || '';
+                const department = item.department || item['แผนก'] || item['Department'] || '';
+                const vehicle = item.choose || item['รถที่เลือก'] || item['vehicle'] || item['Choose'] || '';
+                const startDate = item.rentStartdate || item['วันที่เริ่ม'] || item['startDate'] || '';
+                const endDate = item.rentEnddate || item['วันที่สิ้นสุด'] || item['endDate'] || '';
+                const startTime = item.startTime || item['เวลาเริ่ม'] || '';
+                const endTime = item.endTime || item['เวลาสิ้นสุด'] || '';
+                const reason = item.reason || item['เหตุผล'] || item['Reason'] || '';
+                
+                // แปลงวันที่
+                const formattedStartDate = parseDate(startDate);
+                const formattedEndDate = parseDate(endDate);
+                
+                // กำหนดสถานะ
+                let status = 'completed'; // ค่าเริ่มต้น
                 const today = new Date().toISOString().split('T')[0];
                 
                 if (formattedStartDate && formattedEndDate) {
@@ -1159,105 +1106,83 @@ function processRawData(rawData) {
                         status = 'completed';
                     }
                 }
-            }
+                
+                // สร้างข้อมูลรายงาน
+                const reportItem = {
+                    id: `BK${String(index + 1).padStart(3, '0')}`,
+                    name: name,
+                    department: department || 'ไม่ระบุ',
+                    vehicle: vehicle || 'ไม่ระบุ',
+                    date: formatDisplayDate(formattedStartDate, formattedEndDate),
+                    time: formatTime(startTime, endTime),
+                    status: status,
+                    reason: reason || 'ไม่ระบุ',
+                    rawStartDate: formattedStartDate,
+                    rawEndDate: formattedEndDate,
+                    rawStartTime: startTime,
+                    rawEndTime: endTime
+                };
+                
+                processedData.push(reportItem);
+            });
             
-            // สร้างข้อมูลรายงาน
-            const reportItem = {
-                id: `BK${String(index + 1).padStart(3, '0')}`,
-                name: name || 'ไม่ระบุชื่อ',
-                department: department || 'ไม่ระบุแผนก',
-                vehicle: vehicle || 'ไม่ระบุรถ',
-                date: formatDisplayDate(formattedStartDate, formattedEndDate),
-                time: formatTime(startTime, endTime),
-                status: status,
-                reason: reason || 'ไม่ระบุเหตุผล',
-                position: position,
-                contact: contact,
-                approval: approval,
-                code: code,
-                rawStartDate: formattedStartDate,
-                rawEndDate: formattedEndDate,
-                rawStartTime: startTime,
-                rawEndTime: endTime,
-                rawData: item // เก็บข้อมูลดิบทั้งหมด
-            };
-            
-            processedData.push(reportItem);
-            
-        } catch (error) {
-            console.error(`Error processing item ${index}:`, error, item);
+            return processedData;
         }
-    });
-    
-    console.log('Processed data:', processedData);
-    return processedData;
-}
+
         // แปลงรูปแบบวันที่
-function parseDate(dateStr) {
-    if (!dateStr || dateStr.trim() === '') {
-        return '';
-    }
-    
-    console.log('Parsing date:', dateStr);
-    
-    try {
-        // ลองแปลงหลายรูปแบบ
-        // 1. รูปแบบ DD/MM/YYYY
-        const pattern1 = /^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})$/;
-        // 2. รูปแบบ DD/MM/YY
-        const pattern2 = /^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{2})$/;
-        // 3. รูปแบบ YYYY-MM-DD
-        const pattern3 = /^(\d{4})[\/\-](\d{1,2})[\/\-](\d{1,2})$/;
-        
-        let day, month, year;
-        
-        // ตรวจสอบแต่ละรูปแบบ
-        const match1 = dateStr.match(pattern1);
-        const match2 = dateStr.match(pattern2);
-        const match3 = dateStr.match(pattern3);
-        
-        if (match1) {
-            // DD/MM/YYYY
-            day = parseInt(match1[1]);
-            month = parseInt(match1[2]) - 1;
-            year = parseInt(match1[3]);
-        } else if (match2) {
-            // DD/MM/YY
-            day = parseInt(match2[1]);
-            month = parseInt(match2[2]) - 1;
-            year = parseInt(match2[3]) + 2000;
-        } else if (match3) {
-            // YYYY-MM-DD
-            year = parseInt(match3[1]);
-            month = parseInt(match3[2]) - 1;
-            day = parseInt(match3[3]);
-        } else {
-            // ลองใช้ Date() โดยตรง
-            const date = new Date(dateStr);
-            if (!isNaN(date.getTime())) {
-                return date.toISOString().split('T')[0];
+        function parseDate(dateStr) {
+            if (!dateStr || dateStr.trim() === '') {
+                return '';
             }
-            return '';
+            
+            try {
+                // ลองแปลงหลายรูปแบบ
+                const formats = [
+                    /^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})$/,  // DD/MM/YYYY
+                    /^(\d{4})[\/\-](\d{1,2})[\/\-](\d{1,2})$/,  // YYYY-MM-DD
+                    /^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{2})$/,  // DD/MM/YY
+                ];
+                
+                for (const format of formats) {
+                    const match = dateStr.match(format);
+                    if (match) {
+                        let day, month, year;
+                        
+                        if (match[1].length === 4) {
+                            // YYYY-MM-DD
+                            year = parseInt(match[1]);
+                            month = parseInt(match[2]) - 1;
+                            day = parseInt(match[3]);
+                        } else {
+                            // DD/MM/YYYY หรือ DD/MM/YY
+                            day = parseInt(match[1]);
+                            month = parseInt(match[2]) - 1;
+                            year = parseInt(match[3]);
+                            
+                            if (year < 100) {
+                                year += 2000;
+                            }
+                        }
+                        
+                        // สร้าง Date object
+                        const date = new Date(year, month, day);
+                        return date.toISOString().split('T')[0];
+                    }
+                }
+                
+                // ลองใช้ Date constructor โดยตรง
+                const date = new Date(dateStr);
+                if (!isNaN(date.getTime())) {
+                    return date.toISOString().split('T')[0];
+                }
+                
+                return '';
+                
+            } catch (error) {
+                console.error('Error parsing date:', dateStr, error);
+                return '';
+            }
         }
-        
-        // ตรวจสอบความถูกต้องของวันที่
-        if (month < 0 || month > 11 || day < 1 || day > 31) {
-            console.warn('Invalid date components:', { day, month, year });
-            return '';
-        }
-        
-        // สร้าง Date object
-        const date = new Date(year, month, day);
-        const result = date.toISOString().split('T')[0];
-        
-        console.log('Parsed date result:', result);
-        return result;
-        
-    } catch (error) {
-        console.error('Error parsing date:', dateStr, error);
-        return '';
-    }
-}
 
         // จัดรูปแบบวันที่สำหรับแสดง
         function formatDisplayDate(startDateStr, endDateStr) {
@@ -1347,23 +1272,19 @@ function parseDate(dateStr) {
         }
 
         // อัปเดตตัวเลือกแผนก
-        // อัปเดตตัวเลือกแผนก
-function updateDepartmentOptions() {
-    // ดึงแผนกทั้งหมดจากข้อมูล
-    allDepartments = [...new Set(reportData.map(item => item.department).filter(dept => dept && dept !== 'ไม่ระบุแผนก'))];
-    
-    console.log('Available departments:', allDepartments);
-    
-    const departmentSelect = elements.departmentFilter;
-    departmentSelect.innerHTML = '<option value="all">ทั้งหมด</option>';
-    
-    allDepartments.forEach(dept => {
-        const option = document.createElement('option');
-        option.value = dept;
-        option.textContent = dept;
-        departmentSelect.appendChild(option);
-    });
-}
+        function updateDepartmentOptions() {
+            allDepartments = [...new Set(reportData.map(item => item.department).filter(dept => dept && dept !== 'ไม่ระบุ'))];
+            
+            const departmentSelect = elements.departmentFilter;
+            departmentSelect.innerHTML = '<option value="all">ทั้งหมด</option>';
+            
+            allDepartments.forEach(dept => {
+                const option = document.createElement('option');
+                option.value = dept;
+                option.textContent = dept;
+                departmentSelect.appendChild(option);
+            });
+        }
 
         function applyFilters() {
             let filtered = [...reportData];
@@ -1501,55 +1422,64 @@ function updateDepartmentOptions() {
             });
         }
 
-      function renderTable() {
-    const startIndex = (currentPage - 1) * itemsPerPage;
-    const endIndex = startIndex + itemsPerPage;
-    const pageData = filteredData.slice(startIndex, endIndex);
-    
-    let tableHTML = '';
-    
-    if (pageData.length === 0) {
-        tableHTML = `
-            <tr>
-                <td colspan="8" style="text-align: center; padding: 40px; color: var(--gray);">
-                    <i class="fas fa-database" style="font-size: 48px; margin-bottom: 15px;"></i>
-                    <div>ไม่พบข้อมูลการจอง</div>
-                </td>
-            </tr>
-        `;
-    } else {
-        pageData.forEach(item => {
-            let statusBadge = '';
-            let statusText = '';
+        function renderTable() {
+            const startIndex = (currentPage - 1) * itemsPerPage;
+            const endIndex = startIndex + itemsPerPage;
+            const pageData = filteredData.slice(startIndex, endIndex);
             
-            switch(item.status) {
-                case 'active':
-                    statusBadge = 'status-active';
-                    statusText = 'กำลังใช้งาน';
-                    break;
-                case 'completed':
-                    statusBadge = 'status-completed';
-                    statusText = 'เสร็จสิ้น';
-                    break;
-                case 'cancelled':
-                    statusBadge = 'status-cancelled';
-                    statusText = 'ยกเลิก';
-                    break;
-                case 'pending':
-                    statusBadge = 'status-pending';
-                    statusText = 'รออนุมัติ';
-                    break;
-                default:
-                    statusBadge = 'status-pending';
-                    statusText = 'รออนุมัติ';
+            let tableHTML = '';
+            
+            if (pageData.length === 0) {
+                tableHTML = `
+                    <tr>
+                        <td colspan="8" style="text-align: center; padding: 40px; color: var(--gray);">
+                            <i class="fas fa-database" style="font-size: 48px; margin-bottom: 15px;"></i>
+                            <div>ไม่พบข้อมูลการจอง</div>
+                        </td>
+                    </tr>
+                `;
+            } else {
+                pageData.forEach(item => {
+                    let statusBadge = '';
+                    let statusText = '';
+                    
+                    switch(item.status) {
+                        case 'active':
+                            statusBadge = 'status-active';
+                            statusText = 'กำลังใช้งาน';
+                            break;
+                        case 'completed':
+                            statusBadge = 'status-completed';
+                            statusText = 'เสร็จสิ้น';
+                            break;
+                        case 'cancelled':
+                            statusBadge = 'status-cancelled';
+                            statusText = 'ยกเลิก';
+                            break;
+                    }
+                    
+                    tableHTML += `
+                        <tr>
+                            <td>${item.id}</td>
+                            <td>${item.name}</td>
+                            <td>${item.department}</td>
+                            <td>${item.vehicle}</td>
+                            <td>${item.date}</td>
+                            <td>${item.time}</td>
+                            <td><span class="status-badge ${statusBadge}">${statusText}</span></td>
+                            <td>${item.reason}</td>
+                        </tr>
+                    `;
+                });
             }
             
-          
-    // อัปเดตข้อมูลเพจ
-    elements.rowCount.textContent = pageData.length;
-    elements.totalRows.textContent = filteredData.length;
-    elements.currentPage.textContent = currentPage;
-}
+            elements.reportTableBody.innerHTML = tableHTML;
+            
+            // อัปเดตข้อมูลเพจ
+            elements.rowCount.textContent = pageData.length;
+            elements.totalRows.textContent = filteredData.length;
+            elements.currentPage.textContent = currentPage;
+        }
 
         function prevPage() {
             if (currentPage > 1) {
@@ -1939,61 +1869,6 @@ function updateDepartmentOptions() {
                 elements.message.style.display = 'none';
             }, 5000);
         }
-
-        async function loadFromGoogleSheets() {
-    console.log('กำลังโหลดข้อมูลจาก Google Sheets...');
-    
-    try {
-        // วิธีที่ 1: ใช้ CSV export
-        const csvUrl = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv`;
-        console.log('URL ที่ใช้โหลด:', csvUrl);
-        
-        const response = await fetch(csvUrl);
-        
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        
-        const csvText = await response.text();
-        console.log('ข้อมูลดิบที่ได้ (200 ตัวแรก):', csvText.substring(0, 200));
-        
-        const data = parseCSVData(csvText);
-        console.log('ข้อมูลที่แปลงแล้ว:', data);
-        
-        if (data.length === 0) {
-            throw new Error('ไม่พบข้อมูลในไฟล์');
-        }
-        
-        return data;
-        
-    } catch (error) {
-        console.error('Error loading from Google Sheets:', error);
-        
-        // ลองวิธีที่ 2: ใช้ Apps Script
-        try {
-            console.log('ลองใช้ Apps Script...');
-            const scriptUrl = 'https://script.google.com/macros/s/AKfycbzcMdFcpQkAxIbb0iEJJfZ8fD0YgiGUetRkkw1UyMv7uY3tlza345UoL1uNrNbOUKRx/exec';
-            const response = await fetch(`${scriptUrl}?action=getAllData`);
-            
-            if (!response.ok) {
-                throw new Error(`Apps Script HTTP error: ${response.status}`);
-            }
-            
-            const result = await response.json();
-            console.log('Apps Script result:', result);
-            
-            if (result.success && result.data) {
-                return result.data;
-            } else {
-                throw new Error('Invalid Apps Script response');
-            }
-            
-        } catch (scriptError) {
-            console.error('Apps Script failed:', scriptError);
-            throw new Error('ไม่สามารถโหลดข้อมูลได้จากทั้งสองวิธี');
-        }
-    }
-}
     </script>
 </body>
 </html>
