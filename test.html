@@ -575,6 +575,10 @@
                 width: 100%;
             }
         }
+        .status.rejected {
+    background-color: rgba(231, 76, 60, 0.2);
+    color: #c0392b;
+}
     </style>
 </head>
 <body>
@@ -1030,8 +1034,10 @@ function processData(rawData) {
             reason: item.reason || item.Reason || item['reason'] || item['Reason'] || item[12] || '',
             // เพิ่มคอลัมน์ approval จากคอลัมน์ N
             approval: item.approval || item.Approval || item['approval'] || item['Approval'] || item[13] || '',
+            
             // Store original for debugging
             _original: item
+            
         };
         
         // Clean up date formats
@@ -1095,6 +1101,7 @@ function processData(rawData) {
         
         // Update dashboard stats
        // Update dashboard stats
+// Update dashboard stats
 function updateDashboard(data) {
     updateDebugInfo(`Updating dashboard with ${data.length} records`);
     
@@ -1102,24 +1109,47 @@ function updateDashboard(data) {
     totalReservations.textContent = data.length;
     dataStats.textContent = `Data rows loaded: ${data.length}`;
     
-    // คำนวณอนุมัติ (ดึงจากคอลัมน์ approval)
+    // ตรวจสอบค่าสถานะทั้งหมด (สำหรับ debug)
+    if (debugMode) {
+        const allApprovals = data.map(item => item.approval || '(empty)');
+        console.log('All approval values:', allApprovals);
+    }
+    
+    // นับจำนวนอนุมัติ (ต้องตรงกับ "อนุมัติ" เท่านั้น)
     const approvedCount = data.filter(item => {
-        const approvalStatus = (item.approval || '').toLowerCase().trim();
-        return approvalStatus === 'approved' || approvalStatus === 'อนุมัติ' || approvalStatus === 'ยืนยัน';
+        const approvalStatus = String(item.approval || '').toLowerCase().trim();
+        // ตรวจสอบหลายรูปแบบ
+        return approvalStatus === 'อนุมัติ' || 
+               approvalStatus === 'approved' ||
+               approvalStatus === 'ยืนยัน' ||
+               approvalStatus === 'yes' ||
+               approvalStatus === 'y';
     }).length;
     
     activeNow.textContent = approvedCount;
     
-    // คำนวณรออนุมัติ
+    // นับจำนวนรออนุมัติ
     const pendingCount = data.filter(item => {
-        const approvalStatus = (item.approval || '').toLowerCase().trim();
-        return approvalStatus === '' || 
-               approvalStatus === 'pending' || 
-               approvalStatus === 'รออนุมัติ' || 
-               approvalStatus === 'รอยืนยัน';
+        const approvalStatus = String(item.approval || '').toLowerCase().trim();
+        // ตรวจสอบหลายรูปแบบ
+        return approvalStatus === 'รออนุมัติ' || 
+               approvalStatus === 'pending' ||
+               approvalStatus === 'รอ' ||
+               approvalStatus === 'waiting' ||
+               approvalStatus === '' || // ค่าว่างถือว่ารออนุมัติ
+               approvalStatus === '(empty)';
     }).length;
     
     upcomingReservations.textContent = pendingCount;
+    
+    // นับจำนวนปฏิเสธ
+    const rejectedCount = data.filter(item => {
+        const approvalStatus = String(item.approval || '').toLowerCase().trim();
+        return approvalStatus === 'ปฏิเสธ' || 
+               approvalStatus === 'rejected' ||
+               approvalStatus === 'no' ||
+               approvalStatus === 'n';
+    }).length;
     
     // Calculate unique departments
     const departments = [...new Set(data.map(item => item.department).filter(Boolean))];
@@ -1131,17 +1161,20 @@ function updateDashboard(data) {
     dataInfo.style.display = 'block';
     
     // Update stat change indicators
-    updateStatChanges(approvedCount, pendingCount, departments.length, data.length);
+    updateStatChanges(approvedCount, pendingCount, departments.length, data.length, rejectedCount);
     
-    // Debug: Log approval statuses
+    // Debug: Show approval statistics
     if (debugMode) {
-        const approvalStats = data.reduce((acc, item) => {
-            const status = (item.approval || 'empty').toLowerCase();
-            acc[status] = (acc[status] || 0) + 1;
-            return acc;
-        }, {});
-        console.log('Approval status distribution:', approvalStats);
+        console.log(`Approved: ${approvedCount}, Pending: ${pendingCount}, Rejected: ${rejectedCount}, Total: ${data.length}`);
     }
+}
+
+// แก้ไขฟังก์ชัน updateStatChanges
+function updateStatChanges(approved, pending, depts, total, rejected = 0) {
+    document.getElementById('totalChange').textContent = `${total} รายการ`;
+    document.getElementById('activeChange').textContent = `${approved} อนุมัติ`;
+    document.getElementById('upcomingChange').textContent = `${pending} รออนุมัติ`;
+    document.getElementById('deptChange').textContent = `${depts} แผนก`;
 }
 
 // แก้ไขฟังก์ชัน updateStatChanges
@@ -1327,7 +1360,7 @@ function updateStatChanges(approved, pending, depts, total) {
         }
         
         // Update table with data
-       // Update table with data
+  // Update table with data
 function updateTable(data) {
     updateDebugInfo(`Updating table with ${data.length} records`);
     
@@ -1341,11 +1374,11 @@ function updateTable(data) {
                         </td>`;
         tableBody.appendChild(row);
     } else {
-        // Sort by date (newest first)
+        // Sort by timestamp (newest first)
         const sortedData = [...data].sort((a, b) => {
             try {
-                const dateA = new Date(a.Timestamp || a.rentStartdate || 0);
-                const dateB = new Date(b.Timestamp || b.rentStartdate || 0);
+                const dateA = new Date(a.Timestamp || 0);
+                const dateB = new Date(b.Timestamp || 0);
                 return dateB - dateA;
             } catch (e) {
                 return 0;
@@ -1358,22 +1391,24 @@ function updateTable(data) {
         displayData.forEach((item, index) => {
             const row = document.createElement('tr');
             
-            // ใช้สถานะจากคอลัมน์ approval
-            const approvalStatus = (item.approval || '').toLowerCase().trim();
-            let status = 'pending';
+            // ใช้สถานะจากคอลัมน์ approval เท่านั้น
+            const approvalStatus = String(item.approval || '').toLowerCase().trim();
+            
+            // กำหนดสีและข้อความตามสถานะ
+            let statusClass = 'pending';
             let statusText = 'รออนุมัติ';
             
-            // แปลงค่าสถานะ
-            if (approvalStatus.includes('approved') || approvalStatus.includes('อนุมัติ')) {
-                status = 'active';
-                statusText = 'อนุมัติ';
-            } else if (approvalStatus.includes('rejected') || approvalStatus.includes('ปฏิเสธ')) {
-                status = 'completed';
-                statusText = 'ปฏิเสธ';
-            } else if (approvalStatus.includes('completed') || approvalStatus.includes('เสร็จสิ้น')) {
-                status = 'completed';
-                statusText = 'เสร็จสิ้น';
-            }
+           if (approvalStatus === 'อนุมัติ' || approvalStatus === 'approved' || approvalStatus === 'ยืนยัน') {
+    statusClass = 'active';
+    statusText = 'อนุมัติ';
+} else if (approvalStatus === 'ปฏิเสธ' || approvalStatus === 'rejected') {
+    statusClass = 'rejected';  // ใช้คลาส rejected
+    statusText = 'ปฏิเสธ';
+} else if (approvalStatus === 'เสร็จสิ้น' || approvalStatus === 'completed') {
+    statusClass = 'completed';
+    statusText = 'เสร็จสิ้น';
+}
+            // ถ้าเป็นค่าว่างหรือ 'รออนุมัติ' ให้ใช้ค่า default ข้างต้น
             
             // Format rental period
             let rentalPeriod = 'ไม่ระบุวันที่';
@@ -1393,8 +1428,13 @@ function updateTable(data) {
                 <td>${item.position || '-'}</td>
                 <td>${item.choose || '-'}</td>
                 <td>${rentalPeriod}</td>
-                <td><span class="status ${status}">${statusText}</span></td>
+                <td><span class="status ${statusClass}">${statusText}</span></td>
             `;
+            
+            // เพิ่ม tooltip เพื่อแสดงค่าจริงจากคอลัมน์ N (สำหรับ debug)
+            if (debugMode) {
+                row.querySelector('.status').title = `ค่าจากคอลัมน์ N: "${item.approval || '(empty)'}"`;
+            }
             
             tableBody.appendChild(row);
         });
@@ -1402,6 +1442,14 @@ function updateTable(data) {
     
     tableLoading.style.display = 'none';
     reservationsTable.style.display = 'table';
+    
+    // Debug: Log approval status of displayed items
+    if (debugMode && displayData) {
+        console.log('Approval statuses in table:');
+        displayData.forEach((item, idx) => {
+            console.log(`${idx+1}. ${item.name} - Approval: "${item.approval}"`);
+        });
+    }
 }
         
         // Format date for display
