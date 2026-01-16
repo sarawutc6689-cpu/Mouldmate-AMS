@@ -255,49 +255,6 @@
             padding-right: 12px;
         }
         
-        /* Filters Section */
-        .filters-section {
-            background-color: white;
-            border-radius: var(--border-radius);
-            padding: 25px;
-            box-shadow: var(--box-shadow);
-            margin-bottom: 30px;
-            display: flex;
-            flex-wrap: wrap;
-            gap: 20px;
-            align-items: center;
-        }
-        
-        .filter-group {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-            min-width: 200px;
-        }
-        
-        .filter-label {
-            font-weight: 600;
-            color: var(--gray);
-            font-size: 14px;
-        }
-        
-        .filter-select {
-            padding: 12px 15px;
-            border-radius: var(--border-radius);
-            border: 1px solid var(--gray-light);
-            font-family: 'Roboto', 'Kanit', sans-serif;
-            font-size: 16px;
-            transition: var(--transition);
-            background-color: white;
-            width: 100%;
-        }
-        
-        .filter-select:focus {
-            outline: none;
-            border-color: var(--primary);
-            box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.1);
-        }
-        
         /* Stats Section */
         .stats-section {
             display: grid;
@@ -426,6 +383,7 @@
             color: var(--dark);
         }
         
+        /* Event Details */
         .event-list {
             display: flex;
             flex-direction: column;
@@ -502,42 +460,6 @@
             font-size: 16px;
         }
         
-        /* Legend */
-        .legend-section {
-            background-color: white;
-            border-radius: var(--border-radius);
-            padding: 20px;
-            box-shadow: var(--box-shadow);
-        }
-        
-        .legend-title {
-            font-size: 18px;
-            font-weight: 600;
-            margin-bottom: 15px;
-            color: var(--dark);
-        }
-        
-        .legend-items {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 15px;
-        }
-        
-        .legend-item {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            padding: 8px 12px;
-            background-color: #f8f9fa;
-            border-radius: var(--border-radius);
-        }
-        
-        .legend-color {
-            width: 15px;
-            height: 15px;
-            border-radius: 3px;
-        }
-        
         /* Footer */
         .footer {
             text-align: center;
@@ -546,101 +468,6 @@
             font-size: 14px;
             margin-top: 30px;
             border-top: 1px solid var(--gray-light);
-        }
-        
-        /* Responsive */
-        @media (max-width: 1200px) {
-            .calendar-day {
-                min-height: 100px;
-            }
-        }
-        
-        @media (max-width: 992px) {
-            .calendar-day {
-                min-height: 90px;
-                padding: 8px;
-            }
-            
-            .day-number {
-                font-size: 16px;
-            }
-            
-            .event-item {
-                font-size: 11px;
-                padding: 4px 6px;
-            }
-        }
-        
-        @media (max-width: 768px) {
-            .header {
-                flex-direction: column;
-                text-align: center;
-            }
-            
-            .header-controls {
-                justify-content: center;
-            }
-            
-            .calendar-day {
-                min-height: 80px;
-            }
-            
-            .calendar-header {
-                gap: 5px;
-            }
-            
-            .day-header {
-                padding: 10px 5px;
-                font-size: 14px;
-            }
-            
-            .event-item {
-                display: none;
-            }
-            
-            .event-badge {
-                width: 20px;
-                height: 20px;
-                font-size: 10px;
-            }
-            
-            .stats-section {
-                grid-template-columns: 1fr;
-            }
-            
-            .filters-section {
-                flex-direction: column;
-                align-items: stretch;
-            }
-            
-            .filter-group {
-                width: 100%;
-            }
-        }
-        
-        @media (max-width: 576px) {
-            body {
-                padding: 10px;
-            }
-            
-            .header-title {
-                font-size: 22px;
-            }
-            
-            .month-display {
-                font-size: 20px;
-                min-width: 200px;
-            }
-            
-            .calendar-day {
-                min-height: 70px;
-                padding: 5px;
-            }
-            
-            .day-number {
-                font-size: 14px;
-                margin-bottom: 4px;
-            }
         }
         
         /* Loading */
@@ -687,6 +514,70 @@
             border-left: 5px solid #e74c3c;
             color: #e74c3c;
         }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .header {
+                flex-direction: column;
+                text-align: center;
+            }
+            
+            .header-controls {
+                justify-content: center;
+            }
+            
+            .calendar-day {
+                min-height: 80px;
+            }
+            
+            .calendar-header {
+                gap: 5px;
+            }
+            
+            .day-header {
+                padding: 10px 5px;
+                font-size: 14px;
+            }
+            
+            .event-item {
+                display: none;
+            }
+            
+            .event-badge {
+                width: 20px;
+                height: 20px;
+                font-size: 10px;
+            }
+            
+            .stats-section {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        @media (max-width: 576px) {
+            body {
+                padding: 10px;
+            }
+            
+            .header-title {
+                font-size: 22px;
+            }
+            
+            .month-display {
+                font-size: 20px;
+                min-width: 200px;
+            }
+            
+            .calendar-day {
+                min-height: 70px;
+                padding: 5px;
+            }
+            
+            .day-number {
+                font-size: 14px;
+                margin-bottom: 4px;
+            }
+        }
     </style>
 </head>
 <body>
@@ -721,33 +612,6 @@
         <!-- Message -->
         <div class="message" id="message"></div>
         
-        <!-- Filters -->
-        <div class="filters-section">
-            <div class="filter-group">
-                <div class="filter-label">เลือกดูตามรถ</div>
-                <select class="filter-select" id="vehicleFilter">
-                    <option value="all">รถทั้งหมด</option>
-                </select>
-            </div>
-            
-            <div class="filter-group">
-                <div class="filter-label">เลือกดูตามแผนก</div>
-                <select class="filter-select" id="departmentFilter">
-                    <option value="all">ทุกแผนก</option>
-                </select>
-            </div>
-            
-            <div class="filter-group">
-                <div class="filter-label">เลือกดูตามสถานะ</div>
-                <select class="filter-select" id="statusFilter">
-                    <option value="all">ทุกสถานะ</option>
-                    <option value="active">กำลังใช้งาน</option>
-                    <option value="pending">รออนุมัติ</option>
-                    <option value="completed">เสร็จสิ้น</option>
-                </select>
-            </div>
-        </div>
-        
         <!-- Stats -->
         <div class="stats-section">
             <div class="stat-card">
@@ -756,7 +620,7 @@
                 </div>
                 <div class="stat-content">
                     <div class="stat-value" id="totalReservations">0</div>
-                    <div class="stat-label">การจองทั้งหมดในเดือนนี้</div>
+                    <div class="stat-label">การจองทั้งหมด</div>
                 </div>
             </div>
             
@@ -766,7 +630,7 @@
                 </div>
                 <div class="stat-content">
                     <div class="stat-value" id="activeVehicles">0</div>
-                    <div class="stat-label">รถที่ถูกจองในเดือนนี้</div>
+                    <div class="stat-label">รถที่ถูกจอง</div>
                 </div>
             </div>
             
@@ -776,7 +640,7 @@
                 </div>
                 <div class="stat-content">
                     <div class="stat-value" id="activeDepartments">0</div>
-                    <div class="stat-label">แผนกที่ใช้งานในเดือนนี้</div>
+                    <div class="stat-label">แผนกที่ใช้งาน</div>
                 </div>
             </div>
         </div>
@@ -790,33 +654,33 @@
                 <div class="day-header">พุธ</div>
                 <div class="day-header">พฤหัสบดี</div>
                 <div class="day-header">ศุกร์</div>
-                <div class="day-header">เสาร์</div>   
+                <div class="day-header">เสาร์</div>
+                
             </div>
             
             <div class="calendar-grid" id="calendarGrid">
-                <!-- Calendar days will be generated here -->
                 <div class="loading">
                     <div class="spinner"></div>
-                    <div>กำลังโหลดปฏิทิน...</div>
+                    <div>กำลังโหลดข้อมูล...</div>
                 </div>
             </div>
         </div>
         
-        <!-- Legend -->
-        <div class="legend-section">
-            <div class="legend-title">คำอธิบายสีรถ</div>
-            <div class="legend-items" id="legendItems">
-                <div class="legend-item">
-                    <div class="legend-color" style="background-color: #4361ee;"></div>
-                    <span>โตโยต้า ฟอร์จูนเนอร์</span>
+        <!-- Info -->
+        <div style="background-color: white; border-radius: var(--border-radius); padding: 15px; margin-bottom: 20px; box-shadow: var(--box-shadow);">
+            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+                <div>
+                    <strong>จำนวนข้อมูล:</strong>
+                    <span id="dataCount">0</span> รายการ
                 </div>
-                <div class="legend-item">
-                    <div class="legend-color" style="background-color: #3f37c9;"></div>
-                    <span>ฮอนด้า ซีวิค</span>
+                <div>
+                    <strong>อัพเดทล่าสุด:</strong>
+                    <span id="lastUpdated">--</span>
                 </div>
-                <div class="legend-item">
-                    <div class="legend-color" style="background-color: #4cc9f0;"></div>
-                    <span>โตโยต้า ไฮลักซ์</span>
+                <div>
+                    <button class="btn btn-outline" onclick="showRawData()" style="padding: 8px 15px; font-size: 14px;">
+                        <i class="fas fa-database"></i> ดูข้อมูลดิบ
+                    </button>
                 </div>
             </div>
         </div>
@@ -824,7 +688,7 @@
         <!-- Footer -->
         <div class="footer">
             <p>ระบบปฏิทินการจองรถ | บริษัท TokaiSolidtire จำกัด</p>
-            <p>อัพเดทล่าสุด: <span id="lastUpdated">--</span></p>
+            <p>พัฒนาโดย Sarawut.C</p>
         </div>
     </div>
     
@@ -840,48 +704,52 @@
             </div>
         </div>
     </div>
+    
+    <!-- Raw Data Modal -->
+    <div class="modal" id="rawDataModal">
+        <div class="modal-content" style="max-width: 90%;">
+            <div class="modal-header">
+                <div class="modal-title">ข้อมูลดิบจาก Google Sheets</div>
+                <button class="modal-close" onclick="closeRawData()">&times;</button>
+            </div>
+            <div id="rawDataContent" style="font-family: monospace; font-size: 12px; max-height: 60vh; overflow-y: auto;">
+                <!-- Raw data will be populated here -->
+            </div>
+        </div>
+    </div>
 
     <script>
-        // ข้อมูลตัวอย่าง
+        // ข้อมูลตัวอย่าง (ใช้งานทันที)
         const sampleData = [
             {
-                "Timestamp": "2026-01-15",
-                "Code": "EMP001",
                 "name": "สมชาย ใจดี",
-                "section": "ฝ่ายขาย",
+                "code": "EMP001",
                 "department": "การตลาด",
                 "position": "พนักงานขาย",
-                "contact": "081-234-5678",
                 "choose": "โตโยต้า ฟอร์จูนเนอร์",
-                "rentStartdate": "2026-01-16",
-                "rentEnddate": "2026-01-18",
+                "rentStartdate": "2026-01-15",
+                "rentEnddate": "2026-01-17",
                 "startTime": "09:00",
                 "endTime": "17:00",
                 "reason": "นำลูกค้าทัวร์โรงงาน"
             },
             {
-                "Timestamp": "2026-01-14",
-                "Code": "EMP002",
                 "name": "สุภาพร สุขสวัสดิ์",
-                "section": "ฝ่ายบุคคล",
+                "code": "EMP002",
                 "department": "ทรัพยากรบุคคล",
                 "position": "หัวหน้าแผนก",
-                "contact": "082-345-6789",
                 "choose": "ฮอนด้า ซีวิค",
-                "rentStartdate": "2026-01-17",
-                "rentEnddate": "2026-01-17",
+                "rentStartdate": "2026-01-18",
+                "rentEnddate": "2026-01-18",
                 "startTime": "08:30",
                 "endTime": "16:30",
                 "reason": "ไปสัมมนาที่โรงแรม"
             },
             {
-                "Timestamp": "2026-01-13",
-                "Code": "EMP003",
                 "name": "วิชัย ตั้งใจเรียน",
-                "section": "ฝ่ายผลิต",
+                "code": "EMP003",
                 "department": "ผลิตภัณฑ์",
                 "position": "วิศวกร",
-                "contact": "083-456-7890",
                 "choose": "โตโยต้า ไฮลักซ์",
                 "rentStartdate": "2026-01-20",
                 "rentEnddate": "2026-01-22",
@@ -890,13 +758,10 @@
                 "reason": "ขนส่งอุปกรณ์ไปสาขา"
             },
             {
-                "Timestamp": "2026-01-12",
-                "Code": "EMP004",
                 "name": "อรุณี สดใส",
-                "section": "ฝ่ายบัญชี",
+                "code": "EMP004",
                 "department": "การเงิน",
                 "position": "นักบัญชี",
-                "contact": "084-567-8901",
                 "choose": "โตโยต้า ฟอร์จูนเนอร์",
                 "rentStartdate": "2026-01-25",
                 "rentEnddate": "2026-01-26",
@@ -905,104 +770,23 @@
                 "reason": "ไปธนาคารและสรรพากร"
             },
             {
-                "Timestamp": "2026-01-11",
-                "Code": "EMP005",
                 "name": "บดินทร์ แข็งแรง",
-                "section": "ฝ่ายขนส่ง",
+                "code": "EMP005",
                 "department": "โลจิสติกส์",
                 "position": "หัวหน้าขนส่ง",
-                "contact": "085-678-9012",
                 "choose": "อิซูซุ ดีแมคซ์",
-                "rentStartdate": "2026-01-19",
-                "rentEnddate": "2026-01-21",
+                "rentStartdate": "2026-01-28",
+                "rentEnddate": "2026-01-29",
                 "startTime": "06:00",
                 "endTime": "20:00",
                 "reason": "ขนสินค้าให้ลูกค้า"
-            },
-            {
-                "Timestamp": "2026-01-10",
-                "Code": "EMP006",
-                "name": "กนกวรรณ งามเลิศ",
-                "section": "ฝ่ายจัดซื้อ",
-                "department": "จัดซื้อ",
-                "position": "ผู้จัดการฝ่าย",
-                "contact": "086-789-0123",
-                "choose": "โตโยต้า ฟอร์จูนเนอร์",
-                "rentStartdate": "2026-01-28",
-                "rentEnddate": "2026-01-29",
-                "startTime": "08:00",
-                "endTime": "17:00",
-                "reason": "ไปพบผู้จำหน่ายวัตถุดิบ"
-            },
-            {
-                "Timestamp": "2026-01-09",
-                "Code": "EMP007",
-                "name": "ธีรพงศ์ มั่นคง",
-                "section": "ฝ่ายผลิต",
-                "department": "ผลิตภัณฑ์",
-                "position": "หัวหน้าคิวซี",
-                "contact": "087-890-1234",
-                "choose": "ฮอนด้า ซีวิค",
-                "rentStartdate": "2026-01-23",
-                "rentEnddate": "2026-01-24",
-                "startTime": "07:30",
-                "endTime": "18:30",
-                "reason": "ตรวจสอบคุณภาพสินค้าสาขา"
-            },
-            {
-                "Timestamp": "2026-01-08",
-                "Code": "EMP008",
-                "name": "พัชรินทร์ อ่อนหวาน",
-                "section": "ฝ่ายบริการ",
-                "department": "บริการลูกค้า",
-                "position": "เจ้าหน้าที่บริการ",
-                "contact": "088-901-2345",
-                "choose": "โตโยต้า ไฮลักซ์",
-                "rentStartdate": "2026-01-30",
-                "rentEnddate": "2026-02-01",
-                "startTime": "09:00",
-                "endTime": "16:00",
-                "reason": "ติดตั้งสินค้าให้ลูกค้า"
-            },
-            {
-                "Timestamp": "2026-01-07",
-                "Code": "EMP009",
-                "name": "อนุชา เก่งกาจ",
-                "section": "ฝ่ายขาย",
-                "department": "การตลาด",
-                "position": "พนักงานขาย",
-                "contact": "089-012-3456",
-                "choose": "อิซูซุ ดีแมคซ์",
-                "rentStartdate": "2026-01-15",
-                "rentEnddate": "2026-01-16",
-                "startTime": "10:00",
-                "endTime": "15:00",
-                "reason": "นำเสนอสินค้าให้ลูกค้าใหม่"
-            },
-            {
-                "Timestamp": "2026-01-06",
-                "Code": "EMP010",
-                "name": "วรัญญา สุขสง่า",
-                "section": "ฝ่ายบุคคล",
-                "department": "ทรัพยากรบุคคล",
-                "position": "เจ้าหน้าที่บุคคล",
-                "contact": "090-123-4567",
-                "choose": "โตโยต้า ฟอร์จูนเนอร์",
-                "rentStartdate": "2026-01-27",
-                "rentEnddate": "2026-01-27",
-                "startTime": "08:00",
-                "endTime": "16:00",
-                "reason": "ไปรับสมัครงานที่มหาวิทยาลัย"
             }
         ];
 
-        // ตัวแปรเก็บข้อมูล
+        // ตัวแปรหลัก
         let reservationsData = [];
         let currentMonth = new Date().getMonth();
         let currentYear = new Date().getFullYear();
-        let selectedVehicle = 'all';
-        let selectedDepartment = 'all';
-        let selectedStatus = 'all';
 
         // DOM Elements
         const elements = {
@@ -1012,9 +796,6 @@
             nextMonthBtn: document.getElementById('nextMonth'),
             todayBtn: document.getElementById('todayBtn'),
             refreshBtn: document.getElementById('refreshBtn'),
-            vehicleFilter: document.getElementById('vehicleFilter'),
-            departmentFilter: document.getElementById('departmentFilter'),
-            statusFilter: document.getElementById('statusFilter'),
             eventModal: document.getElementById('eventModal'),
             modalTitle: document.getElementById('modalTitle'),
             eventList: document.getElementById('eventList'),
@@ -1022,24 +803,12 @@
             totalReservations: document.getElementById('totalReservations'),
             activeVehicles: document.getElementById('activeVehicles'),
             activeDepartments: document.getElementById('activeDepartments'),
-            legendItems: document.getElementById('legendItems'),
             lastUpdated: document.getElementById('lastUpdated'),
-            message: document.getElementById('message')
+            message: document.getElementById('message'),
+            dataCount: document.getElementById('dataCount')
         };
 
-        // สีสำหรับรถแต่ละคัน
-        const vehicleColors = {
-            'โตโยต้า ฟอร์จูนเนอร์': '#4361ee',
-            'ฮอนด้า ซีวิค': '#3f37c9',
-            'โตโยต้า ไฮลักซ์': '#4cc9f0',
-            'อิซูซุ ดีแมคซ์': '#f72585',
-            'มิชูบิชิ แทริส': '#7209b7',
-            'นิสสัน เทอร์รา': '#06d6a0',
-            'ฮอนด้า เอชอาร์วี': '#ffd166',
-            'อื่นๆ': '#6c757d'
-        };
-
-        // เริ่มต้นโปรแกรม
+        // เริ่มต้น
         document.addEventListener('DOMContentLoaded', function() {
             initCalendar();
             loadData();
@@ -1048,113 +817,183 @@
 
         function initCalendar() {
             updateCalendarDisplay();
-            renderCalendar();
-        }
-
-        async function loadData() {
-    showLoading('กำลังโหลดข้อมูล...');
-    
-    try {
-        // ใช้ CSV export (ทำงานได้แน่นอน)
-        const csvUrl = `https://docs.google.com/spreadsheets/d/1-5izB7N6ldxHAa3ca0RNhGP8Z36vuA0mw9Wi_xR_Lj4/export?format=csv`;
-        
-        console.log('Fetching CSV from:', csvUrl);
-        
-        const response = await fetch(csvUrl);
-        const csvText = await response.text();
-        
-        // แปลง CSV เป็น array
-        const lines = csvText.split('\n');
-        const headers = lines[0].split(',').map(h => h.trim());
-        const rows = lines.slice(1).filter(line => line.trim() !== '');
-        
-        reservationsData = rows.map((line, index) => {
-            const values = line.split(',').map(v => v.trim());
-            const obj = {};
-            
-            headers.forEach((header, i) => {
-                const key = header.toLowerCase().replace(/\s+(.)/g, (match, group1) => group1.toUpperCase());
-                obj[key] = values[i] || '';
-            });
-            
-            if (!obj.code || obj.code.trim() === '') {
-                obj.code = `EMP${String(index + 1).padStart(3, '0')}`;
-            }
-            
-            return obj;
-        }).filter(item => item.name && item.name.trim() !== '');
-        
-        console.log('Loaded data:', reservationsData.length, 'rows');
-        
-        dataSource = 'csv-export';
-        showMessage(`โหลดข้อมูลสำเร็จ: ${reservationsData.length} รายการ`, 'success');
-        updateUI();
-        
-    } catch (error) {
-        console.error('Error loading CSV:', error);
-        useFallbackData();
-    }
-}
-
-        async function fetchFromGoogleSheets() {
-            // URL ของ Google Apps Script
-            const scriptUrl = 'https://script.google.com/macros/s/AKfycbzReRwQHdUTdit1HMRCVVNlsGwpdvZMFG4fhsv5yh5nLpOE28NFuV2y_1OXPHU0DPkM/exec';
-            const SHEET_ID = '1-5izB7N6ldxHAa3ca0RNhGP8Z36vuA0mw9Wi_xR_Lj4';
-            
-            try {
-                const response = await fetch(scriptUrl);
-                if (!response.ok) throw new Error('Network response was not ok');
-                
-                const data = await response.json();
-                return data.data || [];
-            } catch (error) {
-                console.error('Error fetching from Google Sheets:', error);
-                return [];
-            }
         }
 
         function setupEventListeners() {
-            // ปุ่มควบคุมปฏิทิน
             elements.prevMonthBtn.addEventListener('click', goToPreviousMonth);
             elements.nextMonthBtn.addEventListener('click', goToNextMonth);
             elements.todayBtn.addEventListener('click', goToToday);
             elements.refreshBtn.addEventListener('click', loadData);
-            
-            // ฟิลเตอร์
-            elements.vehicleFilter.addEventListener('change', function() {
-                selectedVehicle = this.value;
-                updateStats();
-                renderCalendar();
-            });
-            
-            elements.departmentFilter.addEventListener('change', function() {
-                selectedDepartment = this.value;
-                updateStats();
-                renderCalendar();
-            });
-            
-            elements.statusFilter.addEventListener('change', function() {
-                selectedStatus = this.value;
-                updateStats();
-                renderCalendar();
-            });
-            
-            // ปิด Modal
             elements.closeModal.addEventListener('click', closeEventModal);
+            
             elements.eventModal.addEventListener('click', function(e) {
                 if (e.target === elements.eventModal) {
                     closeEventModal();
                 }
             });
-            
-            // ปุ่ม Escape ปิด Modal
-            document.addEventListener('keydown', function(e) {
-                if (e.key === 'Escape') {
-                    closeEventModal();
-                }
-            });
         }
 
+        // โหลดข้อมูล
+        async function loadData() {
+            showLoading();
+            showMessage('กำลังโหลดข้อมูล...', 'info');
+            
+            try {
+                // ลองโหลดจาก Google Sheets
+                const data = await loadFromGoogleSheets();
+                reservationsData = data;
+                
+                if (reservationsData.length > 0) {
+                    showMessage(`โหลดข้อมูลสำเร็จ: ${reservationsData.length} รายการ`, 'success');
+                    updateStats();
+                    renderCalendar();
+                    updateLastUpdated();
+                } else {
+                    throw new Error('ไม่พบข้อมูล');
+                }
+                
+            } catch (error) {
+                console.log('ใช้ข้อมูลตัวอย่าง:', error.message);
+                reservationsData = sampleData;
+                showMessage('ใช้ข้อมูลตัวอย่าง', 'warning');
+                updateStats();
+                renderCalendar();
+                updateLastUpdated();
+            }
+        }
+
+        // โหลดจาก Google Sheets (แบบง่าย)
+        async function loadFromGoogleSheets() {
+            const SHEET_ID = '1-5izB7N6ldxHAa3ca0RNhGP8Z36vuA0mw9Wi_xR_Lj4';
+            
+            // ลองหลายวิธี
+            const methods = [
+                async () => await tryMethod1(SHEET_ID),
+                async () => await tryMethod2(SHEET_ID),
+                async () => await tryMethod3(SHEET_ID)
+            ];
+            
+            for (let i = 0; i < methods.length; i++) {
+                try {
+                    const data = await methods[i]();
+                    if (data && data.length > 0) {
+                        console.log(`Method ${i + 1} successful: ${data.length} items`);
+                        return data;
+                    }
+                } catch (error) {
+                    console.log(`Method ${i + 1} failed:`, error.message);
+                }
+            }
+            
+            throw new Error('All methods failed');
+        }
+
+        async function tryMethod1(sheetId) {
+            // วิธีที่ 1: CSV Export
+            const url = `https://docs.google.com/spreadsheets/d/${sheetId}/export?format=csv`;
+            const response = await fetch(url);
+            const csv = await response.text();
+            return parseCSV(csv);
+        }
+
+        async function tryMethod2(sheetId) {
+            // วิธีที่ 2: Google Sheets API
+            const url = `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/Sheet1`;
+            const response = await fetch(url);
+            const data = await response.json();
+            
+            if (data.values) {
+                const headers = data.values[0];
+                const rows = data.values.slice(1);
+                
+                return rows.map(row => {
+                    const obj = {};
+                    headers.forEach((header, index) => {
+                        obj[header] = row[index] || '';
+                    });
+                    return obj;
+                });
+            }
+            
+            return [];
+        }
+
+        async function tryMethod3(sheetId) {
+            // วิธีที่ 3: Apps Script
+            const scriptUrl = 'https://script.google.com/macros/s/AKfycbzcMdFcpQkAxIbb0iEJJfZ8fD0YgiGUetRkkw1UyMv7uY3tlza345UoL1uNrNbOUKRx/exec';
+            const response = await fetch(scriptUrl);
+            const data = await response.json();
+            
+            if (data.data) {
+                return data.data;
+            }
+            
+            return [];
+        }
+
+        function parseCSV(csvText) {
+            const lines = csvText.split('\n').filter(line => line.trim() !== '');
+            if (lines.length < 2) return [];
+            
+            const headers = lines[0].split(',').map(h => h.trim());
+            const result = [];
+            
+            for (let i = 1; i < lines.length; i++) {
+                const values = lines[i].split(',').map(v => v.trim());
+                const obj = {};
+                
+                headers.forEach((header, index) => {
+                    if (index < values.length) {
+                        obj[header] = values[index];
+                    }
+                });
+                
+                // แปลงชื่อคอลัมน์ให้ตรงกัน
+                obj.name = obj.name || obj.Name || obj['ชื่อ-สกุล'] || '';
+                obj.choose = obj.choose || obj.Choose || obj.vehicle || '';
+                obj.department = obj.department || obj.Department || obj.dept || '';
+                obj.rentStartdate = obj.rentStartdate || obj.rentStartDate || obj.startdate || '';
+                obj.rentEnddate = obj.rentEnddate || obj.rentEndDate || obj.enddate || '';
+                
+                if (obj.name && obj.name.trim() !== '') {
+                    result.push(obj);
+                }
+            }
+            
+            return result;
+        }
+
+        // แปลงวันที่
+       function parseDate(dateStr) {
+    if (!dateStr || dateStr.trim() === '') return '';
+    
+    // ลองแปลงหลายรูปแบบ
+    const date = new Date(dateStr);
+    
+    // ถ้าข้อมูลเป็นรูปแบบ DD/MM/YYYY
+    if (dateStr.includes('/')) {
+        const parts = dateStr.split('/');
+        if (parts.length === 3) {
+            const day = parseInt(parts[0]);
+            const month = parseInt(parts[1]) - 1;
+            const year = parseInt(parts[2]);
+            
+            // ถ้าปีมีแค่ 2 หลัก
+            const fullYear = year < 100 ? year + 2500 : year;
+            
+            return new Date(fullYear, month, day).toISOString().split('T')[0];
+        }
+    }
+    
+    // ถ้าแปลงด้วย Date() ได้
+    if (!isNaN(date.getTime())) {
+        return date.toISOString().split('T')[0];
+    }
+    
+    return dateStr;
+}
+
+        // อัพเดทปฏิทิน
         function updateCalendarDisplay() {
             const monthNames = [
                 'มกราคม', 'กุมภาพันธ์', 'มีนาคม', 'เมษายน', 'พฤษภาคม', 'มิถุนายน',
@@ -1166,114 +1005,78 @@
         }
 
         function renderCalendar() {
-            elements.calendarGrid.innerHTML = '';
+            if (!reservationsData || reservationsData.length === 0) {
+                elements.calendarGrid.innerHTML = `
+                    <div style="grid-column: 1 / -1; text-align: center; padding: 40px;">
+                        <i class="fas fa-database" style="font-size: 48px; color: var(--gray); margin-bottom: 15px;"></i>
+                        <div style="color: var(--gray); font-size: 18px;">ไม่พบข้อมูลการจองรถ</div>
+                        <button class="btn btn-primary" onclick="loadData()" style="margin-top: 15px;">
+                            <i class="fas fa-redo"></i> โหลดข้อมูลใหม่
+                        </button>
+                    </div>
+                `;
+                return;
+            }
             
-            // วันแรกและวันสุดท้ายของเดือน
+            // สร้างปฏิทิน
             const firstDay = new Date(currentYear, currentMonth, 1);
             const lastDay = new Date(currentYear, currentMonth + 1, 0);
             const daysInMonth = lastDay.getDate();
             
-            // วันแรกของเดือน (0 = อาทิตย์, 1 = จันทร์, ...)
             let firstDayOfWeek = firstDay.getDay();
-            // ปรับให้วันจันทร์เป็นวันแรก
             firstDayOfWeek = firstDayOfWeek === 0 ? 6 : firstDayOfWeek - 0;
             
-            // วันนี้
             const today = new Date();
             const isTodayMonth = today.getMonth() === currentMonth && today.getFullYear() === currentYear;
             
-            // เพิ่มช่องว่างก่อนวันที่ 1
+            let calendarHTML = '';
+            
+            // วันว่างก่อนวันที่ 1
             for (let i = 0; i < firstDayOfWeek; i++) {
-                const emptyDay = document.createElement('div');
-                emptyDay.className = 'calendar-day empty';
-                elements.calendarGrid.appendChild(emptyDay);
+                calendarHTML += '<div class="calendar-day empty"></div>';
             }
             
-            // เพิ่มวันในเดือน
+            // วันในเดือน
             for (let day = 1; day <= daysInMonth; day++) {
-                const dayElement = document.createElement('div');
-                dayElement.className = 'calendar-day';
-                
-                // ตรวจสอบว่าเป็นวันนี้หรือไม่
-                if (isTodayMonth && day === today.getDate()) {
-                    dayElement.classList.add('today');
-                }
-                
-                // หมายเลขวัน
-                const dayNumber = document.createElement('div');
-                dayNumber.className = 'day-number';
-                dayNumber.textContent = day;
-                dayElement.appendChild(dayNumber);
-                
-                // วันที่ในรูปแบบ YYYY-MM-DD
                 const dateStr = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-                
-                // ดึงการจองสำหรับวันนี้
                 const dayReservations = getReservationsForDate(dateStr);
                 
-                // แสดงจำนวนการจอง
+                const todayClass = isTodayMonth && day === today.getDate() ? 'today' : '';
+                
+                calendarHTML += `
+                    <div class="calendar-day ${todayClass}">
+                        <div class="day-number">${day}</div>
+                `;
+                
                 if (dayReservations.length > 0) {
-                    const eventBadge = document.createElement('div');
-                    eventBadge.className = 'event-badge';
-                    eventBadge.textContent = dayReservations.length;
-                    eventBadge.title = `${dayReservations.length} การจอง`;
-                    dayElement.appendChild(eventBadge);
+                    calendarHTML += `
+                        <div class="event-badge">${dayReservations.length}</div>
+                        <div class="day-events">
+                    `;
                     
-                    // แสดงรายการจอง (สูงสุด 3 รายการ)
-                    const eventsContainer = document.createElement('div');
-                    eventsContainer.className = 'day-events';
-                    
-                    dayReservations.slice(0, 3).forEach(reservation => {
-                        const eventItem = document.createElement('div');
-                        eventItem.className = 'event-item';
-                        eventItem.style.backgroundColor = getVehicleColor(reservation.choose);
-                        eventItem.textContent = `${reservation.choose.split(' ')[0]}: ${reservation.name.split(' ')[0]}`;
-                        eventItem.title = `${reservation.name}\n${reservation.choose}\n${formatTime(reservation.startTime)}-${formatTime(reservation.endTime)}`;
-                        
-                        eventItem.addEventListener('click', (e) => {
-                            e.stopPropagation();
-                            showEventDetails(dateStr, dayReservations);
-                        });
-                        
-                        eventsContainer.appendChild(eventItem);
+                    dayReservations.slice(0, 2).forEach(reservation => {
+                        const color = getVehicleColor(reservation.choose);
+                        calendarHTML += `
+                            <div class="event-item" style="background-color: ${color};"
+                                 onclick="showEventDetails('${dateStr}')">
+                                ${reservation.choose.split(' ')[0]}: ${reservation.name.split(' ')[0]}
+                            </div>
+                        `;
                     });
                     
-                    dayElement.appendChild(eventsContainer);
+                    calendarHTML += '</div>';
                 }
                 
-                // คลิกที่วันเพื่อดูรายละเอียดทั้งหมด
-                dayElement.addEventListener('click', () => {
-                    if (dayReservations.length > 0) {
-                        showEventDetails(dateStr, dayReservations);
-                    }
-                });
-                
-                elements.calendarGrid.appendChild(dayElement);
+                calendarHTML += '</div>';
             }
+            
+            elements.calendarGrid.innerHTML = calendarHTML;
         }
 
         function getReservationsForDate(dateStr) {
             return reservationsData.filter(reservation => {
-                // ตรวจสอบฟิลเตอร์
-                if (selectedVehicle !== 'all' && reservation.choose !== selectedVehicle) {
-                    return false;
-                }
-                
-                if (selectedDepartment !== 'all' && reservation.department !== selectedDepartment) {
-                    return false;
-                }
-                
-                // ตรวจสอบสถานะ
-                if (selectedStatus !== 'all') {
-                    const status = getReservationStatus(reservation, dateStr);
-                    if (status !== selectedStatus) {
-                        return false;
-                    }
-                }
-                
-                // ตรวจสอบว่าอยู่ในช่วงวันที่จองหรือไม่
-                const startDate = reservation.rentStartdate;
-                const endDate = reservation.rentEnddate;
+                const startDate = parseDate(reservation.rentStartdate);
+                const endDate = parseDate(reservation.rentEnddate);
                 
                 if (!startDate || !endDate) return false;
                 
@@ -1281,148 +1084,23 @@
             });
         }
 
-        function getReservationStatus(reservation, dateStr) {
-            const today = new Date().toISOString().split('T')[0];
-            const startDate = reservation.rentStartdate;
-            const endDate = reservation.rentEnddate;
-            
-            if (!startDate || !endDate) return 'pending';
-            
-            if (today > endDate) {
-                return 'completed';
-            } else if (today >= startDate && today <= endDate) {
-                return 'active';
-            } else {
-                return 'pending';
-            }
-        }
-
         function getVehicleColor(vehicleName) {
-            if (!vehicleName) return vehicleColors['อื่นๆ'];
+            const colors = [
+                '#4361ee', '#3f37c9', '#4cc9f0', '#f72585',
+                '#7209b7', '#3a0ca3', '#06d6a0', '#ffd166'
+            ];
             
-            // หาสีที่ตรงกับชื่อรถ
-            for (const [key, color] of Object.entries(vehicleColors)) {
-                if (vehicleName.includes(key)) {
-                    return color;
-                }
-            }
+            if (!vehicleName) return colors[0];
             
-            // หากไม่เจอให้สร้างสีจากชื่อ
-            const colors = Object.values(vehicleColors);
             let hash = 0;
             for (let i = 0; i < vehicleName.length; i++) {
                 hash = vehicleName.charCodeAt(i) + ((hash << 5) - hash);
             }
-            const index = Math.abs(hash) % colors.length;
-            return colors[index];
+            
+            return colors[Math.abs(hash) % colors.length];
         }
 
-        function updateFilters() {
-            // อัพเดทตัวเลือกรถ
-            const vehicles = [...new Set(reservationsData.map(item => item.choose).filter(Boolean))];
-            const vehicleFilter = elements.vehicleFilter;
-            
-            while (vehicleFilter.options.length > 1) {
-                vehicleFilter.remove(1);
-            }
-            
-            vehicles.forEach(vehicle => {
-                const option = document.createElement('option');
-                option.value = vehicle;
-                option.textContent = vehicle;
-                vehicleFilter.appendChild(option);
-            });
-            
-            // อัพเดทตัวเลือกแผนก
-            const departments = [...new Set(reservationsData.map(item => item.department).filter(Boolean))];
-            const departmentFilter = elements.departmentFilter;
-            
-            while (departmentFilter.options.length > 1) {
-                departmentFilter.remove(1);
-            }
-            
-            departments.forEach(dept => {
-                const option = document.createElement('option');
-                option.value = dept;
-                option.textContent = dept;
-                departmentFilter.appendChild(option);
-            });
-        }
-
-        function updateStats() {
-            // คำนวณการจองในเดือนนี้
-            const monthReservations = reservationsData.filter(reservation => {
-                const startDate = reservation.rentStartdate;
-                if (!startDate) return false;
-                
-                const reservationDate = new Date(startDate);
-                return reservationDate.getMonth() === currentMonth && 
-                       reservationDate.getFullYear() === currentYear;
-            }).length;
-            
-            elements.totalReservations.textContent = monthReservations;
-            
-            // คำนวณรถที่ถูกจองในเดือนนี้
-            const monthVehicles = new Set();
-            reservationsData.forEach(reservation => {
-                const startDate = reservation.rentStartdate;
-                if (!startDate) return;
-                
-                const reservationDate = new Date(startDate);
-                if (reservationDate.getMonth() === currentMonth && 
-                    reservationDate.getFullYear() === currentYear) {
-                    monthVehicles.add(reservation.choose);
-                }
-            });
-            
-            elements.activeVehicles.textContent = monthVehicles.size;
-            
-            // คำนวณแผนกที่ใช้งานในเดือนนี้
-            const monthDepartments = new Set();
-            reservationsData.forEach(reservation => {
-                const startDate = reservation.rentStartdate;
-                if (!startDate) return;
-                
-                const reservationDate = new Date(startDate);
-                if (reservationDate.getMonth() === currentMonth && 
-                    reservationDate.getFullYear() === currentYear) {
-                    monthDepartments.add(reservation.department);
-                }
-            });
-            
-            elements.activeDepartments.textContent = monthDepartments.size;
-        }
-
-        function updateLegend() {
-            const vehicles = [...new Set(reservationsData.map(item => item.choose).filter(Boolean))].slice(0, 8);
-            elements.legendItems.innerHTML = '';
-            
-            vehicles.forEach(vehicle => {
-                const legendItem = document.createElement('div');
-                legendItem.className = 'legend-item';
-                
-                const colorBox = document.createElement('div');
-                colorBox.className = 'legend-color';
-                colorBox.style.backgroundColor = getVehicleColor(vehicle);
-                
-                const label = document.createElement('span');
-                label.textContent = vehicle;
-                
-                legendItem.appendChild(colorBox);
-                legendItem.appendChild(label);
-                elements.legendItems.appendChild(legendItem);
-            });
-            
-            if (vehicles.length === 0) {
-                const noData = document.createElement('div');
-                noData.textContent = 'ไม่มีข้อมูลรถ';
-                noData.style.color = 'var(--gray)';
-                noData.style.padding = '10px';
-                elements.legendItems.appendChild(noData);
-            }
-        }
-
-        function showEventDetails(dateStr, reservations) {
+        function showEventDetails(dateStr) {
             const date = new Date(dateStr);
             const formattedDate = date.toLocaleDateString('th-TH', {
                 year: 'numeric',
@@ -1430,6 +1108,8 @@
                 day: 'numeric',
                 weekday: 'long'
             });
+            
+            const reservations = getReservationsForDate(dateStr);
             
             elements.modalTitle.textContent = `การจองรถวันที่ ${formattedDate}`;
             elements.eventList.innerHTML = '';
@@ -1443,14 +1123,13 @@
                 `;
             } else {
                 reservations.forEach(reservation => {
+                    const eventDetail = document.createElement('div');
+                    eventDetail.className = 'event-detail';
+                    
                     const status = getReservationStatus(reservation, dateStr);
                     const statusClass = `status-${status}`;
                     const statusText = status === 'active' ? 'กำลังใช้งาน' : 
                                      status === 'pending' ? 'รออนุมัติ' : 'เสร็จสิ้น';
-                    
-                    const eventDetail = document.createElement('div');
-                    eventDetail.className = 'event-detail';
-                    eventDetail.style.borderLeftColor = getVehicleColor(reservation.choose);
                     
                     eventDetail.innerHTML = `
                         <div class="event-header">
@@ -1464,27 +1143,23 @@
                             </div>
                             <div class="event-detail-item">
                                 <span class="event-detail-label">รหัสพนักงาน</span>
-                                <span class="event-detail-value">${reservation.Code || '-'}</span>
+                                <span class="event-detail-value">${reservation.code || '-'}</span>
                             </div>
                             <div class="event-detail-item">
                                 <span class="event-detail-label">แผนก</span>
                                 <span class="event-detail-value">${reservation.department || '-'}</span>
                             </div>
                             <div class="event-detail-item">
-                                <span class="event-detail-label">ตำแหน่ง</span>
-                                <span class="event-detail-value">${reservation.position || '-'}</span>
+                                <span class="event-detail-label">วันที่จอง</span>
+                                <span class="event-detail-value">${formatDate(reservation.rentStartdate)} - ${formatDate(reservation.rentEnddate)}</span>
                             </div>
                             <div class="event-detail-item">
                                 <span class="event-detail-label">เวลา</span>
-                                <span class="event-detail-value">${formatTime(reservation.startTime)} - ${formatTime(reservation.endTime)}</span>
+                                <span class="event-detail-value">${reservation.startTime || '-'} - ${reservation.endTime || '-'}</span>
                             </div>
                             <div class="event-detail-item">
                                 <span class="event-detail-label">เหตุผล</span>
                                 <span class="event-detail-value">${reservation.reason || '-'}</span>
-                            </div>
-                            <div class="event-detail-item">
-                                <span class="event-detail-label">ติดต่อ</span>
-                                <span class="event-detail-value">${reservation.contact || '-'}</span>
                             </div>
                         </div>
                     `;
@@ -1494,6 +1169,18 @@
             }
             
             elements.eventModal.style.display = 'flex';
+        }
+
+        function getReservationStatus(reservation, dateStr) {
+            const today = new Date().toISOString().split('T')[0];
+            const startDate = parseDate(reservation.rentStartdate);
+            const endDate = parseDate(reservation.rentEnddate);
+            
+            if (!startDate || !endDate) return 'pending';
+            
+            if (today > endDate) return 'completed';
+            if (today >= startDate && today <= endDate) return 'active';
+            return 'pending';
         }
 
         function closeEventModal() {
@@ -1507,7 +1194,6 @@
                 currentYear--;
             }
             updateCalendarDisplay();
-            updateStats();
             renderCalendar();
         }
 
@@ -1518,7 +1204,6 @@
                 currentYear++;
             }
             updateCalendarDisplay();
-            updateStats();
             renderCalendar();
         }
 
@@ -1527,13 +1212,18 @@
             currentMonth = today.getMonth();
             currentYear = today.getFullYear();
             updateCalendarDisplay();
-            updateStats();
             renderCalendar();
         }
 
-        function formatTime(timeStr) {
-            if (!timeStr) return '-';
-            return timeStr.replace(/:\d+$/, ''); // ลบวินาทีออกถ้ามี
+        function updateStats() {
+            elements.totalReservations.textContent = reservationsData.length;
+            elements.dataCount.textContent = reservationsData.length;
+            
+            const vehicles = [...new Set(reservationsData.map(item => item.choose).filter(Boolean))];
+            elements.activeVehicles.textContent = vehicles.length;
+            
+            const departments = [...new Set(reservationsData.map(item => item.department).filter(Boolean))];
+            elements.activeDepartments.textContent = departments.length;
         }
 
         function updateLastUpdated() {
@@ -1543,20 +1233,25 @@
             elements.lastUpdated.textContent = `${dateString} ${timeString}`;
         }
 
+        function formatDate(dateStr) {
+            if (!dateStr) return '-';
+            
+            const date = new Date(parseDate(dateStr));
+            if (isNaN(date.getTime())) return dateStr;
+            
+            const day = date.getDate().toString().padStart(2, '0');
+            const month = (date.getMonth() + 1).toString().padStart(2, '0');
+            const year = (date.getFullYear() + 543).toString().slice(-2);
+            return `${day}/${month}/${year}`;
+        }
+
         function showLoading() {
             elements.calendarGrid.innerHTML = `
                 <div class="loading">
                     <div class="spinner"></div>
-                    <div>กำลังโหลดปฏิทิน...</div>
+                    <div>กำลังโหลดข้อมูล...</div>
                 </div>
             `;
-        }
-
-        function hideLoading() {
-            const loading = elements.calendarGrid.querySelector('.loading');
-            if (loading) {
-                loading.style.display = 'none';
-            }
         }
 
         function showMessage(text, type) {
@@ -1564,10 +1259,35 @@
             elements.message.className = `message ${type}`;
             elements.message.style.display = 'block';
             
-            // ซ่อนข้อความหลังจาก 5 วินาที
             setTimeout(() => {
                 elements.message.style.display = 'none';
-            }, 5000);
+            }, 3000);
+        }
+
+        function showRawData() {
+            const modal = document.getElementById('rawDataModal');
+            const content = document.getElementById('rawDataContent');
+            
+            let html = '<div style="margin-bottom: 10px;"><strong>ข้อมูลทั้งหมด:</strong> ' + reservationsData.length + ' รายการ</div>';
+            
+            reservationsData.forEach((item, index) => {
+                html += `
+                    <div style="border: 1px solid #ddd; border-radius: 5px; padding: 10px; margin-bottom: 10px;">
+                        <div><strong>รายการที่ ${index + 1}: ${item.name || 'ไม่มีชื่อ'}</strong></div>
+                        <div>รถ: ${item.choose || 'ไม่ระบุ'}</div>
+                        <div>วันที่: ${item.rentStartdate || 'ไม่ระบุ'} ถึง ${item.rentEnddate || 'ไม่ระบุ'}</div>
+                        <div>แปลงแล้ว: ${parseDate(item.rentStartdate)} ถึง ${parseDate(item.rentEnddate)}</div>
+                        <div>แผนก: ${item.department || 'ไม่ระบุ'}</div>
+                    </div>
+                `;
+            });
+            
+            content.innerHTML = html;
+            modal.style.display = 'flex';
+        }
+
+        function closeRawData() {
+            document.getElementById('rawDataModal').style.display = 'none';
         }
     </script>
 </body>
