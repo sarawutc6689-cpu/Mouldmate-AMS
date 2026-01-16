@@ -1,0 +1,1939 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Car Rent Dashboard</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600&family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --primary: #4361ee;
+            --primary-light: #4895ef;
+            --secondary: #3f37c9;
+            --success: #4cc9f0;
+            --warning: #f72585;
+            --light: #f8f9fa;
+            --dark: #212529;
+            --gray: #6c757d;
+            --gray-light: #e9ecef;
+            --border-radius: 12px;
+            --box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+            --transition: all 0.3s ease;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Roboto', 'Kanit', sans-serif;
+            background-color: #f5f7fb;
+            color: var(--dark);
+            line-height: 1.6;
+        }
+        
+        .container {
+            display: flex;
+            min-height: 100vh;
+        }
+        
+        /* Sidebar */
+        .sidebar {
+            width: 260px;
+            background: linear-gradient(180deg, var(--primary) 0%, var(--secondary) 100%);
+            color: white;
+            padding: 25px 20px;
+            display: flex;
+            flex-direction: column;
+            box-shadow: var(--box-shadow);
+            z-index: 10;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid rgba(255,255,255,0.2);
+        }
+        
+        .logo-icon {
+            font-size: 28px;
+            margin-right: 12px;
+            background-color: rgba(255,255,255,0.2);
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .logo-text {
+            font-size: 22px;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+        
+        .logo-subtext {
+            font-size: 12px;
+            opacity: 0.8;
+        }
+        
+        .nav-menu {
+            flex-grow: 1;
+        }
+        
+        .nav-item {
+            display: flex;
+            align-items: center;
+            padding: 15px;
+            margin-bottom: 8px;
+            border-radius: var(--border-radius);
+            transition: var(--transition);
+            cursor: pointer;
+        }
+        
+        .nav-item:hover, .nav-item.active {
+            background-color: rgba(255,255,255,0.15);
+        }
+        
+        .nav-icon {
+            font-size: 20px;
+            margin-right: 15px;
+            width: 24px;
+            text-align: center;
+        }
+        
+        .nav-text {
+            font-size: 16px;
+            font-weight: 500;
+        }
+        
+        .user-info {
+            display: flex;
+            align-items: center;
+            padding-top: 20px;
+            border-top: 1px solid rgba(255,255,255,0.2);
+        }
+        
+        .user-avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background-color: rgba(255,255,255,0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+            margin-right: 15px;
+        }
+        
+        .user-name {
+            font-weight: 500;
+            margin-bottom: 5px;
+        }
+        
+        .user-role {
+            font-size: 13px;
+            opacity: 0.8;
+        }
+        
+        /* Main Content */
+        .main-content {
+            flex-grow: 1;
+            padding: 25px;
+            overflow-y: auto;
+        }
+        
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+        
+        .header-title {
+            font-size: 28px;
+            font-weight: 600;
+            color: var(--dark);
+        }
+        
+        .header-actions {
+            display: flex;
+            gap: 15px;
+        }
+        
+        .btn {
+            padding: 12px 24px;
+            border-radius: var(--border-radius);
+            border: none;
+            font-weight: 500;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            font-family: 'Roboto', 'Kanit', sans-serif;
+        }
+        
+        .btn-primary {
+            background-color: var(--primary);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background-color: var(--secondary);
+            transform: translateY(-2px);
+        }
+        
+        .btn-outline {
+            background-color: transparent;
+            color: var(--primary);
+            border: 1px solid var(--primary);
+        }
+        
+        .btn-outline:hover {
+            background-color: rgba(67, 97, 238, 0.1);
+        }
+        
+        /* Stats Cards */
+        .stats-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 25px;
+            margin-bottom: 40px;
+        }
+        
+        .stat-card {
+            background-color: white;
+            border-radius: var(--border-radius);
+            padding: 25px;
+            box-shadow: var(--box-shadow);
+            transition: var(--transition);
+            border-left: 5px solid var(--primary);
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .stat-card.warning {
+            border-left-color: var(--warning);
+        }
+        
+        .stat-card.success {
+            border-left-color: var(--success);
+        }
+        
+        .stat-card.secondary {
+            border-left-color: var(--secondary);
+        }
+        
+        .stat-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .stat-title {
+            font-size: 16px;
+            color: var(--gray);
+            font-weight: 500;
+        }
+        
+        .stat-icon {
+            font-size: 28px;
+            color: var(--primary);
+        }
+        
+        .stat-card.warning .stat-icon {
+            color: var(--warning);
+        }
+        
+        .stat-card.success .stat-icon {
+            color: var(--success);
+        }
+        
+        .stat-card.secondary .stat-icon {
+            color: var(--secondary);
+        }
+        
+        .stat-value {
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+        
+        .stat-change {
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+        }
+        
+        .stat-change.positive {
+            color: #2ecc71;
+        }
+        
+        .stat-change.negative {
+            color: #e74c3c;
+        }
+        
+        /* Charts Section */
+        .charts-section {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 25px;
+            margin-bottom: 40px;
+        }
+        
+        @media (max-width: 1200px) {
+            .charts-section {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        .chart-card {
+            background-color: white;
+            border-radius: var(--border-radius);
+            padding: 25px;
+            box-shadow: var(--box-shadow);
+        }
+        
+        .chart-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+        }
+        
+        .chart-title {
+            font-size: 20px;
+            font-weight: 600;
+        }
+        
+        .chart-container {
+            height: 300px;
+            position: relative;
+        }
+        
+        /* Calendar Section */
+        .calendar-section {
+            background-color: white;
+            border-radius: var(--border-radius);
+            padding: 25px;
+            box-shadow: var(--box-shadow);
+            margin-bottom: 40px;
+        }
+        
+        .calendar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        
+        .calendar-title {
+            font-size: 20px;
+            font-weight: 600;
+        }
+        
+        .calendar-controls {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 8px;
+            margin-bottom: 20px;
+        }
+        
+        .calendar-day-header {
+            text-align: center;
+            font-weight: 600;
+            padding: 10px;
+            background-color: var(--gray-light);
+            border-radius: var(--border-radius);
+        }
+        
+        .calendar-day {
+            min-height: 100px;
+            border: 1px solid var(--gray-light);
+            border-radius: var(--border-radius);
+            padding: 8px;
+            background-color: white;
+            transition: var(--transition);
+            position: relative;
+        }
+        
+        .calendar-day:hover {
+            background-color: #f8f9fa;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        
+        .calendar-day.empty {
+            background-color: #f8f9fa;
+            border: 1px dashed #dee2e6;
+        }
+        
+        .day-number {
+            font-weight: 600;
+            margin-bottom: 5px;
+            color: var(--dark);
+        }
+        
+        .calendar-event {
+            background-color: var(--primary);
+            color: white;
+            padding: 3px 6px;
+            border-radius: 4px;
+            margin-bottom: 3px;
+            font-size: 12px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        
+        .calendar-event:hover {
+            opacity: 0.9;
+            transform: translateX(2px);
+        }
+        
+        .calendar-event-count {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            background-color: var(--warning);
+            color: white;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+            font-weight: 600;
+        }
+        
+        .calendar-today {
+            background-color: rgba(67, 97, 238, 0.1);
+            border: 2px solid var(--primary);
+        }
+        
+        /* Legend */
+        .calendar-legend {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid var(--gray-light);
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .legend-color {
+            width: 15px;
+            height: 15px;
+            border-radius: 3px;
+        }
+        
+        /* Event Details Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            animation: fadeIn 0.3s ease;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        .modal-content {
+            background-color: white;
+            border-radius: var(--border-radius);
+            padding: 30px;
+            width: 90%;
+            max-width: 600px;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: var(--box-shadow);
+            animation: slideUp 0.3s ease;
+        }
+        
+        @keyframes slideUp {
+            from { transform: translateY(50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .modal-title {
+            font-size: 24px;
+            font-weight: 600;
+        }
+        
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 28px;
+            cursor: pointer;
+            color: var(--gray);
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: var(--transition);
+        }
+        
+        .modal-close:hover {
+            background-color: var(--gray-light);
+            color: var(--dark);
+        }
+        
+        /* Event Details */
+        .event-list {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        
+        .event-item {
+            background-color: var(--gray-light);
+            border-radius: var(--border-radius);
+            padding: 15px;
+            margin-bottom: 10px;
+            border-left: 4px solid var(--primary);
+        }
+        
+        .event-item-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        
+        .event-vehicle {
+            font-weight: 600;
+            color: var(--primary);
+            font-size: 18px;
+        }
+        
+        .event-details {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 10px;
+            font-size: 14px;
+        }
+        
+        .event-detail-item {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .event-detail-label {
+            font-weight: 600;
+            color: var(--gray);
+            margin-bottom: 2px;
+        }
+        
+        /* Data Table */
+        .data-table-container {
+            background-color: white;
+            border-radius: var(--border-radius);
+            padding: 25px;
+            box-shadow: var(--box-shadow);
+            margin-bottom: 40px;
+        }
+        
+        .table-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+        }
+        
+        .table-title {
+            font-size: 20px;
+            font-weight: 600;
+        }
+        
+        .search-box {
+            position: relative;
+        }
+        
+        .search-input {
+            padding: 12px 15px 12px 40px;
+            border-radius: var(--border-radius);
+            border: 1px solid var(--gray-light);
+            width: 250px;
+            font-family: 'Roboto', 'Kanit', sans-serif;
+            transition: var(--transition);
+        }
+        
+        .search-input:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+        
+        .search-icon {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--gray);
+        }
+        
+        .table-responsive {
+            overflow-x: auto;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        thead {
+            background-color: var(--gray-light);
+        }
+        
+        th {
+            padding: 18px 15px;
+            text-align: left;
+            font-weight: 600;
+            color: var(--dark);
+            border-bottom: 2px solid var(--gray-light);
+        }
+        
+        td {
+            padding: 18px 15px;
+            border-bottom: 1px solid var(--gray-light);
+        }
+        
+        tbody tr:hover {
+            background-color: rgba(67, 97, 238, 0.05);
+        }
+        
+        .status {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 500;
+            display: inline-block;
+        }
+        
+        .status.active {
+            background-color: rgba(46, 204, 113, 0.2);
+            color: #27ae60;
+        }
+        
+        .status.pending {
+            background-color: rgba(241, 196, 15, 0.2);
+            color: #f39c12;
+        }
+        
+        .status.completed {
+            background-color: rgba(52, 152, 219, 0.2);
+            color: #2980b9;
+        }
+        
+        /* Loading */
+        .loading {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 200px;
+            font-size: 18px;
+            color: var(--gray);
+        }
+        
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid rgba(67, 97, 238, 0.2);
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: 15px;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        /* Footer */
+        .footer {
+            text-align: center;
+            padding-top: 20px;
+            border-top: 1px solid var(--gray-light);
+            color: var(--gray);
+            font-size: 14px;
+        }
+        
+        /* Error Message */
+        .error-message {
+            background-color: #fee;
+            border-left: 5px solid #e74c3c;
+            padding: 20px;
+            border-radius: var(--border-radius);
+            margin-bottom: 20px;
+            color: #c0392b;
+            display: none;
+        }
+        
+        /* Responsive */
+        @media (max-width: 992px) {
+            .sidebar {
+                width: 80px;
+                padding: 25px 15px;
+            }
+            
+            .logo-text, .logo-subtext, .nav-text, .user-name, .user-role {
+                display: none;
+            }
+            
+            .logo {
+                justify-content: center;
+            }
+            
+            .logo-icon {
+                margin-right: 0;
+            }
+            
+            .nav-item {
+                justify-content: center;
+            }
+            
+            .nav-icon {
+                margin-right: 0;
+            }
+            
+            .user-info {
+                justify-content: center;
+            }
+            
+            .user-avatar {
+                margin-right: 0;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                flex-direction: column;
+            }
+            
+            .sidebar {
+                width: 100%;
+                flex-direction: row;
+                padding: 15px;
+                justify-content: space-between;
+            }
+            
+            .logo, .nav-menu, .user-info {
+                margin-bottom: 0;
+                padding-bottom: 0;
+                border: none;
+            }
+            
+            .nav-menu {
+                flex-grow: 0;
+                display: flex;
+            }
+            
+            .nav-item {
+                margin-bottom: 0;
+                margin-right: 10px;
+            }
+            
+            .main-content {
+                padding: 20px;
+            }
+            
+            .stats-cards {
+                grid-template-columns: 1fr;
+            }
+            
+            .header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 15px;
+            }
+            
+            .header-actions {
+                width: 100%;
+                justify-content: space-between;
+            }
+            
+            .search-input {
+                width: 100%;
+            }
+            
+            .calendar-grid {
+                gap: 4px;
+            }
+            
+            .calendar-day {
+                min-height: 80px;
+                padding: 4px;
+                font-size: 12px;
+            }
+            
+            .calendar-event {
+                font-size: 10px;
+                padding: 2px 4px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .calendar-day {
+                min-height: 60px;
+            }
+            
+            .day-number {
+                font-size: 12px;
+            }
+            
+            .calendar-event {
+                display: none;
+            }
+            
+            .calendar-event-count {
+                width: 16px;
+                height: 16px;
+                font-size: 9px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="logo">
+                <div class="logo-icon">
+                    <i class="fas fa-car"></i>
+                </div>
+                <div>
+                    <div class="logo-text">ระบบจองรถ</div>
+                    <div class="logo-subtext">ระบบการจัดการจองรถบริษัท</div>
+                </div>
+            </div>
+            
+            <div class="nav-menu">
+                <div class="nav-item active">
+                    <div class="nav-icon">
+                        <i class="fas fa-tachometer-alt"></i>
+                    </div>
+                    <div class="nav-text">Dashboard</div>
+                </div>
+                <div class="nav-item">
+                    <div class="nav-icon">
+                        <i class="fas fa-calendar-alt"></i>
+                    </div>
+                    <div class="nav-text">ปฏิทินจองรถ</div>
+                </div>
+                <div class="nav-item">
+                    <div class="nav-icon">
+                        <i class="fas fa-chart-bar"></i>
+                    </div>
+                    <div class="nav-text">รายงาน</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Header -->
+            <div class="header">
+                <h1 class="header-title">Dashboard ระบบการจองรถ</h1>
+                <div class="header-actions">
+                    <button class="btn btn-outline" id="refreshBtn">
+                        <i class="fas fa-sync-alt"></i>
+                        รีเฟรชข้อมูล
+                    </button>
+                    <button class="btn btn-primary" id="addReservationBtn">
+                        <i class="fas fa-plus"></i>
+                        จองรถใหม่
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Error Message -->
+            <div class="error-message" id="errorMessage"></div>
+            
+            <!-- Stats Cards -->
+            <div class="stats-cards">
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <div class="stat-title">การจองรถทั้งหมด</div>
+                        <div class="stat-icon">
+                            <i class="fas fa-calendar-check"></i>
+                        </div>
+                    </div>
+                    <div class="stat-value" id="totalReservations">0</div>
+                    <div class="stat-change">
+                        <span id="totalChange">กำลังโหลด...</span>
+                    </div>
+                </div>
+                
+                <div class="stat-card warning">
+                    <div class="stat-header">
+                        <div class="stat-title">กำลังใช้งาน</div>
+                        <div class="stat-icon">
+                            <i class="fas fa-car"></i>
+                        </div>
+                    </div>
+                    <div class="stat-value" id="activeNow">0</div>
+                    <div class="stat-change">
+                        <span id="activeChange">กำลังโหลด...</span>
+                    </div>
+                </div>
+                
+                <div class="stat-card success">
+                    <div class="stat-header">
+                        <div class="stat-title">รออนุมัติ</div>
+                        <div class="stat-icon">
+                            <i class="fas fa-clock"></i>
+                        </div>
+                    </div>
+                    <div class="stat-value" id="upcomingReservations">0</div>
+                    <div class="stat-change">
+                        <span id="upcomingChange">กำลังโหลด...</span>
+                    </div>
+                </div>
+                
+                <div class="stat-card secondary">
+                    <div class="stat-header">
+                        <div class="stat-title">แผนกที่ใช้งาน</div>
+                        <div class="stat-icon">
+                            <i class="fas fa-building"></i>
+                        </div>
+                    </div>
+                    <div class="stat-value" id="totalDepartments">0</div>
+                    <div class="stat-change">
+                        <span id="deptChange">กำลังโหลด...</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Calendar Section -->
+            <div class="calendar-section">
+                <div class="calendar-header">
+                    <div class="calendar-title">ปฏิทินการจองรถ</div>
+                    <div class="calendar-controls">
+                        <button class="btn btn-outline" id="prevMonth">
+                            <i class="fas fa-chevron-left"></i>
+                        </button>
+                        <button class="btn btn-outline" id="todayBtn">
+                            วันนี้
+                        </button>
+                        <button class="btn btn-outline" id="nextMonth">
+                            <i class="fas fa-chevron-right"></i>
+                        </button>
+                        <h3 id="currentMonth" style="margin: 0 15px; min-width: 200px;"></h3>
+                        <select id="vehicleFilter" class="search-input" style="width: auto; padding: 8px 15px;">
+                            <option value="all">รถทั้งหมด</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="calendar-grid">
+                    <div class="calendar-day-header">จันทร์</div>
+                    <div class="calendar-day-header">อังคาร</div>
+                    <div class="calendar-day-header">พุธ</div>
+                    <div class="calendar-day-header">พฤหัสบดี</div>
+                    <div class="calendar-day-header">ศุกร์</div>
+                    <div class="calendar-day-header">เสาร์</div>
+                    <div class="calendar-day-header">อาทิตย์</div>
+                    <div id="calendarDays"></div>
+                </div>
+                
+                <div class="calendar-legend" id="calendarLegend">
+                    <!-- Legend will be populated by JavaScript -->
+                </div>
+            </div>
+            
+            <!-- Charts Section -->
+            <div class="charts-section">
+                <div class="chart-card">
+                    <div class="chart-header">
+                        <div class="chart-title">สถิติการจองรถ</div>
+                        <div>
+                            <select id="timeRange" class="search-input" style="width: auto; padding: 8px 15px;">
+                                <option value="week">สัปดาห์นี้</option>
+                                <option value="month" selected>เดือนนี้</option>
+                                <option value="quarter">ไตรมาสนี้</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="reservationsChart"></canvas>
+                    </div>
+                </div>
+                
+                <div class="chart-card">
+                    <div class="chart-header">
+                        <div class="chart-title">อัตรารถที่ใช้งาน</div>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="vehicleChart"></canvas>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Data Table -->
+            <div class="data-table-container">
+                <div class="table-header">
+                    <div class="table-title">รายการจองรถล่าสุด</div>
+                    <div class="search-box">
+                        <i class="fas fa-search search-icon"></i>
+                        <input type="text" class="search-input" id="searchInput" placeholder="ค้นหาการจองรถ">
+                    </div>
+                </div>
+                
+                <div class="table-responsive">
+                    <div class="loading" id="tableLoading">
+                        <div class="spinner"></div>
+                        <div>กำลังโหลดข้อมูล...</div>
+                    </div>
+                    <table id="reservationsTable" style="display: none;">
+                        <thead>
+                            <tr>
+                                <th>ลำดับ</th>
+                                <th>รหัสพนักงาน</th>
+                                <th>ชื่อ-สกุล</th>
+                                <th>แผนก</th>
+                                <th>ตำแหน่ง</th>
+                                <th>รถที่จอง</th>
+                                <th>ระยะเวลาจอง</th>
+                                <th>สถานะ</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tableBody">
+                            <!-- Data will be populated by JavaScript -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            
+            <!-- Footer -->
+            <div class="footer">
+                <p>ระบบขอจองรถใช้งานบริษัท - แผนกยานยนต์ | © 2026 บริษัท TokaiSolidtire จำกัด</p>
+                <p>ออกแบบและพัฒนาโดย Sarawut.C</p>
+                <p id="lastUpdated">อัพเดทครั้งล่าสุด : --</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Event Details Modal -->
+    <div class="modal" id="eventModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title" id="modalTitle">รายละเอียดการจอง</div>
+                <button class="modal-close" id="closeModal">&times;</button>
+            </div>
+            <div id="eventList" class="event-list">
+                <!-- Event details will be populated here -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ข้อมูลตัวอย่าง (ถ้าไม่สามารถดึงจาก Google Sheets ได้)
+        const sampleData = [
+            {
+                "Timestamp": "2026-01-15",
+                "Code": "EMP001",
+                "name": "สมชาย ใจดี",
+                "section": "ฝ่ายขาย",
+                "department": "การตลาด",
+                "position": "พนักงานขาย",
+                "contact": "081-234-5678",
+                "choose": "โตโยต้า ฟอร์จูนเนอร์",
+                "rentStartdate": "2026-01-16",
+                "rentEnddate": "2026-01-18",
+                "startTime": "09:00",
+                "endTime": "17:00",
+                "reason": "นำลูกค้าทัวร์โรงงาน"
+            },
+            {
+                "Timestamp": "2026-01-14",
+                "Code": "EMP002",
+                "name": "สุภาพร สุขสวัสดิ์",
+                "section": "ฝ่ายบุคคล",
+                "department": "ทรัพยากรบุคคล",
+                "position": "หัวหน้าแผนก",
+                "contact": "082-345-6789",
+                "choose": "ฮอนด้า ซีวิค",
+                "rentStartdate": "2026-01-17",
+                "rentEnddate": "2026-01-17",
+                "startTime": "08:30",
+                "endTime": "16:30",
+                "reason": "ไปสัมมนาที่โรงแรม"
+            },
+            {
+                "Timestamp": "2026-01-13",
+                "Code": "EMP003",
+                "name": "วิชัย ตั้งใจเรียน",
+                "section": "ฝ่ายผลิต",
+                "department": "ผลิตภัณฑ์",
+                "position": "วิศวกร",
+                "contact": "083-456-7890",
+                "choose": "โตโยต้า ไฮลักซ์",
+                "rentStartdate": "2026-01-20",
+                "rentEnddate": "2026-01-22",
+                "startTime": "07:00",
+                "endTime": "18:00",
+                "reason": "ขนส่งอุปกรณ์ไปสาขา"
+            },
+            {
+                "Timestamp": "2026-01-12",
+                "Code": "EMP004",
+                "name": "อรุณี สดใส",
+                "section": "ฝ่ายบัญชี",
+                "department": "การเงิน",
+                "position": "นักบัญชี",
+                "contact": "084-567-8901",
+                "choose": "โตโยต้า ฟอร์จูนเนอร์",
+                "rentStartdate": "2026-01-25",
+                "rentEnddate": "2026-01-26",
+                "startTime": "10:00",
+                "endTime": "15:00",
+                "reason": "ไปธนาคารและสรรพากร"
+            },
+            {
+                "Timestamp": "2026-01-11",
+                "Code": "EMP005",
+                "name": "บดินทร์ แข็งแรง",
+                "section": "ฝ่ายขนส่ง",
+                "department": "โลจิสติกส์",
+                "position": "หัวหน้าขนส่ง",
+                "contact": "085-678-9012",
+                "choose": "อิซูซุ ดีแมคซ์",
+                "rentStartdate": "2026-01-19",
+                "rentEnddate": "2026-01-21",
+                "startTime": "06:00",
+                "endTime": "20:00",
+                "reason": "ขนสินค้าให้ลูกค้า"
+            }
+        ];
+
+        // Global variables
+        let reservationsData = [];
+        let currentMonth = new Date().getMonth();
+        let currentYear = new Date().getFullYear();
+        let selectedVehicle = 'all';
+        let reservationsChart, vehicleChart;
+
+        // DOM Elements
+        const elements = {
+            totalReservations: document.getElementById('totalReservations'),
+            activeNow: document.getElementById('activeNow'),
+            upcomingReservations: document.getElementById('upcomingReservations'),
+            totalDepartments: document.getElementById('totalDepartments'),
+            tableBody: document.getElementById('tableBody'),
+            tableLoading: document.getElementById('tableLoading'),
+            reservationsTable: document.getElementById('reservationsTable'),
+            searchInput: document.getElementById('searchInput'),
+            refreshBtn: document.getElementById('refreshBtn'),
+            errorMessage: document.getElementById('errorMessage'),
+            lastUpdated: document.getElementById('lastUpdated'),
+            currentMonthEl: document.getElementById('currentMonth'),
+            calendarDays: document.getElementById('calendarDays'),
+            prevMonthBtn: document.getElementById('prevMonth'),
+            nextMonthBtn: document.getElementById('nextMonth'),
+            todayBtn: document.getElementById('todayBtn'),
+            vehicleFilter: document.getElementById('vehicleFilter'),
+            eventModal: document.getElementById('eventModal'),
+            modalTitle: document.getElementById('modalTitle'),
+            eventList: document.getElementById('eventList'),
+            closeModal: document.getElementById('closeModal'),
+            addReservationBtn: document.getElementById('addReservationBtn')
+        };
+
+        // Initialize the dashboard
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeDashboard();
+            setupEventListeners();
+        });
+
+        function initializeDashboard() {
+            // Load data from sample or API
+            loadData();
+            
+            // Initialize charts
+            initializeCharts();
+            
+            // Initialize calendar
+            updateCalendar();
+        }
+
+        function setupEventListeners() {
+            elements.refreshBtn.addEventListener('click', loadData);
+            elements.searchInput.addEventListener('input', filterTable);
+            elements.prevMonthBtn.addEventListener('click', goToPreviousMonth);
+            elements.nextMonthBtn.addEventListener('click', goToNextMonth);
+            elements.todayBtn.addEventListener('click', goToToday);
+            elements.vehicleFilter.addEventListener('change', updateCalendar);
+            elements.closeModal.addEventListener('click', closeEventModal);
+            elements.addReservationBtn.addEventListener('click', showAddReservationForm);
+            
+            // Close modal when clicking outside
+            elements.eventModal.addEventListener('click', function(e) {
+                if (e.target === elements.eventModal) {
+                    closeEventModal();
+                }
+            });
+            
+            // Navigation items
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.addEventListener('click', function() {
+                    document.querySelectorAll('.nav-item').forEach(nav => {
+                        nav.classList.remove('active');
+                    });
+                    this.classList.add('active');
+                    
+                    // Handle navigation (simple version)
+                    const text = this.querySelector('.nav-text').textContent;
+                    if (text === 'Dashboard') {
+                        showSection('dashboard');
+                    } else if (text === 'ปฏิทินจองรถ') {
+                        showSection('calendar');
+                    } else if (text === 'รายงาน') {
+                        showSection('reports');
+                    }
+                });
+            });
+        }
+
+        function showSection(section) {
+            // Simple section switching
+            const sections = ['dashboard', 'calendar', 'reports'];
+            sections.forEach(sec => {
+                const elements = document.querySelectorAll(`.${sec}-section`);
+                elements.forEach(el => {
+                    el.style.display = sec === section ? 'block' : 'none';
+                });
+            });
+        }
+
+        function loadData() {
+            showLoading();
+            
+            // Try to load from Google Sheets first, then fallback to sample data
+            fetchFromGoogleSheets()
+                .then(data => {
+                    if (data && data.length > 0) {
+                        reservationsData = data;
+                        showSuccess('โหลดข้อมูลจาก Google Sheets สำเร็จ');
+                    } else {
+                        throw new Error('ไม่พบข้อมูลจาก Google Sheets');
+                    }
+                })
+                .catch(error => {
+                    console.log('Using sample data:', error.message);
+                    reservationsData = sampleData;
+                    showError('ใช้ข้อมูลตัวอย่าง (Google Sheets ไม่สามารถเชื่อมต่อได้)');
+                })
+                .finally(() => {
+                    updateDashboard();
+                    updateCalendar();
+                    updateCharts();
+                    updateTable();
+                    updateLastUpdated();
+                });
+        }
+
+        async function fetchFromGoogleSheets() {
+            // Google Apps Script URL - แก้ไขตาม URL จริงของคุณ
+            const scriptUrl = 'https://script.google.com/macros/s/AKfycbzcMdFcpQkAxIbb0iEJJfZ8fD0YgiGUetRkkw1UyMv7uY3tlza345UoL1uNrNbOUKRx/exec';
+            
+            try {
+                const response = await fetch(scriptUrl);
+                if (!response.ok) throw new Error('Network response was not ok');
+                
+                const data = await response.json();
+                return data.data || [];
+            } catch (error) {
+                console.error('Error fetching from Google Sheets:', error);
+                return [];
+            }
+        }
+
+        function updateDashboard() {
+            const total = reservationsData.length;
+            elements.totalReservations.textContent = total;
+            document.getElementById('totalChange').textContent = `ทั้งหมด ${total} รายการ`;
+            
+            // Calculate active reservations (today is within rental period)
+            const today = new Date().toISOString().split('T')[0];
+            const activeCount = reservationsData.filter(item => {
+                const start = item.rentStartdate;
+                const end = item.rentEnddate;
+                return start && end && today >= start && today <= end;
+            }).length;
+            
+            elements.activeNow.textContent = activeCount;
+            document.getElementById('activeChange').textContent = `${activeCount} รายการ`;
+            
+            // Calculate upcoming reservations (starting in future)
+            const upcomingCount = reservationsData.filter(item => {
+                const start = item.rentStartdate;
+                return start && start > today;
+            }).length;
+            
+            elements.upcomingReservations.textContent = upcomingCount;
+            document.getElementById('upcomingChange').textContent = `${upcomingCount} รายการ`;
+            
+            // Calculate unique departments
+            const departments = [...new Set(reservationsData.map(item => item.department).filter(Boolean))];
+            elements.totalDepartments.textContent = departments.length;
+            document.getElementById('deptChange').textContent = `${departments.length} แผนก`;
+        }
+
+        function updateTable() {
+            elements.tableBody.innerHTML = '';
+            
+            if (reservationsData.length === 0) {
+                const row = document.createElement('tr');
+                row.innerHTML = `<td colspan="8" style="text-align: center; padding: 40px; color: var(--gray);">
+                                    <i class="fas fa-database" style="font-size: 24px; margin-bottom: 10px; display: block;"></i>
+                                    ไม่พบข้อมูลการจองรถ
+                                </td>`;
+                elements.tableBody.appendChild(row);
+            } else {
+                // Show only recent 10 reservations
+                const displayData = [...reservationsData].slice(0, 10);
+                
+                displayData.forEach((item, index) => {
+                    const row = document.createElement('tr');
+                    
+                    // Determine status
+                    const today = new Date().toISOString().split('T')[0];
+                    const startDate = item.rentStartdate;
+                    const endDate = item.rentEnddate;
+                    
+                    let status = 'pending';
+                    let statusText = 'รออนุมัติ';
+                    
+                    if (startDate && endDate) {
+                        if (today > endDate) {
+                            status = 'completed';
+                            statusText = 'เสร็จสิ้น';
+                        } else if (today >= startDate && today <= endDate) {
+                            status = 'active';
+                            statusText = 'กำลังใช้งาน';
+                        }
+                    }
+                    
+                    // Format rental period
+                    let rentalPeriod = 'ไม่ระบุวันที่';
+                    if (startDate && endDate) {
+                        rentalPeriod = `${formatDate(startDate)} - ${formatDate(endDate)}`;
+                    }
+                    
+                    row.innerHTML = `
+                        <td>${index + 1}</td>
+                        <td><strong>${item.Code || '-'}</strong></td>
+                        <td>${item.name || '-'}</td>
+                        <td>${item.department || '-'}</td>
+                        <td>${item.position || '-'}</td>
+                        <td>${item.choose || '-'}</td>
+                        <td>${rentalPeriod}</td>
+                        <td><span class="status ${status}">${statusText}</span></td>
+                    `;
+                    
+                    elements.tableBody.appendChild(row);
+                });
+            }
+            
+            elements.tableLoading.style.display = 'none';
+            elements.reservationsTable.style.display = 'table';
+        }
+
+        function filterTable() {
+            const searchTerm = elements.searchInput.value.toLowerCase();
+            const rows = elements.tableBody.querySelectorAll('tr');
+            
+            rows.forEach(row => {
+                const text = row.textContent.toLowerCase();
+                row.style.display = text.includes(searchTerm) ? '' : 'none';
+            });
+        }
+
+        function updateCalendar() {
+            // Update month display
+            const monthNames = [
+                'มกราคม', 'กุมภาพันธ์', 'มีนาคม', 'เมษายน', 'พฤษภาคม', 'มิถุนายน',
+                'กรกฎาคม', 'สิงหาคม', 'กันยายน', 'ตุลาคม', 'พฤศจิกายน', 'ธันวาคม'
+            ];
+            
+            elements.currentMonthEl.textContent = 
+                `${monthNames[currentMonth]} ${currentYear + 543}`;
+            
+            // Update vehicle filter options
+            updateVehicleFilter();
+            
+            // Render calendar
+            renderCalendar();
+            
+            // Update legend
+            updateCalendarLegend();
+        }
+
+        function updateVehicleFilter() {
+            const vehicles = [...new Set(reservationsData.map(item => item.choose).filter(Boolean))];
+            const vehicleFilter = elements.vehicleFilter;
+            
+            // Clear existing options except "all"
+            while (vehicleFilter.options.length > 1) {
+                vehicleFilter.remove(1);
+            }
+            
+            // Add vehicle options
+            vehicles.forEach(vehicle => {
+                const option = document.createElement('option');
+                option.value = vehicle;
+                option.textContent = vehicle;
+                vehicleFilter.appendChild(option);
+            });
+        }
+
+        function renderCalendar() {
+            elements.calendarDays.innerHTML = '';
+            
+            // Get first and last day of month
+            const firstDay = new Date(currentYear, currentMonth, 1);
+            const lastDay = new Date(currentYear, currentMonth + 1, 0);
+            const daysInMonth = lastDay.getDate();
+            
+            // Get day of week for first day (0 = Sunday, 1 = Monday, etc.)
+            let firstDayOfWeek = firstDay.getDay();
+            // Adjust for Thai calendar (Monday first)
+            firstDayOfWeek = firstDayOfWeek === 0 ? 6 : firstDayOfWeek - 1;
+            
+            // Today's date
+            const today = new Date();
+            const isTodayMonth = today.getMonth() === currentMonth && today.getFullYear() === currentYear;
+            
+            // Add empty cells for days before the first day of month
+            for (let i = 0; i < firstDayOfWeek; i++) {
+                const emptyDay = document.createElement('div');
+                emptyDay.className = 'calendar-day empty';
+                elements.calendarDays.appendChild(emptyDay);
+            }
+            
+            // Add days of the month
+            for (let day = 1; day <= daysInMonth; day++) {
+                const dayElement = document.createElement('div');
+                dayElement.className = 'calendar-day';
+                
+                // Check if today
+                if (isTodayMonth && day === today.getDate()) {
+                    dayElement.classList.add('calendar-today');
+                }
+                
+                // Day number
+                const dayNumber = document.createElement('div');
+                dayNumber.className = 'day-number';
+                dayNumber.textContent = day;
+                dayElement.appendChild(dayNumber);
+                
+                // Get reservations for this day
+                const dateStr = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                const dayReservations = getReservationsForDate(dateStr);
+                
+                // Show event count badge
+                if (dayReservations.length > 0) {
+                    const eventCount = document.createElement('div');
+                    eventCount.className = 'calendar-event-count';
+                    eventCount.textContent = dayReservations.length;
+                    eventCount.title = `${dayReservations.length} การจอง`;
+                    dayElement.appendChild(eventCount);
+                }
+                
+                // Show events (up to 2)
+                const maxEventsToShow = 2;
+                dayReservations.slice(0, maxEventsToShow).forEach(reservation => {
+                    const eventElement = document.createElement('div');
+                    eventElement.className = 'calendar-event';
+                    eventElement.style.backgroundColor = getVehicleColor(reservation.choose);
+                    eventElement.textContent = reservation.choose || 'ไม่ระบุรถ';
+                    eventElement.title = `${reservation.name || 'ไม่ระบุชื่อ'}\n${reservation.choose || 'ไม่ระบุรถ'}`;
+                    
+                    eventElement.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        showEventDetails(dateStr, dayReservations);
+                    });
+                    
+                    dayElement.appendChild(eventElement);
+                });
+                
+                // Show "more" indicator if there are more events
+                if (dayReservations.length > maxEventsToShow) {
+                    const moreElement = document.createElement('div');
+                    moreElement.className = 'calendar-event';
+                    moreElement.textContent = `+${dayReservations.length - maxEventsToShow} อื่นๆ`;
+                    moreElement.style.backgroundColor = 'var(--gray)';
+                    moreElement.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        showEventDetails(dateStr, dayReservations);
+                    });
+                    dayElement.appendChild(moreElement);
+                }
+                
+                // Add click event to show all events for the day
+                dayElement.addEventListener('click', () => {
+                    if (dayReservations.length > 0) {
+                        showEventDetails(dateStr, dayReservations);
+                    }
+                });
+                
+                elements.calendarDays.appendChild(dayElement);
+            }
+        }
+
+        function getReservationsForDate(dateStr) {
+            return reservationsData.filter(reservation => {
+                // Check vehicle filter
+                if (selectedVehicle !== 'all' && reservation.choose !== selectedVehicle) {
+                    return false;
+                }
+                
+                const startDate = reservation.rentStartdate;
+                const endDate = reservation.rentEnddate;
+                
+                if (!startDate || !endDate) return false;
+                
+                // Check if date is within reservation period
+                return dateStr >= startDate && dateStr <= endDate;
+            });
+        }
+
+        function getVehicleColor(vehicleName) {
+            const colors = [
+                '#4361ee', '#3f37c9', '#4cc9f0', '#f72585',
+                '#7209b7', '#3a0ca3', '#06d6a0', '#ffd166',
+                '#ef476f', '#118ab2', '#073b4c', '#ff9e00'
+            ];
+            
+            if (!vehicleName) return colors[0];
+            
+            // Generate consistent color from vehicle name
+            let hash = 0;
+            for (let i = 0; i < vehicleName.length; i++) {
+                hash = vehicleName.charCodeAt(i) + ((hash << 5) - hash);
+            }
+            
+            const index = Math.abs(hash) % colors.length;
+            return colors[index];
+        }
+
+        function updateCalendarLegend() {
+            const legendContainer = document.getElementById('calendarLegend');
+            legendContainer.innerHTML = '';
+            
+            // Get unique vehicles (limited to 6 for display)
+            const vehicles = [...new Set(reservationsData.map(item => item.choose).filter(Boolean))].slice(0, 6);
+            
+            vehicles.forEach(vehicle => {
+                const legendItem = document.createElement('div');
+                legendItem.className = 'legend-item';
+                
+                const colorBox = document.createElement('div');
+                colorBox.className = 'legend-color';
+                colorBox.style.backgroundColor = getVehicleColor(vehicle);
+                
+                const label = document.createElement('span');
+                label.textContent = vehicle;
+                
+                legendItem.appendChild(colorBox);
+                legendItem.appendChild(label);
+                legendContainer.appendChild(legendItem);
+            });
+            
+            if (vehicles.length === 0) {
+                const noData = document.createElement('div');
+                noData.textContent = 'ไม่มีข้อมูลรถ';
+                noData.style.color = 'var(--gray)';
+                legendContainer.appendChild(noData);
+            }
+        }
+
+        function showEventDetails(dateStr, reservations) {
+            const date = new Date(dateStr);
+            const formattedDate = date.toLocaleDateString('th-TH', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+                weekday: 'long'
+            });
+            
+            elements.modalTitle.textContent = `การจองรถวันที่ ${formattedDate}`;
+            elements.eventList.innerHTML = '';
+            
+            if (reservations.length === 0) {
+                elements.eventList.innerHTML = `
+                    <div style="text-align: center; padding: 40px; color: var(--gray);">
+                        <i class="fas fa-calendar-times" style="font-size: 48px; margin-bottom: 15px;"></i>
+                        <div>ไม่มีการจองรถในวันนี้</div>
+                    </div>
+                `;
+            } else {
+                reservations.forEach(reservation => {
+                    const eventItem = document.createElement('div');
+                    eventItem.className = 'event-item';
+                    eventItem.style.borderLeftColor = getVehicleColor(reservation.choose);
+                    
+                    // Determine status
+                    const today = new Date().toISOString().split('T')[0];
+                    let status = 'pending';
+                    let statusText = 'รออนุมัติ';
+                    
+                    if (today > reservation.rentEnddate) {
+                        status = 'completed';
+                        statusText = 'เสร็จสิ้น';
+                    } else if (today >= reservation.rentStartdate && today <= reservation.rentEnddate) {
+                        status = 'active';
+                        statusText = 'กำลังใช้งาน';
+                    }
+                    
+                    eventItem.innerHTML = `
+                        <div class="event-item-header">
+                            <div class="event-vehicle">${reservation.choose || 'ไม่ระบุรถ'}</div>
+                            <span class="status ${status}">${statusText}</span>
+                        </div>
+                        <div class="event-details">
+                            <div class="event-detail-item">
+                                <span class="event-detail-label">ผู้จอง</span>
+                                <span>${reservation.name || '-'}</span>
+                            </div>
+                            <div class="event-detail-item">
+                                <span class="event-detail-label">รหัสพนักงาน</span>
+                                <span>${reservation.Code || '-'}</span>
+                            </div>
+                            <div class="event-detail-item">
+                                <span class="event-detail-label">แผนก</span>
+                                <span>${reservation.department || '-'}</span>
+                            </div>
+                            <div class="event-detail-item">
+                                <span class="event-detail-label">ระยะเวลาจอง</span>
+                                <span>${formatDate(reservation.rentStartdate)} ถึง ${formatDate(reservation.rentEnddate)}</span>
+                            </div>
+                            <div class="event-detail-item">
+                                <span class="event-detail-label">เวลา</span>
+                                <span>${reservation.startTime || '-'} - ${reservation.endTime || '-'}</span>
+                            </div>
+                            <div class="event-detail-item">
+                                <span class="event-detail-label">เหตุผล</span>
+                                <span>${reservation.reason || '-'}</span>
+                            </div>
+                        </div>
+                    `;
+                    
+                    elements.eventList.appendChild(eventItem);
+                });
+            }
+            
+            elements.eventModal.style.display = 'flex';
+        }
+
+        function closeEventModal() {
+            elements.eventModal.style.display = 'none';
+        }
+
+        function goToPreviousMonth() {
+            currentMonth--;
+            if (currentMonth < 0) {
+                currentMonth = 11;
+                currentYear--;
+            }
+            updateCalendar();
+        }
+
+        function goToNextMonth() {
+            currentMonth++;
+            if (currentMonth > 11) {
+                currentMonth = 0;
+                currentYear++;
+            }
+            updateCalendar();
+        }
+
+        function goToToday() {
+            const today = new Date();
+            currentMonth = today.getMonth();
+            currentYear = today.getFullYear();
+            updateCalendar();
+        }
+
+        function initializeCharts() {
+            // Reservations Chart
+            const reservationsCtx = document.getElementById('reservationsChart').getContext('2d');
+            reservationsChart = new Chart(reservationsCtx, {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        label: 'จำนวนการจอง',
+                        data: [],
+                        borderColor: '#4361ee',
+                        backgroundColor: 'rgba(67, 97, 238, 0.1)',
+                        borderWidth: 3,
+                        fill: true,
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                color: 'rgba(0, 0, 0, 0.05)'
+                            },
+                            ticks: {
+                                stepSize: 1
+                            }
+                        },
+                        x: {
+                            grid: {
+                                color: 'rgba(0, 0, 0, 0.05)'
+                            }
+                        }
+                    }
+                }
+            });
+            
+            // Vehicle Chart
+            const vehicleCtx = document.getElementById('vehicleChart').getContext('2d');
+            vehicleChart = new Chart(vehicleCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        data: [],
+                        backgroundColor: [
+                            '#4361ee',
+                            '#3f37c9',
+                            '#4cc9f0',
+                            '#f72585',
+                            '#7209b7'
+                        ],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'right'
+                        }
+                    }
+                }
+            });
+        }
+
+        function updateCharts() {
+            if (reservationsData.length === 0) return;
+            
+            // Update reservations trend chart
+            const timeRange = document.getElementById('timeRange').value;
+            let days;
+            
+            switch(timeRange) {
+                case 'week': days = 7; break;
+                case 'month': days = 30; break;
+                case 'quarter': days = 90; break;
+                default: days = 30;
+            }
+            
+            const dateLabels = [];
+            const dailyCounts = new Array(days).fill(0);
+            
+            // Generate labels for last N days
+            for (let i = days - 1; i >= 0; i--) {
+                const d = new Date();
+                d.setDate(d.getDate() - i);
+                dateLabels.push(formatDateForChart(d));
+            }
+            
+            // Count reservations per day
+            reservationsData.forEach(item => {
+                const startDate = item.rentStartdate;
+                if (!startDate) return;
+                
+                try {
+                    const reservationDate = new Date(startDate);
+                    const today = new Date();
+                    const startPeriod = new Date();
+                    startPeriod.setDate(today.getDate() - days + 1);
+                    
+                    if (reservationDate >= startPeriod && reservationDate <= today) {
+                        const dayIndex = Math.floor((reservationDate - startPeriod) / (1000 * 60 * 60 * 24));
+                        if (dayIndex >= 0 && dayIndex < days) {
+                            dailyCounts[dayIndex]++;
+                        }
+                    }
+                } catch (e) {
+                    // Skip invalid dates
+                }
+            });
+            
+            reservationsChart.data.labels = dateLabels;
+            reservationsChart.data.datasets[0].data = dailyCounts;
+            reservationsChart.update();
+            
+            // Update vehicle usage chart
+            const vehicleCounts = {};
+            reservationsData.forEach(item => {
+                const vehicle = item.choose || 'ไม่ระบุ';
+                vehicleCounts[vehicle] = (vehicleCounts[vehicle] || 0) + 1;
+            });
+            
+            const vehicles = Object.keys(vehicleCounts);
+            const counts = vehicles.map(vehicle => vehicleCounts[vehicle]);
+            
+            vehicleChart.data.labels = vehicles;
+            vehicleChart.data.datasets[0].data = counts;
+            vehicleChart.update();
+        }
+
+        function formatDate(dateStr) {
+            if (!dateStr) return '-';
+            
+            try {
+                const date = new Date(dateStr);
+                const day = date.getDate().toString().padStart(2, '0');
+                const month = (date.getMonth() + 1).toString().padStart(2, '0');
+                const year = (date.getFullYear() + 543).toString().slice(-2);
+                return `${day}/${month}/${year}`;
+            } catch (e) {
+                return dateStr;
+            }
+        }
+
+        function formatDateForChart(date) {
+            const day = date.getDate();
+            const month = date.getMonth() + 1;
+            return `${day}/${month}`;
+        }
+
+        function updateLastUpdated() {
+            const now = new Date();
+            const timeString = now.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' });
+            const dateString = now.toLocaleDateString('th-TH');
+            elements.lastUpdated.textContent = `อัพเดทครั้งล่าสุด : ${dateString} ${timeString}`;
+        }
+
+        function showLoading() {
+            elements.tableLoading.style.display = 'flex';
+            elements.reservationsTable.style.display = 'none';
+            
+            // Reset stats
+            elements.totalReservations.textContent = '...';
+            elements.activeNow.textContent = '...';
+            elements.upcomingReservations.textContent = '...';
+            elements.totalDepartments.textContent = '...';
+        }
+
+        function showError(message) {
+            elements.errorMessage.innerHTML = `
+                <h3><i class="fas fa-exclamation-triangle"></i> ข้อผิดพลาด</h3>
+                <p>${message}</p>
+                <p style="margin-top: 10px; font-size: 14px;">
+                    <i class="fas fa-info-circle"></i> กำลังแสดงข้อมูลตัวอย่าง
+                </p>
+            `;
+            elements.errorMessage.style.display = 'block';
+            
+            // Hide error after 5 seconds
+            setTimeout(() => {
+                elements.errorMessage.style.display = 'none';
+            }, 5000);
+        }
+
+        function showSuccess(message) {
+            // Create success notification
+            const successDiv = document.createElement('div');
+            successDiv.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background-color: #2ecc71;
+                color: white;
+                padding: 15px 20px;
+                border-radius: var(--border-radius);
+                box-shadow: var(--box-shadow);
+                z-index: 1000;
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                animation: slideInRight 0.3s ease;
+            `;
+            
+            successDiv.innerHTML = `
+                <i class="fas fa-check-circle"></i>
+                <span>${message}</span>
+            `;
+            
+            document.body.appendChild(successDiv);
+            
+            // Remove after 3 seconds
+            setTimeout(() => {
+                successDiv.style.animation = 'slideOutRight 0.3s ease';
+                setTimeout(() => {
+                    if (successDiv.parentNode) {
+                        successDiv.parentNode.removeChild(successDiv);
+                    }
+                }, 300);
+            }, 3000);
+        }
+
+        function showAddReservationForm() {
+            alert('ฟังก์ชันจองรถใหม่\n\nในระบบจริง คุณควรเชื่อมต่อกับ Google Form สำหรับเพิ่มข้อมูลการจองรถ\n\nURL Google Form: https://docs.google.com/forms/d/e/1FAIpQLSf...');
+        }
+    </script>
+</body>
+</html>
