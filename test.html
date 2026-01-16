@@ -901,6 +901,112 @@
                 <!-- Event details will be populated here -->
             </div>
         </div>
+
+        // เพิ่ม HTML ในส่วนท้ายของ container (ก่อน </div>)
+<div id="dataInfoCard" style="background: white; border-radius: var(--border-radius); padding: 15px; margin-top: 20px; box-shadow: var(--box-shadow);">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+        <h4 style="color: var(--primary);">
+            <i class="fas fa-info-circle"></i> ข้อมูลระบบ
+        </h4>
+        <button onclick="toggleDataInfo()" class="btn btn-outline" style="padding: 5px 10px; font-size: 12px;">
+            <i class="fas fa-chevron-down"></i>
+        </button>
+    </div>
+    <div id="dataInfoContent" style="display: none;">
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
+            <div>
+                <div style="font-weight: 600; color: var(--gray);">ข้อมูลทั้งหมด</div>
+                <div style="font-size: 24px; font-weight: 700;" id="infoTotal">0</div>
+            </div>
+            <div>
+                <div style="font-weight: 600; color: var(--gray);">รถทั้งหมด</div>
+                <div style="font-size: 24px; font-weight: 700;" id="infoVehicles">0</div>
+            </div>
+            <div>
+                <div style="font-weight: 600; color: var(--gray);">แผนกทั้งหมด</div>
+                <div style="font-size: 24px; font-weight: 700;" id="infoDepartments">0</div>
+            </div>
+            <div>
+                <div style="font-weight: 600; color: var(--gray);">สถานะ</div>
+                <div style="font-size: 14px; color: var(--success);" id="infoStatus">พร้อมใช้งาน</div>
+            </div>
+        </div>
+        <div style="margin-top: 15px; padding-top: 15px; border-top: 1px solid var(--gray-light);">
+            <button onclick="exportData()" class="btn btn-outline" style="padding: 5px 10px; font-size: 12px;">
+                <i class="fas fa-download"></i> Export Data
+            </button>
+            <button onclick="testDates()" class="btn btn-outline" style="padding: 5px 10px; font-size: 12px; margin-left: 10px;">
+                <i class="fas fa-calendar-check"></i> Test Dates
+            </button>
+        </div>
+    </div>
+</div>
+
+// เพิ่ม JavaScript functions
+function toggleDataInfo() {
+    const content = document.getElementById('dataInfoContent');
+    const button = document.querySelector('#dataInfoCard button i');
+    
+    if (content.style.display === 'none') {
+        content.style.display = 'block';
+        button.className = 'fas fa-chevron-up';
+        updateDataInfo();
+    } else {
+        content.style.display = 'none';
+        button.className = 'fas fa-chevron-down';
+    }
+}
+
+function updateDataInfo() {
+    document.getElementById('infoTotal').textContent = reservationsData.length;
+    
+    const vehicles = [...new Set(reservationsData.map(item => item.choose).filter(Boolean))];
+    document.getElementById('infoVehicles').textContent = vehicles.length;
+    
+    const departments = [...new Set(reservationsData.map(item => item.department).filter(Boolean))];
+    document.getElementById('infoDepartments').textContent = departments.length;
+    
+    document.getElementById('infoStatus').textContent = 
+        reservationsData.length > 0 ? 'พร้อมใช้งาน' : 'ไม่มีข้อมูล';
+}
+
+function testDates() {
+    console.log('🧪 Testing dates...');
+    
+    // ตรวจสอบ 5 รายการแรก
+    const sample = reservationsData.slice(0, 5);
+    
+    sample.forEach((item, index) => {
+        console.log(`Item ${index}: ${item.name}`);
+        console.log(`  Start: ${item.rentStartdate} -> ${normalizeDate(item.rentStartdate)}`);
+        console.log(`  End: ${item.rentEnddate} -> ${normalizeDate(item.rentEnddate)}`);
+        
+        // ตรวจสอบว่าวันที่อยู่ในเดือนปัจจุบันหรือไม่
+        const start = normalizeDate(item.rentStartdate);
+        const currentMonth = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}`;
+        
+        if (start && start.startsWith(currentMonth)) {
+            console.log(`  ✅ In current month`);
+        }
+    });
+    
+    alert('ตรวจสอบวันที่แล้ว ดูผลลัพธ์ใน Console (F12)');
+}
+
+function exportData() {
+    const dataStr = JSON.stringify(reservationsData, null, 2);
+    const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
+    
+    const exportFileDefaultName = `reservations-${new Date().toISOString().split('T')[0]}.json`;
+    
+    const linkElement = document.createElement('a');
+    linkElement.setAttribute('href', dataUri);
+    linkElement.setAttribute('download', exportFileDefaultName);
+    linkElement.click();
+    
+    showMessage('ส่งออกข้อมูลเรียบร้อยแล้ว', 'success');
+}
+        
     </div>
 
     <script>
@@ -1077,30 +1183,136 @@
             });
         }
 
-        function loadData() {
-            showLoading();
-            showStatus('กำลังโหลดข้อมูล...', 'info');
-            
-            // ลองโหลดจาก Google Sheets ผ่าน CSV export
-            fetchFromGoogleSheetsCSV()
-                .then(data => {
-                    if (data && data.length > 0) {
-                        reservationsData = data;
-                        dataSource = 'google-sheets-csv';
-                        showMessage(`โหลดข้อมูลสำเร็จ: ${data.length} รายการ`, 'success');
-                        showStatus('โหลดข้อมูลสำเร็จ', 'success');
-                        updateUI();
-                    } else {
-                        throw new Error('ไม่พบข้อมูลจาก Google Sheets');
-                    }
-                })
-                .catch(error => {
-                    console.log('Error loading from Google Sheets:', error.message);
-                    
-                    // ใช้ข้อมูลตัวอย่าง
-                    useFallbackData();
-                });
+        async function loadData() {
+    showLoading();
+    showMessage('กำลังโหลดข้อมูล...', 'info');
+    
+    try {
+        // ใช้ CSV export (วิธีที่ปลอดภัยที่สุด)
+        const SHEET_ID = '1-5izB7N6ldxHAa3ca0RNhGP8Z36vuA0mw9Wi_xR_Lj4';
+        const csvUrl = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv`;
+        
+        console.log('📥 Fetching from:', csvUrl);
+        
+        const response = await fetch(csvUrl);
+        const csvText = await response.text();
+        
+        // แปลง CSV เป็นข้อมูล
+        const lines = csvText.split('\n').filter(line => line.trim() !== '');
+        
+        if (lines.length < 2) {
+            throw new Error('ไฟล์ CSV ว่างเปล่า');
         }
+        
+        // อ่าน header
+        const headers = lines[0].split(',').map(h => h.trim().toLowerCase());
+        
+        // แปลงข้อมูล
+        reservationsData = [];
+        
+        for (let i = 1; i < lines.length; i++) {
+            const line = lines[i];
+            const values = parseCSVLine(line);
+            
+            const item = {};
+            headers.forEach((header, idx) => {
+                if (idx < values.length) {
+                    item[header] = values[idx] || '';
+                }
+            });
+            
+            // เติมข้อมูลที่จำเป็น
+            if (!item.code && !item.id) {
+                item.code = `EMP${i.toString().padStart(3, '0')}`;
+            }
+            
+            // เติมชื่อคอลัมน์ต่างๆ
+            item.name = item.name || item.fullname || item['ชื่อ-สกุล'] || '';
+            item.choose = item.choose || item.vehicle || item.car || '';
+            item.department = item.department || item.dept || item.แผนก || '';
+            
+            // วันที่
+            item.rentStartdate = item.rentstartdate || item.startdate || item['วันที่เริ่ม'] || '';
+            item.rentEnddate = item.rentenddate || item.enddate || item['วันที่สิ้นสุด'] || '';
+            
+            // กรองแถวว่าง
+            if (item.name.trim() !== '') {
+                reservationsData.push(item);
+            }
+        }
+        
+        console.log(`✅ Loaded ${reservationsData.length} items`);
+        
+        // ตรวจสอบและแปลงวันที่
+        checkAndFixData();
+        
+        // อัพเดท UI
+        updateUI();
+        showMessage(`โหลดข้อมูลสำเร็จ: ${reservationsData.length} รายการ`, 'success');
+        
+        // ตรวจสอบข้อมูลเพิ่มเติม
+        analyzeData();
+        
+    } catch (error) {
+        console.error('❌ Error loading data:', error);
+        useFallbackData();
+    }
+}
+
+// ฟังก์ชัน parse CSV line ที่ถูกต้อง (รองรับ commas ในค่าข้อมูล)
+function parseCSVLine(line) {
+    const values = [];
+    let current = '';
+    let inQuotes = false;
+    
+    for (let i = 0; i < line.length; i++) {
+        const char = line[i];
+        const nextChar = i + 1 < line.length ? line[i + 1] : '';
+        
+        if (char === '"' && !inQuotes) {
+            inQuotes = true;
+        } else if (char === '"' && inQuotes && nextChar === '"') {
+            current += '"';
+            i++; // ข้าม quote ถัดไป
+        } else if (char === '"' && inQuotes) {
+            inQuotes = false;
+        } else if (char === ',' && !inQuotes) {
+            values.push(current.trim());
+            current = '';
+        } else {
+            current += char;
+        }
+    }
+    
+    values.push(current.trim());
+    return values;
+}
+
+// ฟังก์ชันวิเคราะห์ข้อมูล
+function analyzeData() {
+    console.log('📊 Data Analysis:');
+    console.log('- Total items:', reservationsData.length);
+    
+    // ตรวจสอบรูปแบบวันที่
+    const dateFormats = new Set();
+    reservationsData.slice(0, 5).forEach(item => {
+        dateFormats.add(item.rentStartdate);
+        dateFormats.add(item.rentEnddate);
+    });
+    
+    console.log('- Date formats found:', Array.from(dateFormats));
+    
+    // ตรวจสอบเดือนปัจจุบัน
+    const currentDate = new Date();
+    const currentMonthStr = `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}`;
+    
+    const thisMonthReservations = reservationsData.filter(item => {
+        const startDate = normalizeDate(item.rentStartdate);
+        return startDate && startDate.startsWith(currentMonthStr);
+    }).length;
+    
+    console.log(`- Reservations this month: ${thisMonthReservations}`);
+}
 
         async function fetchFromGoogleSheetsCSV() {
             try {
@@ -1389,39 +1601,61 @@
         }
 
         function normalizeDate(dateStr) {
-            if (!dateStr) return '';
-            
-            try {
-                // ลองแปลงวันที่หลายๆ รูปแบบ
-                let date;
+    if (!dateStr || dateStr.toString().trim() === '') {
+        return '';
+    }
+    
+    const str = dateStr.toString().trim();
+    console.log('📅 Original date:', str);
+    
+    // ลองรูปแบบต่างๆ
+    try {
+        // 1. รูปแบบ DD/MM/YYYY หรือ DD-MM-YYYY
+        if (str.includes('/') || str.includes('-')) {
+            const parts = str.split(/[/-]/);
+            if (parts.length === 3) {
+                let day = parseInt(parts[0]);
+                let month = parseInt(parts[1]);
+                let year = parseInt(parts[2]);
                 
-                if (dateStr instanceof Date) {
-                    date = dateStr;
-                } else if (typeof dateStr === 'string') {
-                    // ลอง parse หลายรูปแบบ
-                    date = new Date(dateStr);
-                    
-                    if (isNaN(date.getTime())) {
-                        // ลองรูปแบบ DD/MM/YYYY
-                        const parts = dateStr.split(/[/-]/);
-                        if (parts.length === 3) {
-                            const day = parts[0];
-                            const month = parts[1];
-                            const year = parts[2].length === 2 ? '20' + parts[2] : parts[2];
-                            date = new Date(year, month - 1, day);
-                        }
-                    }
+                // ถ้าปีเป็น 2 หลัก (เช่น 26)
+                if (year < 100) {
+                    year = 2000 + year; // 26 -> 2026
                 }
                 
-                if (date && !isNaN(date.getTime())) {
-                    return date.toISOString().split('T')[0]; // YYYY-MM-DD
+                // ถ้าปีเป็น พ.ศ. (เช่น 2569)
+                if (year > 2500) {
+                    year = year - 543; // 2569 -> 2026
                 }
                 
-                return dateStr.toString();
-            } catch (e) {
-                return dateStr.toString();
+                // ถ้าเดือน > 12 แสดงว่าสลับกัน (เช่น 01/25/2026)
+                if (month > 12 && day <= 12) {
+                    [day, month] = [month, day]; // สลับกัน
+                }
+                
+                const date = new Date(year, month - 1, day);
+                const result = date.toISOString().split('T')[0];
+                console.log('✅ Converted to:', result);
+                return result;
             }
         }
+        
+        // 2. รูปแบบอื่นๆ ให้ลองใช้ new Date() โดยตรง
+        const date = new Date(str);
+        if (!isNaN(date.getTime())) {
+            const result = date.toISOString().split('T')[0];
+            console.log('✅ Direct conversion:', result);
+            return result;
+        }
+        
+        console.log('❌ Cannot convert date');
+        return str; // ส่งคืนค่าเดิมถ้าแปลงไม่ได้
+        
+    } catch (error) {
+        console.error('❌ Error converting date:', error);
+        return str; // ส่งคืนค่าเดิมถ้า error
+    }
+}
 
         function getReservationStatus(reservation, dateStr) {
             const today = new Date().toISOString().split('T')[0];
@@ -1776,6 +2010,32 @@
                 elements.message.style.display = 'none';
             }, 5000);
         }
+
+        // เพิ่มฟังก์ชันนี้ในโค้ด
+function checkAndFixData() {
+    console.log('🔍 Checking data format...');
+    
+    reservationsData.forEach((item, index) => {
+        const originalStart = item.rentStartdate;
+        const originalEnd = item.rentEnddate;
+        
+        const fixedStart = normalizeDate(originalStart);
+        const fixedEnd = normalizeDate(originalEnd);
+        
+        // อัพเดทข้อมูล
+        item.rentStartdate = fixedStart;
+        item.rentEnddate = fixedEnd;
+        
+        // แสดงเฉพาะรายการที่แปลงแล้ว
+        if (originalStart !== fixedStart || originalEnd !== fixedEnd) {
+            console.log(`Item ${index}: ${item.name}`);
+            console.log(`  Start: ${originalStart} -> ${fixedStart}`);
+            console.log(`  End: ${originalEnd} -> ${fixedEnd}`);
+        }
+    });
+    
+    console.log('✅ Data check completed');
+}
     </script>
 </body>
 </html>
