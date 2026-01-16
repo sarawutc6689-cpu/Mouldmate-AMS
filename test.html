@@ -370,19 +370,11 @@
             background-color: rgba(67, 97, 238, 0.05);
         }
         
-       .report-table td {
-    padding: 15px;
-    color: var(--dark);
-    vertical-align: middle; /* เปลี่ยนจาก top เป็น middle */
-}
-
-@media (max-width: 576px) {
-    .report-table th,
-    .report-table td {
-        padding: 10px 8px;
-        font-size: 14px;
-    }
-}
+        .report-table td {
+            padding: 15px;
+            color: var(--dark);
+            vertical-align: middle;
+        }
         
         .status-badge {
             padding: 6px 12px;
@@ -392,9 +384,30 @@
             display: inline-block;
         }
         
-        .status-active { background-color: rgba(6, 214, 160, 0.2); color: var(--success); }
-        .status-completed { background-color: rgba(17, 138, 178, 0.2); color: var(--info); }
-        .status-cancelled { background-color: rgba(239, 71, 111, 0.2); color: var(--danger); }
+        .status-approved {
+            background-color: rgba(6, 214, 160, 0.2);
+            color: var(--success);
+        }
+        
+        .status-pending {
+            background-color: rgba(255, 193, 7, 0.2);
+            color: #ffc107;
+        }
+        
+        .status-rejected {
+            background-color: rgba(239, 71, 111, 0.2);
+            color: var(--danger);
+        }
+        
+        .status-active {
+            background-color: rgba(17, 138, 178, 0.2);
+            color: var(--info);
+        }
+        
+        .status-completed {
+            background-color: rgba(108, 117, 125, 0.2);
+            color: var(--gray);
+        }
         
         .summary-section {
             display: grid;
@@ -563,20 +576,6 @@
                 height: 250px;
             }
         }
-        .status-pending {
-    background-color: rgba(255, 193, 7, 0.2);
-    color: #ffc107;
-}
-
-.status-approved {
-    background-color: rgba(0, 123, 255, 0.2);
-    color: #007bff;
-}
-
-.status-upcoming {
-    background-color: rgba(111, 66, 193, 0.2);
-    color: #6f42c1;
-}
     </style>
 </head>
 <body>
@@ -639,17 +638,14 @@
                 </div>
                 
                 <div class="filter-group">
-    <label class="filter-label">สถานะ</label>
-    <select class="filter-select" id="statusFilter">
-        <option value="all">ทั้งหมด</option>
-        <option value="active">กำลังใช้งาน</option>
-        <option value="completed">เสร็จสิ้น</option>
-        <option value="approved">อนุมัติ</option>
-        <option value="pending">รออนุมัติ</option>
-        <option value="cancelled">ยกเลิก</option>
-        <option value="upcoming">ยังไม่ถึงวัน</option>
-    </select>
-</div>
+                    <label class="filter-label">สถานะ</label>
+                    <select class="filter-select" id="statusFilter">
+                        <option value="all">ทั้งหมด</option>
+                        <option value="approved">อนุมัติ</option>
+                        <option value="pending">รออนุมัติ</option>
+                        <option value="rejected">ไม่อนุมัติ</option>
+                    </select>
+                </div>
             </div>
             
             <div style="display: flex; gap: 15px; margin-top: 20px;">
@@ -1088,85 +1084,71 @@
             return values;
         }
 
-        // แปลงข้อมูลดิบให้เป็นรูปแบบรายงาน
-        function renderTable() {
-    const startIndex = (currentPage - 1) * itemsPerPage;
-    const endIndex = startIndex + itemsPerPage;
-    const pageData = filteredData.slice(startIndex, endIndex);
-    
-    let tableHTML = '';
-    
-    if (pageData.length === 0) {
-        tableHTML = `
-            <tr>
-                <td colspan="7" style="text-align: center; padding: 40px; color: var(--gray);">
-                    <i class="fas fa-database" style="font-size: 48px; margin-bottom: 15px;"></i>
-                    <div>ไม่พบข้อมูลการจอง</div>
-                </td>
-            </tr>
-        `;
-    } else {
-        pageData.forEach(item => {
-            let statusBadge = '';
-            let statusText = '';
+        // แปลงข้อมูลดิบให้เป็นรูปแบบรายงาน - ใช้คอลัมน์ approval ตรงๆ
+        function processRawData(rawData) {
+            const processedData = [];
             
-            // กำหนดสถานะตามค่าที่ได้จาก approval
-            switch(item.status) {
-                case 'active':
-                    statusBadge = 'status-active';
-                    statusText = 'กำลังใช้งาน';
-                    break;
-                case 'completed':
-                    statusBadge = 'status-completed';
-                    statusText = 'เสร็จสิ้น';
-                    break;
-                case 'approved':
-                    statusBadge = 'status-approved';
-                    statusText = 'อนุมัติ';
-                    break;
-                case 'pending':
-                    statusBadge = 'status-pending';
-                    statusText = 'รออนุมัติ';
-                    break;
-                case 'cancelled':
-                    statusBadge = 'status-cancelled';
-                    statusText = 'ยกเลิก';
-                    break;
-                case 'upcoming':
-                    statusBadge = 'status-upcoming';
-                    statusText = 'ยังไม่ถึงวัน';
-                    break;
-                default:
-                    // ถ้าไม่รู้จักสถานะ ให้แสดงค่าจาก approval โดยตรง
-                    statusBadge = 'status-pending';
-                    statusText = item.approval || 'รออนุมัติ';
-            }
+            rawData.forEach((item, index) => {
+                try {
+                    // ดึงค่าจากคอลัมน์ต่างๆ
+                    const name = item.name || '';
+                    const department = item.department || item.section || '';
+                    const vehicle = item.choose || '';
+                    const startDate = item.rentStartdate || '';
+                    const endDate = item.rentEnddate || '';
+                    const startTime = item.startTime || '';
+                    const endTime = item.endTime || '';
+                    const reason = item.reason || '';
+                    const approval = item.approval || 'รออนุมัติ'; // คอลัมน์ approval
+                    
+                    // แปลงวันที่
+                    const formattedStartDate = parseDate(startDate);
+                    const formattedEndDate = parseDate(endDate);
+                    
+                    // กำหนดสถานะจากคอลัมน์ approval โดยตรง
+                    let status = 'pending'; // ค่าเริ่มต้น
+                    let statusText = approval; // ใช้ค่าจาก approval โดยตรง
+                    
+                    // แปลงค่าสถานะให้เป็นภาษาอังกฤษเพื่อใช้ในระบบ
+                    if (approval.includes('อนุมัติ') || approval.toLowerCase().includes('approved')) {
+                        status = 'approved';
+                    } else if (approval.includes('ไม่อนุมัติ') || approval.toLowerCase().includes('rejected')) {
+                        status = 'rejected';
+                    } else if (approval.includes('รออนุมัติ') || approval.toLowerCase().includes('pending')) {
+                        status = 'pending';
+                    } else {
+                        // ถ้าไม่รู้จัก ให้ใช้ค่าจาก approval โดยตรง
+                        status = 'pending';
+                    }
+                    
+                    // สร้างข้อมูลรายงาน
+                    const reportItem = {
+                        id: `BK${String(index + 1).padStart(3, '0')}`,
+                        name: name || 'ไม่ระบุชื่อ',
+                        department: department || 'ไม่ระบุแผนก',
+                        vehicle: vehicle || 'ไม่ระบุรถ',
+                        date: formatDisplayDate(formattedStartDate, formattedEndDate),
+                        time: formatTime(startTime, endTime),
+                        status: status,
+                        statusText: statusText, // เก็บข้อความสถานะดิบ
+                        reason: reason || 'ไม่ระบุเหตุผล',
+                        approval: approval, // เก็บข้อมูล approval ดิบ
+                        rawStartDate: formattedStartDate,
+                        rawEndDate: formattedEndDate,
+                        rawStartTime: startTime,
+                        rawEndTime: endTime
+                    };
+                    
+                    processedData.push(reportItem);
+                    
+                } catch (error) {
+                    console.error(`Error processing item ${index}:`, error);
+                }
+            });
             
-            tableHTML += `
-                <tr>
-                    <td>
-                        <div style="font-weight: 600;">${item.name}</div>
-                    </td>
-                    <td>${item.department}</td>
-                    <td><strong>${item.vehicle}</strong></td>
-                    <td>${item.date}</td>
-                    <td>${item.time}</td>
-                    <td><span class="status-badge ${statusBadge}">${statusText}</span></td>
-                    <td>${item.reason}</td>
-                </tr>
-            `;
-        });
-    }
-    
-    if (elements.reportTableBody) {
-        elements.reportTableBody.innerHTML = tableHTML;
-    }
-    
-    // อัปเดตข้อมูลเพจ
-    if (elements.rowCount) elements.rowCount.textContent = pageData.length;
-    if (elements.totalRows) elements.totalRows.textContent = filteredData.length;
-    if (elements.currentPage) elements.currentPage.textContent = currentPage;
-}
+            console.log('Processed data with approval:', processedData);
+            return processedData;
+        }
 
         // แปลงรูปแบบวันที่
         function parseDate(dateStr) {
@@ -1275,6 +1257,7 @@
             const vehicles = ['โตโยต้า ฟอร์จูนเนอร์', 'ฮอนด้า ซีวิค', 'โตโยต้า ไฮลักซ์', 'อิซูซุ ดีแมคซ์'];
             const names = ['สมชาย ใจดี', 'สุภาพร สุขสวัสดิ์', 'วิชัย ตั้งใจเรียน', 'อรุณี สดใส', 'บดินทร์ แข็งแรง'];
             const reasons = ['นำลูกค้าทัวร์โรงงาน', 'ไปสัมมนาที่โรงแรม', 'ขนส่งอุปกรณ์ไปสาขา', 'ไปธนาคารและสรรพากร'];
+            const approvals = ['อนุมัติ', 'รออนุมัติ', 'ไม่อนุมัติ'];
             
             const today = new Date();
             const sampleData = [];
@@ -1288,7 +1271,12 @@
                 const endDate = new Date(startDate);
                 endDate.setDate(endDate.getDate() + duration);
                 
-                const status = i % 3 === 0 ? 'active' : (i % 3 === 1 ? 'completed' : 'cancelled');
+                const approval = approvals[Math.floor(Math.random() * approvals.length)];
+                let status = 'pending';
+                
+                if (approval === 'อนุมัติ') status = 'approved';
+                else if (approval === 'ไม่อนุมัติ') status = 'rejected';
+                else status = 'pending';
                 
                 sampleData.push({
                     id: `BK${String(i + 1).padStart(3, '0')}`,
@@ -1298,7 +1286,9 @@
                     date: formatDisplayDate(startDate.toISOString().split('T')[0], endDate.toISOString().split('T')[0]),
                     time: '09:00 - 17:00',
                     status: status,
+                    statusText: approval,
                     reason: reasons[Math.floor(Math.random() * reasons.length)],
+                    approval: approval,
                     rawStartDate: startDate.toISOString().split('T')[0],
                     rawEndDate: endDate.toISOString().split('T')[0],
                     rawStartTime: '09:00',
@@ -1327,54 +1317,54 @@
             }
         }
 
-       function applyFilters() {
-    let filtered = [...reportData];
-    
-    // กรองตามแผนก
-    const department = elements.departmentFilter ? elements.departmentFilter.value : 'all';
-    if (department !== 'all') {
-        filtered = filtered.filter(item => item.department === department);
-    }
-    
-    // กรองตามสถานะ
-    const status = elements.statusFilter ? elements.statusFilter.value : 'all';
-    if (status !== 'all') {
-        filtered = filtered.filter(item => item.status === status);
-    }
-    
-    // กรองตามวันที่
-    const timeRange = elements.timeRange ? elements.timeRange.value : 'month';
-    if (timeRange === 'custom') {
-        const startFilter = elements.startDate ? elements.startDate.value : '';
-        const endFilter = elements.endDate ? elements.endDate.value : '';
-        
-        if (startFilter && endFilter) {
-            filtered = filtered.filter(item => {
-                if (!item.rawStartDate) return false;
+        function applyFilters() {
+            let filtered = [...reportData];
+            
+            // กรองตามแผนก
+            const department = elements.departmentFilter ? elements.departmentFilter.value : 'all';
+            if (department !== 'all') {
+                filtered = filtered.filter(item => item.department === department);
+            }
+            
+            // กรองตามสถานะ
+            const status = elements.statusFilter ? elements.statusFilter.value : 'all';
+            if (status !== 'all') {
+                filtered = filtered.filter(item => item.status === status);
+            }
+            
+            // กรองตามวันที่
+            const timeRange = elements.timeRange ? elements.timeRange.value : 'month';
+            if (timeRange === 'custom') {
+                const startFilter = elements.startDate ? elements.startDate.value : '';
+                const endFilter = elements.endDate ? elements.endDate.value : '';
                 
-                const itemDate = new Date(item.rawStartDate);
-                const startDate = new Date(startFilter);
-                const endDate = new Date(endFilter);
-                
-                return itemDate >= startDate && itemDate <= endDate;
-            });
+                if (startFilter && endFilter) {
+                    filtered = filtered.filter(item => {
+                        if (!item.rawStartDate) return false;
+                        
+                        const itemDate = new Date(item.rawStartDate);
+                        const startDate = new Date(startFilter);
+                        const endDate = new Date(endFilter);
+                        
+                        return itemDate >= startDate && itemDate <= endDate;
+                    });
+                }
+            }
+            
+            filteredData = filtered;
+            
+            // อัปเดตสถิติ
+            updateStats();
+            
+            // แสดงตาราง
+            renderTable();
+            
+            // อัปเดตกราฟ
+            updateCharts();
+            
+            // อัปเดตสรุป
+            updateSummary();
         }
-    }
-    
-    filteredData = filtered;
-    
-    // อัปเดตสถิติ
-    updateStats();
-    
-    // แสดงตาราง
-    renderTable();
-    
-    // อัปเดตกราฟ
-    updateCharts();
-    
-    // อัปเดตสรุป
-    updateSummary();
-}
 
         function resetFilters() {
             if (elements.timeRange) elements.timeRange.value = 'month';
@@ -1457,66 +1447,78 @@
         }
 
         function renderTable() {
-    const startIndex = (currentPage - 1) * itemsPerPage;
-    const endIndex = startIndex + itemsPerPage;
-    const pageData = filteredData.slice(startIndex, endIndex);
-    
-    let tableHTML = '';
-    
-    if (pageData.length === 0) {
-        tableHTML = `
-            <tr>
-                <td colspan="7" style="text-align: center; padding: 40px; color: var(--gray);">
-                    <i class="fas fa-database" style="font-size: 48px; margin-bottom: 15px;"></i>
-                    <div>ไม่พบข้อมูลการจอง</div>
-                </td>
-            </tr>
-        `;
-    } else {
-        pageData.forEach(item => {
-            let statusBadge = '';
-            let statusText = '';
+            const startIndex = (currentPage - 1) * itemsPerPage;
+            const endIndex = startIndex + itemsPerPage;
+            const pageData = filteredData.slice(startIndex, endIndex);
             
-            switch(item.status) {
-                case 'active':
-                    statusBadge = 'status-active';
-                    statusText = 'กำลังใช้งาน';
-                    break;
-                case 'completed':
-                    statusBadge = 'status-completed';
-                    statusText = 'เสร็จสิ้น';
-                    break;
-                case 'cancelled':
-                    statusBadge = 'status-cancelled';
-                    statusText = 'ยกเลิก';
-                    break;
+            let tableHTML = '';
+            
+            if (pageData.length === 0) {
+                tableHTML = `
+                    <tr>
+                        <td colspan="7" style="text-align: center; padding: 40px; color: var(--gray);">
+                            <i class="fas fa-database" style="font-size: 48px; margin-bottom: 15px;"></i>
+                            <div>ไม่พบข้อมูลการจอง</div>
+                        </td>
+                    </tr>
+                `;
+            } else {
+                pageData.forEach(item => {
+                    let statusBadge = '';
+                    let statusText = item.statusText || item.approval || 'รออนุมัติ';
+                    
+                    // กำหนดสีตามสถานะ
+                    switch(item.status) {
+                        case 'approved':
+                            statusBadge = 'status-approved';
+                            statusText = 'อนุมัติ';
+                            break;
+                        case 'pending':
+                            statusBadge = 'status-pending';
+                            statusText = 'รออนุมัติ';
+                            break;
+                        case 'rejected':
+                            statusBadge = 'status-rejected';
+                            statusText = 'ไม่อนุมัติ';
+                            break;
+                        case 'active':
+                            statusBadge = 'status-active';
+                            statusText = 'กำลังใช้งาน';
+                            break;
+                        case 'completed':
+                            statusBadge = 'status-completed';
+                            statusText = 'เสร็จสิ้น';
+                            break;
+                        default:
+                            statusBadge = 'status-pending';
+                            statusText = item.approval || 'รออนุมัติ';
+                    }
+                    
+                    tableHTML += `
+                        <tr>
+                            <td>
+                                <div style="font-weight: 600;">${item.name}</div>
+                            </td>
+                            <td>${item.department}</td>
+                            <td><strong>${item.vehicle}</strong></td>
+                            <td>${item.date}</td>
+                            <td>${item.time}</td>
+                            <td><span class="status-badge ${statusBadge}">${statusText}</span></td>
+                            <td>${item.reason}</td>
+                        </tr>
+                    `;
+                });
             }
             
-            tableHTML += `
-                <tr>
-                    <td>
-                        <div style="font-weight: 600;">${item.name}</div>
-                    </td>
-                    <td>${item.department}</td>
-                    <td><strong>${item.vehicle}</strong></td>
-                    <td>${item.date}</td>
-                    <td>${item.time}</td>
-                    <td><span class="status-badge ${statusBadge}">${statusText}</span></td>
-                    <td>${item.reason}</td>
-                </tr>
-            `;
-        });
-    }
-    
-    if (elements.reportTableBody) {
-        elements.reportTableBody.innerHTML = tableHTML;
-    }
-    
-    // อัปเดตข้อมูลเพจ
-    if (elements.rowCount) elements.rowCount.textContent = pageData.length;
-    if (elements.totalRows) elements.totalRows.textContent = filteredData.length;
-    if (elements.currentPage) elements.currentPage.textContent = currentPage;
-}
+            if (elements.reportTableBody) {
+                elements.reportTableBody.innerHTML = tableHTML;
+            }
+            
+            // อัปเดตข้อมูลเพจ
+            if (elements.rowCount) elements.rowCount.textContent = pageData.length;
+            if (elements.totalRows) elements.totalRows.textContent = filteredData.length;
+            if (elements.currentPage) elements.currentPage.textContent = currentPage;
+        }
 
         function prevPage() {
             if (currentPage > 1) {
@@ -1853,41 +1855,40 @@
         }
 
         function exportExcel() {
-    // สร้าง CSV สำหรับส่งออก
-    const headers = ['ผู้จอง', 'แผนก', 'รถที่จอง', 'วันที่จอง', 'เวลาจอง', 'สถานะ', 'เหตุผล'];
-    const csvRows = [];
-    
-    // เพิ่ม header
-    csvRows.push(headers.join(','));
-    
-    // เพิ่มข้อมูล
-    filteredData.forEach(item => {
-        const statusText = item.status === 'active' ? 'กำลังใช้งาน' : 
-                         item.status === 'completed' ? 'เสร็จสิ้น' : 'ยกเลิก';
-        
-        const row = [
-            `"${item.name}"`,
-            `"${item.department}"`,
-            `"${item.vehicle}"`,
-            `"${item.date}"`,
-            `"${item.time}"`,
-            `"${statusText}"`,
-            `"${item.reason}"`
-        ];
-        
-        csvRows.push(row.join(','));
-    });
-    
-    const csvContent = csvRows.join('\n');
-    const blob = new Blob(['\ufeff' + csvContent], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = `รายงานจองรถ_${new Date().toISOString().split('T')[0]}.csv`;
-    link.click();
-    
-    showMessage('ส่งออกไฟล์ CSV สำเร็จ', 'success');
-}
+            // สร้าง CSV สำหรับส่งออก
+            const headers = ['ผู้จอง', 'แผนก', 'รถที่จอง', 'วันที่จอง', 'เวลาจอง', 'สถานะ', 'เหตุผล'];
+            const csvRows = [];
+            
+            // เพิ่ม header
+            csvRows.push(headers.join(','));
+            
+            // เพิ่มข้อมูล
+            filteredData.forEach(item => {
+                const statusText = item.statusText || item.approval || 'รออนุมัติ';
+                
+                const row = [
+                    `"${item.name}"`,
+                    `"${item.department}"`,
+                    `"${item.vehicle}"`,
+                    `"${item.date}"`,
+                    `"${item.time}"`,
+                    `"${statusText}"`,
+                    `"${item.reason}"`
+                ];
+                
+                csvRows.push(row.join(','));
+            });
+            
+            const csvContent = csvRows.join('\n');
+            const blob = new Blob(['\ufeff' + csvContent], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `รายงานจองรถ_${new Date().toISOString().split('T')[0]}.csv`;
+            link.click();
+            
+            showMessage('ส่งออกไฟล์ CSV สำเร็จ', 'success');
+        }
 
         function printReport() {
             window.print();
@@ -1946,90 +1947,6 @@
                 }, 5000);
             }
         }
-        // ฟังก์ชันตรวจสอบข้อมูลดิบ
-function debugApprovalData() {
-    console.log('=== DEBUG APPROVAL DATA ===');
-    
-    if (reportData.length === 0) {
-        console.log('No data available');
-        return;
-    }
-    
-    // นับสถานะต่างๆ
-    const statusCount = {};
-    const approvalCount = {};
-    
-    reportData.forEach(item => {
-        // นับสถานะที่ประมวลผลแล้ว
-        statusCount[item.status] = (statusCount[item.status] || 0) + 1;
-        
-        // นับค่าจากคอลัมน์ approval ดิบ
-        const approvalValue = item.approval || 'ไม่มีค่า';
-        approvalCount[approvalValue] = (approvalCount[approvalValue] || 0) + 1;
-    });
-    
-    console.log('Status counts (processed):', statusCount);
-    console.log('Approval counts (raw from Google Sheets):', approvalCount);
-    
-    // แสดงตัวอย่างข้อมูล
-    console.log('Sample items (first 5):');
-    reportData.slice(0, 5).forEach((item, index) => {
-        console.log(`Item ${index}:`, {
-            name: item.name,
-            approval: item.approval,
-            status: item.status,
-            startDate: item.rawStartDate,
-            endDate: item.rawEndDate
-        });
-    });
-}
-
-// เรียกใช้ debugApprovalData ใน loadReportData หลังจากประมวลผลข้อมูล
-async function loadReportData() {
-    showLoading();
-    showMessage('กำลังโหลดข้อมูลจาก Google Sheets...', 'info');
-    
-    try {
-        const data = await loadFromGoogleSheets();
-        
-        if (data && data.length > 0) {
-            reportData = processRawData(data);
-            console.log('โหลดข้อมูลสำเร็จ:', reportData.length, 'รายการ');
-            
-            // เรียกดูข้อมูล approval
-            debugApprovalData();
-            
-            // อัปเดตตัวเลือกแผนก
-            updateDepartmentOptions();
-            
-            showMessage(`โหลดข้อมูลสำเร็จ: ${reportData.length} รายการ`, 'success');
-            
-            // แสดงข้อมูล
-            applyFilters();
-            
-            // สร้างกราฟ
-            setTimeout(() => {
-                initCharts();
-            }, 100);
-            
-        } else {
-            throw new Error('ไม่พบข้อมูลจาก Google Sheets');
-        }
-        
-    } catch (error) {
-        console.error('Error loading report data:', error);
-        showMessage('ไม่สามารถโหลดข้อมูลได้: ' + error.message, 'error');
-        
-        // ใช้ข้อมูลตัวอย่าง
-        generateSampleData();
-        updateDepartmentOptions();
-        applyFilters();
-        
-        setTimeout(() => {
-            initCharts();
-        }, 100);
-    }
-}
     </script>
 </body>
 </html>
