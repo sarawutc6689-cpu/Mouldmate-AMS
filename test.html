@@ -969,87 +969,115 @@
 
         // โหลดข้อมูลจาก Google Sheets
         async function loadFromGoogleSheets() {
-            console.log('กำลังโหลดข้อมูลจาก Google Sheets...');
-            
-            // วิธีที่ 1: ใช้ CSV export
-            try {
-                const csvUrl = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv`;
-                console.log('กำลังโหลดจาก:', csvUrl);
-                
-                const response = await fetch(csvUrl);
-                
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-                
-                const csvText = await response.text();
-                console.log('ได้รับ CSV text:', csvText.substring(0, 200));
-                
-                return parseCSVData(csvText);
-                
-            } catch (error) {
-                console.error('CSV method failed:', error);
-                
-                // วิธีที่ 2: ใช้ Google Apps Script
-                try {
-                    const scriptUrl = 'https://script.google.com/macros/s/AKfycbzcMdFcpQkAxIbb0iEJJfZ8fD0YgiGUetRkkw1UyMv7uY3tlza345UoL1uNrNbOUKRx/exec';
-                    const response = await fetch(`${scriptUrl}?action=getAllData`);
-                    
-                    if (!response.ok) {
-                        throw new Error(`HTTP error! status: ${response.status}`);
-                    }
-                    
-                    const result = await response.json();
-                    console.log('Apps Script result:', result);
-                    
-                    if (result.success && result.data) {
-                        return result.data;
-                    } else {
-                        throw new Error('Invalid response from Apps Script');
-                    }
-                    
-                } catch (scriptError) {
-                    console.error('Apps Script method failed:', scriptError);
-                    throw new Error('All data loading methods failed');
-                }
-            }
+    console.log('กำลังโหลดข้อมูลจาก Google Sheets...');
+    
+    try {
+        // วิธีที่ 1: ใช้ CSV export
+        const csvUrl = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv`;
+        console.log('URL ที่ใช้โหลด:', csvUrl);
+        
+        const response = await fetch(csvUrl);
+        
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
         }
+        
+        const csvText = await response.text();
+        console.log('ข้อมูลดิบที่ได้ (200 ตัวแรก):', csvText.substring(0, 200));
+        
+        const data = parseCSVData(csvText);
+        console.log('ข้อมูลที่แปลงแล้ว:', data);
+        
+        if (data.length === 0) {
+            throw new Error('ไม่พบข้อมูลในไฟล์');
+        }
+        
+        return data;
+        
+    } catch (error) {
+        console.error('Error loading from Google Sheets:', error);
+        
+        // ลองวิธีที่ 2: ใช้ Apps Script
+        try {
+            console.log('ลองใช้ Apps Script...');
+            const scriptUrl = 'https://script.google.com/macros/s/AKfycbzcMdFcpQkAxIbb0iEJJfZ8fD0YgiGUetRkkw1UyMv7uY3tlza345UoL1uNrNbOUKRx/exec';
+            const response = await fetch(`${scriptUrl}?action=getAllData`);
+            
+            if (!response.ok) {
+                throw new Error(`Apps Script HTTP error: ${response.status}`);
+            }
+            
+            const result = await response.json();
+            console.log('Apps Script result:', result);
+            
+            if (result.success && result.data) {
+                return result.data;
+            } else {
+                throw new Error('Invalid Apps Script response');
+            }
+            
+        } catch (scriptError) {
+            console.error('Apps Script failed:', scriptError);
+            throw new Error('ไม่สามารถโหลดข้อมูลได้จากทั้งสองวิธี');
+        }
+    }
+}
 
         // แปลง CSV เป็นข้อมูล
-        function parseCSVData(csvText) {
-            const lines = csvText.split('\n').filter(line => line.trim() !== '');
+       function parseCSVData(csvText) {
+    console.log('เริ่มแปลง CSV...');
+    
+    const lines = csvText.split('\n').filter(line => line.trim() !== '');
+    
+    if (lines.length < 2) {
+        console.log('CSV มีน้อยกว่า 2 บรรทัด');
+        return [];
+    }
+    
+    // หา header
+    const headerLine = lines[0];
+    console.log('Header line:', headerLine);
+    
+    // แยก header โดยใช้ regex ที่ดีกว่า
+    const headers = headerLine.match(/(".*?"|[^",]+)(?=\s*,|\s*$)/g) || [];
+    const cleanedHeaders = headers.map(h => h.trim().replace(/^"|"$/g, ''));
+    
+    console.log('Headers found:', cleanedHeaders);
+    
+    const result = [];
+    
+    // แปลงแต่ละแถวข้อมูล
+    for (let i = 1; i < lines.length; i++) {
+        try {
+            const line = lines[i];
+            if (line.trim() === '') continue;
             
-            if (lines.length < 2) {
-                return [];
-            }
+            // แยกค่าโดยใช้ regex เดียวกับ header
+            const values = line.match(/(".*?"|[^",]+)(?=\s*,|\s*$)/g) || [];
+            const cleanedValues = values.map(v => v.trim().replace(/^"|"$/g, ''));
             
-            // แยก header
-            const headers = lines[0].split(',').map(h => h.trim().replace(/"/g, ''));
-            console.log('Headers:', headers);
-            
-            const result = [];
-            
-            // แปลงแต่ละแถว
-            for (let i = 1; i < lines.length; i++) {
-                const line = lines[i];
-                const values = parseCSVLine(line);
-                
-                const row = {};
-                headers.forEach((header, index) => {
-                    if (index < values.length) {
-                        row[header] = values[index] || '';
-                    }
-                });
-                
-                // ตรวจสอบว่ามีข้อมูลสำคัญหรือไม่
-                if (row['name'] || row['ชื่อ-สกุล'] || row['Name']) {
-                    result.push(row);
+            const row = {};
+            cleanedHeaders.forEach((header, index) => {
+                if (index < cleanedValues.length) {
+                    row[header] = cleanedValues[index];
+                } else {
+                    row[header] = '';
                 }
+            });
+            
+            // ตรวจสอบว่ามีข้อมูลหรือไม่
+            if (Object.values(row).some(value => value && value.trim() !== '')) {
+                result.push(row);
             }
             
-            console.log('Parsed data:', result);
-            return result;
+        } catch (error) {
+            console.error(`Error parsing line ${i}:`, error);
         }
+    }
+    
+    console.log(`แปลงข้อมูลสำเร็จ: ${result.length} รายการ`);
+    return result;
+}
 
         // แยกค่าใน CSV line (รองรับค่าที่มี comma อยู่ใน quotes)
         function parseCSVLine(line) {
