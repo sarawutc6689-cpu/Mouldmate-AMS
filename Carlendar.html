@@ -1160,7 +1160,7 @@
             // วันแรกของเดือน (0 = อาทิตย์, 1 = จันทร์, ...)
             let firstDayOfWeek = firstDay.getDay();
             // ปรับให้วันจันทร์เป็นวันแรก
-            firstDayOfWeek = firstDayOfWeek === 0 ? 6 : firstDayOfWeek - 1;
+            firstDayOfWeek = firstDayOfWeek === 0 ? 6 : firstDayOfWeek - 0;
             
             // วันนี้
             const today = new Date();
