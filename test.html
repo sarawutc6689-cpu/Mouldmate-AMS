@@ -344,46 +344,49 @@
             border: 1px solid var(--gray-light);
         }
         
-     /* Report Table */
-.report-table {
-    width: 100%;
-    border-collapse: collapse;
-    min-width: 700px; /* ลดความกว้างต่ำสุดเพราะเอาคอลัมน์ออก */
-}
-
-.report-table th {
-    padding: 15px;
-    text-align: left;
-    font-weight: 600;
-    border-right: 1px solid rgba(255,255,255,0.1);
-}
-
-.report-table th:last-child {
-    border-right: none;
-}
-
-.report-table tbody tr {
-    border-bottom: 1px solid var(--gray-light);
-    transition: var(--transition);
-}
-
-.report-table tbody tr:hover {
-    background-color: rgba(67, 97, 238, 0.05);
-}
-
-.report-table td {
-    padding: 15px;
-    color: var(--dark);
-    vertical-align: top; /* จัดตำแหน่งให้อยู่ด้านบน */
-}
-
-.status-badge {
-    padding: 6px 12px;
-    border-radius: 20px;
-    font-size: 14px;
-    font-weight: 500;
-    display: inline-block;
-}
+        .report-table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 800px;
+        }
+        
+        .report-table thead {
+            background-color: var(--primary);
+            color: white;
+        }
+        
+        .report-table th {
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
+            border-right: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .report-table th:last-child {
+            border-right: none;
+        }
+        
+        .report-table tbody tr {
+            border-bottom: 1px solid var(--gray-light);
+            transition: var(--transition);
+        }
+        
+        .report-table tbody tr:hover {
+            background-color: rgba(67, 97, 238, 0.05);
+        }
+        
+        .report-table td {
+            padding: 15px;
+            color: var(--dark);
+        }
+        
+        .status-badge {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 500;
+            display: inline-block;
+        }
         
         .status-active { background-color: rgba(6, 214, 160, 0.2); color: var(--success); }
         .status-completed { background-color: rgba(17, 138, 178, 0.2); color: var(--info); }
@@ -771,59 +774,59 @@
         </div>
         
         <!-- Report Table -->
-        <!-- Report Table -->
-<div class="report-section">
-    <div class="section-header">
-        <div class="section-title">
-            <i class="fas fa-table"></i> รายการจองรถทั้งหมด
+        <div class="report-section">
+            <div class="section-header">
+                <div class="section-title">
+                    <i class="fas fa-table"></i> รายการจองรถทั้งหมด
+                </div>
+                <div class="export-buttons">
+                    <button class="btn-export btn-pdf" onclick="exportPDF()">
+                        <i class="fas fa-file-pdf"></i> PDF
+                    </button>
+                    <button class="btn-export btn-excel" onclick="exportExcel()">
+                        <i class="fas fa-file-excel"></i> Excel
+                    </button>
+                    <button class="btn-export btn-print" onclick="printReport()">
+                        <i class="fas fa-print"></i> พิมพ์
+                    </button>
+                </div>
+            </div>
+            
+            <div class="table-container">
+                <table class="report-table" id="reportTable">
+                    <thead>
+                        <tr>
+                            <th>เลขที่จอง</th>
+                            <th>ผู้จอง</th>
+                            <th>แผนก</th>
+                            <th>รถที่จอง</th>
+                            <th>วันที่จอง</th>
+                            <th>เวลาจอง</th>
+                            <th>สถานะ</th>
+                            <th>เหตุผล</th>
+                        </tr>
+                    </thead>
+                    <tbody id="reportTableBody">
+                        <!-- จะถูกเติมข้อมูลด้วย JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+            
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 20px; padding-top: 15px; border-top: 1px solid var(--gray-light);">
+                <div style="color: var(--gray); font-size: 14px;">
+                    แสดง <span id="rowCount">0</span> รายการจากทั้งหมด <span id="totalRows">0</span> รายการ
+                </div>
+                <div style="display: flex; gap: 10px;">
+                    <button class="btn-outline" onclick="prevPage()" style="padding: 8px 15px;">
+                        <i class="fas fa-chevron-left"></i> ก่อนหน้า
+                    </button>
+                    <span style="padding: 8px 15px;">หน้า <span id="currentPage">1</span></span>
+                    <button class="btn-outline" onclick="nextPage()" style="padding: 8px 15px;">
+                        ถัดไป <i class="fas fa-chevron-right"></i>
+                    </button>
+                </div>
+            </div>
         </div>
-        <div class="export-buttons">
-            <button class="btn-export btn-pdf" onclick="exportPDF()">
-                <i class="fas fa-file-pdf"></i> PDF
-            </button>
-            <button class="btn-export btn-excel" onclick="exportExcel()">
-                <i class="fas fa-file-excel"></i> Excel
-            </button>
-            <button class="btn-export btn-print" onclick="printReport()">
-                <i class="fas fa-print"></i> พิมพ์
-            </button>
-        </div>
-    </div>
-    
-    <div class="table-container">
-        <table class="report-table" id="reportTable">
-            <thead>
-                <tr>
-                    <th>ผู้จอง</th>
-                    <th>แผนก</th>
-                    <th>รถที่จอง</th>
-                    <th>วันที่จอง</th>
-                    <th>เวลาจอง</th>
-                    <th>สถานะ</th>
-                    <th>เหตุผล</th>
-                </tr>
-            </thead>
-            <tbody id="reportTableBody">
-                <!-- จะถูกเติมข้อมูลด้วย JavaScript -->
-            </tbody>
-        </table>
-    </div>
-    
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 20px; padding-top: 15px; border-top: 1px solid var(--gray-light);">
-        <div style="color: var(--gray); font-size: 14px;">
-            แสดง <span id="rowCount">0</span> รายการจากทั้งหมด <span id="totalRows">0</span> รายการ
-        </div>
-        <div style="display: flex; gap: 10px;">
-            <button class="btn-outline" onclick="prevPage()" style="padding: 8px 15px;">
-                <i class="fas fa-chevron-left"></i> ก่อนหน้า
-            </button>
-            <span style="padding: 8px 15px;">หน้า <span id="currentPage">1</span></span>
-            <button class="btn-outline" onclick="nextPage()" style="padding: 8px 15px;">
-                ถัดไป <i class="fas fa-chevron-right"></i>
-            </button>
-        </div>
-    </div>
-</div>
         
         <!-- Footer -->
         <div class="footer">
@@ -1074,70 +1077,57 @@
         }
 
         // แปลงข้อมูลดิบให้เป็นรูปแบบรายงาน
-      // แปลงข้อมูลดิบให้เป็นรูปแบบรายงาน
-function processRawData(rawData) {
-    console.log('Processing raw data with headers:', rawData.length > 0 ? Object.keys(rawData[0]) : 'No data');
-    
-    const processedData = [];
-    
-    rawData.forEach((item, index) => {
-        try {
-            // ดึงค่าจากคอลัมน์ต่างๆ ตามโครงสร้างจริง
-            const name = item.name || '';
-            const department = item.department || item.section || '';
-            const vehicle = item.choose || '';
-            const startDate = item.rentStartdate || '';
-            const endDate = item.rentEnddate || '';
-            const startTime = item.startTime || '';
-            const endTime = item.endTime || '';
-            const reason = item.reason || '';
-            const position = item.position || '';
-            const code = item.code || '';
+        function processRawData(rawData) {
+            const processedData = [];
             
-            // แปลงวันที่
-            const formattedStartDate = parseDate(startDate);
-            const formattedEndDate = parseDate(endDate);
-            
-            // กำหนดสถานะ
-            let status = 'completed'; // ค่าเริ่มต้น
-            const today = new Date().toISOString().split('T')[0];
-            
-            if (formattedStartDate && formattedEndDate) {
-                if (today >= formattedStartDate && today <= formattedEndDate) {
-                    status = 'active';
-                } else if (today > formattedEndDate) {
-                    status = 'completed';
+            rawData.forEach((item, index) => {
+                // ดึงค่าจากคอลัมน์ต่างๆ
+                const name = item.name || item['ชื่อ-สกุล'] || item['Name'] || item['ชื่อ'] || '';
+                const department = item.department || item['แผนก'] || item['Department'] || '';
+                const vehicle = item.choose || item['รถที่เลือก'] || item['vehicle'] || item['Choose'] || '';
+                const startDate = item.rentStartdate || item['วันที่เริ่ม'] || item['startDate'] || '';
+                const endDate = item.rentEnddate || item['วันที่สิ้นสุด'] || item['endDate'] || '';
+                const startTime = item.startTime || item['เวลาเริ่ม'] || '';
+                const endTime = item.endTime || item['เวลาสิ้นสุด'] || '';
+                const reason = item.reason || item['เหตุผล'] || item['Reason'] || '';
+                
+                // แปลงวันที่
+                const formattedStartDate = parseDate(startDate);
+                const formattedEndDate = parseDate(endDate);
+                
+                // กำหนดสถานะ
+                let status = 'completed'; // ค่าเริ่มต้น
+                const today = new Date().toISOString().split('T')[0];
+                
+                if (formattedStartDate && formattedEndDate) {
+                    if (today >= formattedStartDate && today <= formattedEndDate) {
+                        status = 'active';
+                    } else if (today > formattedEndDate) {
+                        status = 'completed';
+                    }
                 }
-            }
+                
+                // สร้างข้อมูลรายงาน
+                const reportItem = {
+                    id: `BK${String(index + 1).padStart(3, '0')}`,
+                    name: name,
+                    department: department || 'ไม่ระบุ',
+                    vehicle: vehicle || 'ไม่ระบุ',
+                    date: formatDisplayDate(formattedStartDate, formattedEndDate),
+                    time: formatTime(startTime, endTime),
+                    status: status,
+                    reason: reason || 'ไม่ระบุ',
+                    rawStartDate: formattedStartDate,
+                    rawEndDate: formattedEndDate,
+                    rawStartTime: startTime,
+                    rawEndTime: endTime
+                };
+                
+                processedData.push(reportItem);
+            });
             
-            // สร้างข้อมูลรายงาน
-            const reportItem = {
-                id: `BK${String(index + 1).padStart(3, '0')}`, // ยังเก็บ id ไว้แต่ไม่แสดง
-                name: name || 'ไม่ระบุชื่อ',
-                department: department || 'ไม่ระบุแผนก',
-                vehicle: vehicle || 'ไม่ระบุรถ',
-                date: formatDisplayDate(formattedStartDate, formattedEndDate),
-                time: formatTime(startTime, endTime),
-                status: status,
-                reason: reason || 'ไม่ระบุเหตุผล',
-                position: position,
-                code: code,
-                rawStartDate: formattedStartDate,
-                rawEndDate: formattedEndDate,
-                rawStartTime: startTime,
-                rawEndTime: endTime
-            };
-            
-            processedData.push(reportItem);
-            
-        } catch (error) {
-            console.error(`Error processing item ${index}:`, error, item);
+            return processedData;
         }
-    });
-    
-    console.log('Processed data:', processedData);
-    return processedData;
-}
 
         // แปลงรูปแบบวันที่
         function parseDate(dateStr) {
@@ -1432,67 +1422,64 @@ function processRawData(rawData) {
             });
         }
 
-       function renderTable() {
-    const startIndex = (currentPage - 1) * itemsPerPage;
-    const endIndex = startIndex + itemsPerPage;
-    const pageData = filteredData.slice(startIndex, endIndex);
-    
-    let tableHTML = '';
-    
-    if (pageData.length === 0) {
-        tableHTML = `
-            <tr>
-                <td colspan="7" style="text-align: center; padding: 40px; color: var(--gray);">
-                    <i class="fas fa-database" style="font-size: 48px; margin-bottom: 15px;"></i>
-                    <div>ไม่พบข้อมูลการจอง</div>
-                </td>
-            </tr>
-        `;
-    } else {
-        pageData.forEach(item => {
-            let statusBadge = '';
-            let statusText = '';
+        function renderTable() {
+            const startIndex = (currentPage - 1) * itemsPerPage;
+            const endIndex = startIndex + itemsPerPage;
+            const pageData = filteredData.slice(startIndex, endIndex);
             
-            switch(item.status) {
-                case 'active':
-                    statusBadge = 'status-active';
-                    statusText = 'กำลังใช้งาน';
-                    break;
-                case 'completed':
-                    statusBadge = 'status-completed';
-                    statusText = 'เสร็จสิ้น';
-                    break;
-                case 'cancelled':
-                    statusBadge = 'status-cancelled';
-                    statusText = 'ยกเลิก';
-                    break;
+            let tableHTML = '';
+            
+            if (pageData.length === 0) {
+                tableHTML = `
+                    <tr>
+                        <td colspan="8" style="text-align: center; padding: 40px; color: var(--gray);">
+                            <i class="fas fa-database" style="font-size: 48px; margin-bottom: 15px;"></i>
+                            <div>ไม่พบข้อมูลการจอง</div>
+                        </td>
+                    </tr>
+                `;
+            } else {
+                pageData.forEach(item => {
+                    let statusBadge = '';
+                    let statusText = '';
+                    
+                    switch(item.status) {
+                        case 'active':
+                            statusBadge = 'status-active';
+                            statusText = 'กำลังใช้งาน';
+                            break;
+                        case 'completed':
+                            statusBadge = 'status-completed';
+                            statusText = 'เสร็จสิ้น';
+                            break;
+                        case 'cancelled':
+                            statusBadge = 'status-cancelled';
+                            statusText = 'ยกเลิก';
+                            break;
+                    }
+                    
+                    tableHTML += `
+                        <tr>
+                            <td>${item.id}</td>
+                            <td>${item.name}</td>
+                            <td>${item.department}</td>
+                            <td>${item.vehicle}</td>
+                            <td>${item.date}</td>
+                            <td>${item.time}</td>
+                            <td><span class="status-badge ${statusBadge}">${statusText}</span></td>
+                            <td>${item.reason}</td>
+                        </tr>
+                    `;
+                });
             }
             
-            tableHTML += `
-                <tr>
-                    <td>
-                        <div style="font-weight: 600; margin-bottom: 5px;">${item.name}</div>
-                        ${item.code ? `<div style="font-size: 12px; color: var(--gray);">รหัส: ${item.code}</div>` : ''}
-                        ${item.position ? `<div style="font-size: 12px; color: var(--gray);">ตำแหน่ง: ${item.position}</div>` : ''}
-                    </td>
-                    <td>${item.department}</td>
-                    <td><strong>${item.vehicle}</strong></td>
-                    <td>${item.date}</td>
-                    <td>${item.time}</td>
-                    <td><span class="status-badge ${statusBadge}">${statusText}</span></td>
-                    <td>${item.reason}</td>
-                </tr>
-            `;
-        });
-    }
-    
-    elements.reportTableBody.innerHTML = tableHTML;
-    
-    // อัปเดตข้อมูลเพจ
-    elements.rowCount.textContent = pageData.length;
-    elements.totalRows.textContent = filteredData.length;
-    elements.currentPage.textContent = currentPage;
-}
+            elements.reportTableBody.innerHTML = tableHTML;
+            
+            // อัปเดตข้อมูลเพจ
+            elements.rowCount.textContent = pageData.length;
+            elements.totalRows.textContent = filteredData.length;
+            elements.currentPage.textContent = currentPage;
+        }
 
         function prevPage() {
             if (currentPage > 1) {
@@ -1794,41 +1781,42 @@ function processRawData(rawData) {
         }
 
         function exportExcel() {
-    // สร้าง CSV สำหรับส่งออก
-    const headers = ['ผู้จอง', 'แผนก', 'รถที่จอง', 'วันที่จอง', 'เวลาจอง', 'สถานะ', 'เหตุผล'];
-    const csvRows = [];
-    
-    // เพิ่ม header
-    csvRows.push(headers.join(','));
-    
-    // เพิ่มข้อมูล
-    filteredData.forEach(item => {
-        const statusText = item.status === 'active' ? 'กำลังใช้งาน' : 
-                         item.status === 'completed' ? 'เสร็จสิ้น' : 'ยกเลิก';
-        
-        const row = [
-            `"${item.name}"`,
-            `"${item.department}"`,
-            `"${item.vehicle}"`,
-            `"${item.date}"`,
-            `"${item.time}"`,
-            `"${statusText}"`,
-            `"${item.reason}"`
-        ];
-        
-        csvRows.push(row.join(','));
-    });
-    
-    const csvContent = csvRows.join('\n');
-    const blob = new Blob(['\ufeff' + csvContent], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = `รายงานจองรถ_${new Date().toISOString().split('T')[0]}.csv`;
-    link.click();
-    
-    showMessage('ส่งออกไฟล์ CSV สำเร็จ', 'success');
-}
+            // สร้าง CSV สำหรับส่งออก
+            const headers = ['เลขที่จอง', 'ผู้จอง', 'แผนก', 'รถที่จอง', 'วันที่จอง', 'เวลาจอง', 'สถานะ', 'เหตุผล'];
+            const csvRows = [];
+            
+            // เพิ่ม header
+            csvRows.push(headers.join(','));
+            
+            // เพิ่มข้อมูล
+            filteredData.forEach(item => {
+                const statusText = item.status === 'active' ? 'กำลังใช้งาน' : 
+                                 item.status === 'completed' ? 'เสร็จสิ้น' : 'ยกเลิก';
+                
+                const row = [
+                    item.id,
+                    `"${item.name}"`,
+                    `"${item.department}"`,
+                    `"${item.vehicle}"`,
+                    `"${item.date}"`,
+                    `"${item.time}"`,
+                    `"${statusText}"`,
+                    `"${item.reason}"`
+                ];
+                
+                csvRows.push(row.join(','));
+            });
+            
+            const csvContent = csvRows.join('\n');
+            const blob = new Blob(['\ufeff' + csvContent], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `รายงานจองรถ_${new Date().toISOString().split('T')[0]}.csv`;
+            link.click();
+            
+            showMessage('ส่งออกไฟล์ CSV สำเร็จ', 'success');
+        }
 
         function printReport() {
             window.print();
