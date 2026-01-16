@@ -1544,35 +1544,7 @@ function updateDepartmentOptions() {
                     statusText = 'รออนุมัติ';
             }
             
-            // เพิ่มข้อมูลเพิ่มเติม
-            const positionInfo = item.position ? `<br><small>ตำแหน่ง: ${item.position}</small>` : '';
-            const codeInfo = item.code ? `<br><small>รหัส: ${item.code}</small>` : '';
-            const approvalInfo = item.approval ? `<br><small>การอนุมัติ: ${item.approval}</small>` : '';
-            
-            tableHTML += `
-                <tr>
-                    <td>${item.id}</td>
-                    <td>
-                        <strong>${item.name}</strong>
-                        ${positionInfo}
-                        ${codeInfo}
-                    </td>
-                    <td>${item.department}</td>
-                    <td><strong>${item.vehicle}</strong></td>
-                    <td>${item.date}</td>
-                    <td>${item.time}</td>
-                    <td>
-                        <span class="status-badge ${statusBadge}">${statusText}</span>
-                        ${approvalInfo}
-                    </td>
-                    <td>${item.reason}</td>
-                </tr>
-            `;
-        });
-    }
-    
-    elements.reportTableBody.innerHTML = tableHTML;
-    
+          
     // อัปเดตข้อมูลเพจ
     elements.rowCount.textContent = pageData.length;
     elements.totalRows.textContent = filteredData.length;
