@@ -3,10 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard - Car Rent System</title>
+    <title>ระบบอนุมัติการจองรถ</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600&display=swap" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root {
             --primary: #2c3e50;
@@ -33,86 +32,48 @@
         }
         
         .dashboard-container {
-            display: grid;
-            grid-template-columns: 250px 1fr;
-            min-height: 100vh;
-        }
-        
-        /* Sidebar */
-        .sidebar {
-            background: var(--primary);
-            color: white;
-            padding: 20px 0;
-            box-shadow: 3px 0 10px rgba(0,0,0,0.1);
-        }
-        
-        .logo {
-            display: flex;
-            align-items: center;
-            padding: 0 20px 30px;
-            border-bottom: 1px solid rgba(255,255,255,0.1);
-        }
-        
-        .logo i {
-            font-size: 2rem;
-            margin-right: 10px;
-            color: var(--secondary);
-        }
-        
-        .logo h1 {
-            font-size: 1.5rem;
-            font-weight: 600;
-        }
-        
-        .nav-menu {
-            list-style: none;
-            margin-top: 30px;
-        }
-        
-        .nav-item {
-            padding: 15px 20px;
-            transition: all 0.3s ease;
-        }
-        
-        .nav-item:hover {
-            background-color: rgba(255,255,255,0.1);
-        }
-        
-        .nav-item.active {
-            background-color: var(--secondary);
-            border-left: 4px solid var(--accent);
-        }
-        
-        .nav-item a {
-            color: white;
-            text-decoration: none;
-            display: flex;
-            align-items: center;
-        }
-        
-        .nav-item i {
-            margin-right: 10px;
-            font-size: 1.2rem;
-        }
-        
-        /* Main Content */
-        .main-content {
+            max-width: 1400px;
+            margin: 0 auto;
             padding: 20px;
-            overflow-y: auto;
         }
         
+        /* Header */
         .header {
             display: flex;
             justify-content: space-between;
             align-items: center;
             margin-bottom: 30px;
             padding-bottom: 20px;
-            border-bottom: 1px solid #e0e0e0;
+            border-bottom: 2px solid #e0e0e0;
         }
         
-        .header h2 {
+        .logo-section {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .logo {
+            width: 50px;
+            height: 50px;
+            background: var(--secondary);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.5rem;
+        }
+        
+        .header-text h1 {
             font-size: 1.8rem;
             color: var(--primary);
+            margin-bottom: 5px;
+        }
+        
+        .header-text p {
+            color: var(--gray);
+            font-size: 0.9rem;
         }
         
         .header-controls {
@@ -141,6 +102,24 @@
             background-color: #2980b9;
         }
         
+        .btn-success {
+            background-color: var(--success);
+            color: white;
+        }
+        
+        .btn-success:hover {
+            background-color: #27ae60;
+        }
+        
+        .btn-danger {
+            background-color: var(--accent);
+            color: white;
+        }
+        
+        .btn-danger:hover {
+            background-color: #c0392b;
+        }
+        
         .btn-secondary {
             background-color: var(--light);
             color: var(--dark);
@@ -153,7 +132,7 @@
         /* Stats Cards */
         .stats-container {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
             gap: 20px;
             margin-bottom: 30px;
         }
@@ -163,84 +142,73 @@
             border-radius: 10px;
             padding: 20px;
             box-shadow: 0 5px 15px rgba(0,0,0,0.05);
-            display: flex;
-            align-items: center;
-            transition: transform 0.3s ease;
+            text-align: center;
         }
         
-        .stat-card:hover {
-            transform: translateY(-5px);
+        .stat-card.pending {
+            border-top: 4px solid var(--warning);
         }
         
-        .stat-icon {
-            width: 60px;
-            height: 60px;
-            border-radius: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin-right: 15px;
-            font-size: 1.8rem;
+        .stat-card.approved {
+            border-top: 4px solid var(--success);
         }
         
-        .stat-info h3 {
-            font-size: 2rem;
+        .stat-card.rejected {
+            border-top: 4px solid var(--accent);
+        }
+        
+        .stat-card.total {
+            border-top: 4px solid var(--secondary);
+        }
+        
+        .stat-card h3 {
+            font-size: 2.2rem;
             color: var(--primary);
             margin-bottom: 5px;
         }
         
-        .stat-info p {
+        .stat-card p {
             color: var(--gray);
             font-size: 0.9rem;
         }
         
-        /* Charts Container */
-        .charts-container {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
+        /* Filters */
+        .filters-container {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+            margin-bottom: 30px;
+            display: flex;
+            flex-wrap: wrap;
             gap: 20px;
-            margin-bottom: 30px;
-        }
-        
-        .chart-card {
-            background: white;
-            border-radius: 10px;
-            padding: 20px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
-        }
-        
-        .chart-header {
-            display: flex;
-            justify-content: space-between;
             align-items: center;
-            margin-bottom: 20px;
         }
         
-        .chart-header h3 {
-            color: var(--primary);
-        }
-        
-        /* Table Container */
-        .table-container {
-            background: white;
-            border-radius: 10px;
-            overflow: hidden;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
-            margin-bottom: 30px;
-        }
-        
-        .table-header {
+        .filter-group {
             display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 20px;
-            background-color: #f8f9fa;
-            border-bottom: 1px solid #e0e0e0;
+            flex-direction: column;
+            flex: 1;
+            min-width: 200px;
+        }
+        
+        .filter-group label {
+            margin-bottom: 5px;
+            font-weight: 500;
+            color: var(--dark);
+        }
+        
+        .filter-select {
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            background-color: white;
+            font-size: 0.9rem;
         }
         
         .search-box {
             position: relative;
-            width: 300px;
+            flex: 2;
         }
         
         .search-box input {
@@ -257,6 +225,24 @@
             top: 50%;
             transform: translateY(-50%);
             color: var(--gray);
+        }
+        
+        /* Table Container */
+        .table-container {
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+            margin-bottom: 30px;
+        }
+        
+        .table-header {
+            padding: 20px;
+            background-color: #f8f9fa;
+            border-bottom: 1px solid #e0e0e0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
         
         table {
@@ -286,6 +272,59 @@
         
         td {
             padding: 15px;
+            vertical-align: top;
+        }
+        
+        .booking-info {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .booking-code {
+            font-weight: 600;
+            color: var(--primary);
+            font-size: 1rem;
+        }
+        
+        .booking-name {
+            font-size: 0.9rem;
+            color: var(--dark);
+        }
+        
+        .booking-department {
+            font-size: 0.8rem;
+            color: var(--gray);
+        }
+        
+        .date-info {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .date-range {
+            font-weight: 500;
+            color: var(--primary);
+        }
+        
+        .time-range {
+            font-size: 0.8rem;
+            color: var(--gray);
+        }
+        
+        .car-type {
+            padding: 5px 10px;
+            background-color: rgba(52, 152, 219, 0.1);
+            color: var(--secondary);
+            border-radius: 5px;
+            font-size: 0.8rem;
+            display: inline-block;
+        }
+        
+        .reason-text {
+            max-width: 300px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
         }
         
         .status {
@@ -295,19 +334,58 @@
             font-weight: 500;
         }
         
-        .status-approved {
-            background-color: rgba(46, 204, 113, 0.2);
-            color: #27ae60;
-        }
-        
         .status-pending {
             background-color: rgba(243, 156, 18, 0.2);
             color: #d35400;
         }
         
+        .status-approved {
+            background-color: rgba(46, 204, 113, 0.2);
+            color: #27ae60;
+        }
+        
         .status-rejected {
             background-color: rgba(231, 76, 60, 0.2);
             color: #c0392b;
+        }
+        
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .action-btn {
+            padding: 8px 15px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            transition: all 0.3s ease;
+        }
+        
+        .action-btn.approve {
+            background-color: rgba(46, 204, 113, 0.1);
+            color: #27ae60;
+            border: 1px solid #27ae60;
+        }
+        
+        .action-btn.approve:hover {
+            background-color: #27ae60;
+            color: white;
+        }
+        
+        .action-btn.reject {
+            background-color: rgba(231, 76, 60, 0.1);
+            color: #c0392b;
+            border: 1px solid #c0392b;
+        }
+        
+        .action-btn.reject:hover {
+            background-color: #c0392b;
+            color: white;
         }
         
         /* Modal */
@@ -327,7 +405,7 @@
         .modal-content {
             background-color: white;
             width: 90%;
-            max-width: 800px;
+            max-width: 600px;
             border-radius: 10px;
             overflow: hidden;
             max-height: 90vh;
@@ -355,77 +433,36 @@
             padding: 20px;
         }
         
-        .form-row {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
-            margin-bottom: 20px;
+        .booking-details {
+            margin-bottom: 30px;
         }
         
-        .form-group {
+        .detail-row {
+            display: flex;
             margin-bottom: 15px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #eee;
         }
         
-        .form-group label {
-            display: block;
-            margin-bottom: 5px;
+        .detail-label {
+            width: 150px;
             font-weight: 500;
+            color: var(--dark);
         }
         
-        .form-group input, .form-group select, .form-group textarea {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            font-size: 0.9rem;
+        .detail-value {
+            flex: 1;
+            color: #555;
         }
         
-        /* Responsive */
-        @media (max-width: 1100px) {
-            .charts-container {
-                grid-template-columns: 1fr;
-            }
+        .modal-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-top: 20px;
         }
         
-        @media (max-width: 900px) {
-            .dashboard-container {
-                grid-template-columns: 1fr;
-            }
-            
-            .sidebar {
-                display: none;
-            }
-            
-            .form-row {
-                grid-template-columns: 1fr;
-            }
-        }
-        
-        @media (max-width: 768px) {
-            .header {
-                flex-direction: column;
-                align-items: flex-start;
-                gap: 15px;
-            }
-            
-            .header-controls {
-                width: 100%;
-                flex-wrap: wrap;
-            }
-            
-            .search-box {
-                width: 100%;
-            }
-            
-            .table-container {
-                overflow-x: auto;
-            }
-            
-            table {
-                min-width: 800px;
-            }
-        }
-        
+        /* Loading and Error States */
         .loading {
             text-align: center;
             padding: 50px;
@@ -438,355 +475,188 @@
             color: var(--gray);
         }
         
-        .filter-container {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 20px;
-            flex-wrap: wrap;
-        }
-        
-        .filter-select {
-            padding: 8px 15px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            background-color: white;
-        }
-        
-        .approval-filter {
-            display: flex;
-            gap: 10px;
-            align-items: center;
-        }
-        
-        .approval-btn {
-            padding: 5px 15px;
-            border-radius: 20px;
-            border: none;
-            font-size: 0.8rem;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-        
-        .approval-btn.active {
-            color: white;
-        }
-        
-        .approval-btn-all {
-            background-color: var(--gray);
-            color: white;
-        }
-        
-        .approval-btn-approved {
-            background-color: transparent;
-            color: #27ae60;
-            border: 1px solid #27ae60;
-        }
-        
-        .approval-btn-approved.active {
-            background-color: #27ae60;
-            color: white;
-        }
-        
-        .approval-btn-pending {
-            background-color: transparent;
-            color: #f39c12;
-            border: 1px solid #f39c12;
-        }
-        
-        .approval-btn-pending.active {
-            background-color: #f39c12;
-            color: white;
-        }
-        
-        .approval-btn-rejected {
-            background-color: transparent;
-            color: #e74c3c;
-            border: 1px solid #e74c3c;
-        }
-        
-        .approval-btn-rejected.active {
-            background-color: #e74c3c;
-            color: white;
+        /* Responsive */
+        @media (max-width: 768px) {
+            .header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 15px;
+            }
+            
+            .header-controls {
+                width: 100%;
+                flex-wrap: wrap;
+            }
+            
+            .filters-container {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .search-box {
+                width: 100%;
+            }
+            
+            .table-container {
+                overflow-x: auto;
+            }
+            
+            table {
+                min-width: 1000px;
+            }
+            
+            .action-buttons {
+                flex-direction: column;
+            }
         }
     </style>
 </head>
 <body>
     <div class="dashboard-container">
-        <!-- Sidebar -->
-        <aside class="sidebar">
-            <div class="logo">
-                <i class="fas fa-car"></i>
-                <h1>Car Rent System</h1>
+        <!-- Header -->
+        <header class="header">
+            <div class="logo-section">
+                <div class="logo">
+                    <i class="fas fa-check-circle"></i>
+                </div>
+                <div class="header-text">
+                    <h1>ระบบอนุมัติการจองรถ</h1>
+                    <p>ตรวจสอบและอนุมัติการจองรถของพนักงาน</p>
+                </div>
             </div>
-            <ul class="nav-menu">
-                <li class="nav-item active">
-                    <a href="#">
-                        <i class="fas fa-tachometer-alt"></i>
-                        <span>Dashboard</span>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a href="#">
-                        <i class="fas fa-calendar-alt"></i>
-                        <span>การจองทั้งหมด</span>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a href="#">
-                        <i class="fas fa-car"></i>
-                        <span>รายการรถ</span>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a href="#">
-                        <i class="fas fa-users"></i>
-                        <span>พนักงาน</span>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a href="#">
-                        <i class="fas fa-chart-bar"></i>
-                        <span>รายงาน</span>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a href="#">
-                        <i class="fas fa-cog"></i>
-                        <span>ตั้งค่า</span>
-                    </a>
-                </li>
-            </ul>
-        </aside>
+            <div class="header-controls">
+                <button class="btn btn-secondary" id="refreshBtn">
+                    <i class="fas fa-sync-alt"></i> Refresh
+                </button>
+                <button class="btn btn-primary" id="viewAllBtn">
+                    <i class="fas fa-list"></i> ดูทั้งหมด
+                </button>
+            </div>
+        </header>
 
-        <!-- Main Content -->
-        <main class="main-content">
-            <!-- Header -->
-            <header class="header">
-                <h2>Dashboard - ระบบจองรถ</h2>
-                <div class="header-controls">
-                    <button class="btn btn-secondary" id="refreshBtn">
-                        <i class="fas fa-sync-alt"></i> Refresh
-                    </button>
-                    <button class="btn btn-primary" id="addBookingBtn">
-                        <i class="fas fa-plus"></i> จองรถใหม่
-                    </button>
-                </div>
-            </header>
+        <!-- Stats Cards -->
+        <section class="stats-container">
+            <div class="stat-card total">
+                <h3 id="totalBookings">0</h3>
+                <p>การจองทั้งหมด</p>
+            </div>
+            <div class="stat-card pending">
+                <h3 id="pendingBookings">0</h3>
+                <p>รอการอนุมัติ</p>
+            </div>
+            <div class="stat-card approved">
+                <h3 id="approvedBookings">0</h3>
+                <p>อนุมัติแล้ว</p>
+            </div>
+            <div class="stat-card rejected">
+                <h3 id="rejectedBookings">0</h3>
+                <p>ปฏิเสธแล้ว</p>
+            </div>
+        </section>
 
-            <!-- Stats Cards -->
-            <section class="stats-container">
-                <div class="stat-card">
-                    <div class="stat-icon" style="background-color: rgba(52, 152, 219, 0.2); color: var(--secondary);">
-                        <i class="fas fa-car"></i>
-                    </div>
-                    <div class="stat-info">
-                        <h3 id="totalBookings">0</h3>
-                        <p>การจองทั้งหมด</p>
-                    </div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-icon" style="background-color: rgba(46, 204, 113, 0.2); color: var(--success);">
-                        <i class="fas fa-check-circle"></i>
-                    </div>
-                    <div class="stat-info">
-                        <h3 id="approvedBookings">0</h3>
-                        <p>อนุมัติแล้ว</p>
-                    </div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-icon" style="background-color: rgba(243, 156, 18, 0.2); color: var(--warning);">
-                        <i class="fas fa-clock"></i>
-                    </div>
-                    <div class="stat-info">
-                        <h3 id="pendingBookings">0</h3>
-                        <p>รออนุมัติ</p>
-                    </div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-icon" style="background-color: rgba(231, 76, 60, 0.2); color: var(--accent);">
-                        <i class="fas fa-times-circle"></i>
-                    </div>
-                    <div class="stat-info">
-                        <h3 id="rejectedBookings">0</h3>
-                        <p>ปฏิเสธ</p>
-                    </div>
-                </div>
-            </section>
-
-            <!-- Charts -->
-            <section class="charts-container">
-                <div class="chart-card">
-                    <div class="chart-header">
-                        <h3>สถานะการจอง</h3>
-                    </div>
-                    <canvas id="approvalChart"></canvas>
-                </div>
-                <div class="chart-card">
-                    <div class="chart-header">
-                        <h3>การจองรถตามแผนก</h3>
-                    </div>
-                    <canvas id="departmentChart"></canvas>
-                </div>
-            </section>
-
-            <!-- Filters -->
-            <div class="filter-container">
-                <div class="approval-filter">
-                    <span>สถานะ:</span>
-                    <button class="approval-btn approval-btn-all active" data-filter="all">ทั้งหมด</button>
-                    <button class="approval-btn approval-btn-approved" data-filter="approved">อนุมัติแล้ว</button>
-                    <button class="approval-btn approval-btn-pending" data-filter="pending">รออนุมัติ</button>
-                    <button class="approval-btn approval-btn-rejected" data-filter="rejected">ปฏิเสธ</button>
-                </div>
-                
+        <!-- Filters -->
+        <section class="filters-container">
+            <div class="search-box">
+                <i class="fas fa-search"></i>
+                <input type="text" id="searchInput" placeholder="ค้นหาชื่อพนักงาน, รหัส, หรือแผนก...">
+            </div>
+            <div class="filter-group">
+                <label for="statusFilter">สถานะ</label>
+                <select class="filter-select" id="statusFilter">
+                    <option value="all">ทั้งหมด</option>
+                    <option value="pending">รออนุมัติ</option>
+                    <option value="approved">อนุมัติแล้ว</option>
+                    <option value="rejected">ปฏิเสธแล้ว</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label for="departmentFilter">แผนก</label>
                 <select class="filter-select" id="departmentFilter">
                     <option value="all">ทุกแผนก</option>
-                    <!-- Options will be populated dynamically -->
-                </select>
-                
-                <select class="filter-select" id="monthFilter">
-                    <option value="all">ทุกเดือน</option>
-                    <option value="1">มกราคม</option>
-                    <option value="2">กุมภาพันธ์</option>
-                    <option value="3">มีนาคม</option>
-                    <option value="4">เมษายน</option>
-                    <option value="5">พฤษภาคม</option>
-                    <option value="6">มิถุนายน</option>
-                    <option value="7">กรกฎาคม</option>
-                    <option value="8">สิงหาคม</option>
-                    <option value="9">กันยายน</option>
-                    <option value="10">ตุลาคม</option>
-                    <option value="11">พฤศจิกายน</option>
-                    <option value="12">ธันวาคม</option>
                 </select>
             </div>
+            <div class="filter-group">
+                <label for="dateFilter">วันที่จอง</label>
+                <select class="filter-select" id="dateFilter">
+                    <option value="all">ทุกวัน</option>
+                    <option value="today">วันนี้</option>
+                    <option value="week">สัปดาห์นี้</option>
+                    <option value="month">เดือนนี้</option>
+                </select>
+            </div>
+        </section>
 
-            <!-- Table -->
-            <section class="table-container">
-                <div class="table-header">
-                    <h3>รายการจองรถล่าสุด</h3>
-                    <div class="search-box">
-                        <i class="fas fa-search"></i>
-                        <input type="text" id="searchInput" placeholder="ค้นหาชื่อพนักงาน, รหัส, หรือเหตุผล...">
-                    </div>
+        <!-- Table -->
+        <section class="table-container">
+            <div class="table-header">
+                <h3>รายการจองรถ</h3>
+                <div class="table-actions">
+                    <span id="selectedCount">0 รายการที่เลือก</span>
                 </div>
-                <div id="tableContent">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>รหัส</th>
-                                <th>ชื่อพนักงาน</th>
-                                <th>แผนก</th>
-                                <th>ตำแหน่ง</th>
-                                <th>วันที่จอง</th>
-                                <th>วันที่คืน</th>
-                                <th>เหตุผล</th>
-                                <th>สถานะ</th>
-                            </tr>
-                        </thead>
-                        <tbody id="bookingsTableBody">
-                            <!-- Data will be populated here -->
-                            <tr>
-                                <td colspan="8" class="loading">
-                                    <i class="fas fa-spinner fa-spin"></i> กำลังโหลดข้อมูล...
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </section>
-        </main>
+            </div>
+            <div id="tableContent">
+                <table>
+                    <thead>
+                        <tr>
+                            <th style="width: 20px;">
+                                <input type="checkbox" id="selectAllCheckbox">
+                            </th>
+                            <th>ข้อมูลการจอง</th>
+                            <th>วันที่จอง</th>
+                            <th>รถที่จอง</th>
+                            <th>เหตุผล</th>
+                            <th>สถานะ</th>
+                            <th>การดำเนินการ</th>
+                        </tr>
+                    </thead>
+                    <tbody id="bookingsTableBody">
+                        <tr>
+                            <td colspan="7" class="loading">
+                                <i class="fas fa-spinner fa-spin"></i> กำลังโหลดข้อมูล...
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- Bulk Actions -->
+        <div class="filters-container" id="bulkActions" style="display: none;">
+            <h4 style="margin-right: 20px;">ดำเนินการกับรายการที่เลือก:</h4>
+            <button class="btn btn-success" id="bulkApproveBtn">
+                <i class="fas fa-check"></i> อนุมัติทั้งหมด
+            </button>
+            <button class="btn btn-danger" id="bulkRejectBtn">
+                <i class="fas fa-times"></i> ปฏิเสธทั้งหมด
+            </button>
+            <button class="btn btn-secondary" id="clearSelectionBtn">
+                <i class="fas fa-times-circle"></i> ล้างการเลือก
+            </button>
+        </div>
     </div>
 
-    <!-- Add Booking Modal -->
-    <div class="modal" id="addBookingModal">
+    <!-- Approval Modal -->
+    <div class="modal" id="approvalModal">
         <div class="modal-content">
             <div class="modal-header">
-                <h3>จองรถใหม่</h3>
+                <h3 id="modalTitle">รายละเอียดการจอง</h3>
                 <button class="modal-close" id="closeModalBtn">&times;</button>
             </div>
             <div class="modal-body">
-                <form id="bookingForm">
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="employeeCode">รหัสพนักงาน *</label>
-                            <input type="text" id="employeeCode" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="employeeName">ชื่อ-นามสกุล *</label>
-                            <input type="text" id="employeeName" required>
-                        </div>
-                    </div>
-                    
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="department">แผนก *</label>
-                            <select id="department" required>
-                                <option value="">เลือกแผนก</option>
-                                <option value="การเงิน">การเงิน</option>
-                                <option value="บุคคล">บุคคล</option>
-                                <option value="ไอที">ไอที</option>
-                                <option value="การตลาด">การตลาด</option>
-                                <option value="ขาย">ขาย</option>
-                                <option value="บริการ">บริการ</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label for="position">ตำแหน่ง *</label>
-                            <input type="text" id="position" required>
-                        </div>
-                    </div>
-                    
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="contact">ติดต่อ *</label>
-                            <input type="text" id="contact" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="carType">ประเภทรถ *</label>
-                            <select id="carType" required>
-                                <option value="">เลือกรถ</option>
-                                <option value="รถเก๋ง">รถเก๋ง</option>
-                                <option value="รถกระบะ">รถกระบะ</option>
-                                <option value="รถตู้">รถตู้</option>
-                                <option value="รถบัส">รถบัส</option>
-                            </select>
-                        </div>
-                    </div>
-                    
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="rentStartDate">วันที่เริ่มจอง *</label>
-                            <input type="date" id="rentStartDate" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="rentEndDate">วันที่สิ้นสุดจอง *</label>
-                            <input type="date" id="rentEndDate" required>
-                        </div>
-                    </div>
-                    
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="startTime">เวลาเริ่มต้น *</label>
-                            <input type="time" id="startTime" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="endTime">เวลาสิ้นสุด *</label>
-                            <input type="time" id="endTime" required>
-                        </div>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="reason">เหตุผลการจอง *</label>
-                        <textarea id="reason" rows="3" required></textarea>
-                    </div>
-                    
-                    <div class="form-group">
-                        <button type="submit" class="btn btn-primary" style="width: 100%;">
-                            <i class="fas fa-paper-plane"></i> ส่งคำขอจองรถ
-                        </button>
-                    </div>
-                </form>
+                <div class="booking-details" id="bookingDetails">
+                    <!-- Details will be populated here -->
+                </div>
+                <div class="modal-actions">
+                    <button class="btn btn-success" id="approveBtn">
+                        <i class="fas fa-check"></i> อนุมัติ
+                    </button>
+                    <button class="btn btn-danger" id="rejectBtn">
+                        <i class="fas fa-times"></i> ปฏิเสธ
+                    </button>
+                    <button class="btn btn-secondary" id="cancelBtn">
+                        ยกเลิก
+                    </button>
+                </div>
             </div>
         </div>
     </div>
@@ -798,65 +668,68 @@
         // Global variables
         let allBookings = [];
         let filteredBookings = [];
-        let approvalChart = null;
-        let departmentChart = null;
+        let selectedBookings = new Set();
         
         // DOM elements
         const refreshBtn = document.getElementById('refreshBtn');
-        const addBookingBtn = document.getElementById('addBookingBtn');
-        const closeModalBtn = document.getElementById('closeModalBtn');
-        const addBookingModal = document.getElementById('addBookingModal');
-        const bookingForm = document.getElementById('bookingForm');
+        const viewAllBtn = document.getElementById('viewAllBtn');
         const searchInput = document.getElementById('searchInput');
+        const statusFilter = document.getElementById('statusFilter');
         const departmentFilter = document.getElementById('departmentFilter');
-        const monthFilter = document.getElementById('monthFilter');
-        const approvalFilterBtns = document.querySelectorAll('.approval-btn');
+        const dateFilter = document.getElementById('dateFilter');
+        const selectAllCheckbox = document.getElementById('selectAllCheckbox');
+        const bulkActions = document.getElementById('bulkActions');
+        const bulkApproveBtn = document.getElementById('bulkApproveBtn');
+        const bulkRejectBtn = document.getElementById('bulkRejectBtn');
+        const clearSelectionBtn = document.getElementById('clearSelectionBtn');
+        const approvalModal = document.getElementById('approvalModal');
+        const closeModalBtn = document.getElementById('closeModalBtn');
+        const approveBtn = document.getElementById('approveBtn');
+        const rejectBtn = document.getElementById('rejectBtn');
+        const cancelBtn = document.getElementById('cancelBtn');
         
         // Initialize the dashboard
         document.addEventListener('DOMContentLoaded', function() {
             loadBookingsData();
             
-            // Set today's date as default for booking form
-            const today = new Date().toISOString().split('T')[0];
-            document.getElementById('rentStartDate').value = today;
-            document.getElementById('rentEndDate').value = today;
-            
             // Event listeners
             refreshBtn.addEventListener('click', loadBookingsData);
-            addBookingBtn.addEventListener('click', () => addBookingModal.style.display = 'flex');
-            closeModalBtn.addEventListener('click', () => addBookingModal.style.display = 'none');
+            viewAllBtn.addEventListener('click', () => {
+                statusFilter.value = 'all';
+                departmentFilter.value = 'all';
+                dateFilter.value = 'all';
+                searchInput.value = '';
+                filterBookings();
+            });
+            
+            // Filter event listeners
+            searchInput.addEventListener('input', filterBookings);
+            statusFilter.addEventListener('change', filterBookings);
+            departmentFilter.addEventListener('change', filterBookings);
+            dateFilter.addEventListener('change', filterBookings);
+            
+            // Selection event listeners
+            selectAllCheckbox.addEventListener('change', toggleSelectAll);
+            bulkApproveBtn.addEventListener('click', bulkApprove);
+            bulkRejectBtn.addEventListener('click', bulkReject);
+            clearSelectionBtn.addEventListener('click', clearSelection);
+            
+            // Modal event listeners
+            closeModalBtn.addEventListener('click', () => approvalModal.style.display = 'none');
+            cancelBtn.addEventListener('click', () => approvalModal.style.display = 'none');
+            approveBtn.addEventListener('click', approveBooking);
+            rejectBtn.addEventListener('click', rejectBooking);
             
             // Close modal when clicking outside
-            addBookingModal.addEventListener('click', (e) => {
-                if (e.target === addBookingModal) {
-                    addBookingModal.style.display = 'none';
+            approvalModal.addEventListener('click', (e) => {
+                if (e.target === approvalModal) {
+                    approvalModal.style.display = 'none';
                 }
             });
-            
-            // Form submission
-            bookingForm.addEventListener('submit', submitBookingForm);
-            
-            // Search functionality
-            searchInput.addEventListener('input', filterBookings);
-            
-            // Filter functionality
-            departmentFilter.addEventListener('change', filterBookings);
-            monthFilter.addEventListener('change', filterBookings);
-            
-            // Approval filter buttons
-            approvalFilterBtns.forEach(btn => {
-                btn.addEventListener('click', function() {
-                    // Remove active class from all buttons
-                    approvalFilterBtns.forEach(b => b.classList.remove('active'));
-                    
-                    // Add active class to clicked button
-                    this.classList.add('active');
-                    
-                    // Filter bookings
-                    filterBookings();
-                });
-            });
         });
+        
+        // Current booking ID for modal actions
+        let currentBookingId = null;
         
         // Load bookings data from Google Sheets
         async function loadBookingsData() {
@@ -868,20 +741,40 @@
                 const data = await response.json();
                 
                 if (data && data.status === 'success' && data.data) {
-                    allBookings = data.data;
+                    allBookings = processBookingsData(data.data);
                     
                     // Update stats and display
                     updateStats(allBookings);
-                    updateCharts(allBookings);
                     populateDepartmentFilter(allBookings);
-                    displayBookings(allBookings);
+                    filterBookings();
                 } else {
                     throw new Error('Failed to load data');
                 }
             } catch (error) {
                 console.error('Error loading data:', error);
                 showError('ไม่สามารถโหลดข้อมูลได้');
+                
+                // Load sample data for testing
+                loadSampleData();
             }
+        }
+        
+        // Process bookings data
+        function processBookingsData(data) {
+            // Add unique ID to each booking
+            return data.map((booking, index) => {
+                // Generate a unique ID if not exists
+                if (!booking.id) {
+                    booking.id = `booking_${index}_${Date.now()}`;
+                }
+                
+                // Ensure approval status exists
+                if (!booking.approval) {
+                    booking.approval = 'pending';
+                }
+                
+                return booking;
+            });
         }
         
         // Show loading state
@@ -889,7 +782,7 @@
             const tableBody = document.getElementById('bookingsTableBody');
             tableBody.innerHTML = `
                 <tr>
-                    <td colspan="8" class="loading">
+                    <td colspan="7" class="loading">
                         <i class="fas fa-spinner fa-spin"></i> กำลังโหลดข้อมูล...
                     </td>
                 </tr>
@@ -901,7 +794,7 @@
             const tableBody = document.getElementById('bookingsTableBody');
             tableBody.innerHTML = `
                 <tr>
-                    <td colspan="8" class="no-data">
+                    <td colspan="7" class="no-data">
                         <i class="fas fa-exclamation-triangle"></i> ${message}
                     </td>
                 </tr>
@@ -911,105 +804,14 @@
         // Update statistics
         function updateStats(bookings) {
             const total = bookings.length;
-            const approved = bookings.filter(b => b.approval === 'approved').length;
             const pending = bookings.filter(b => b.approval === 'pending').length;
+            const approved = bookings.filter(b => b.approval === 'approved').length;
             const rejected = bookings.filter(b => b.approval === 'rejected').length;
             
             document.getElementById('totalBookings').textContent = total;
-            document.getElementById('approvedBookings').textContent = approved;
             document.getElementById('pendingBookings').textContent = pending;
+            document.getElementById('approvedBookings').textContent = approved;
             document.getElementById('rejectedBookings').textContent = rejected;
-        }
-        
-        // Update charts
-        function updateCharts(bookings) {
-            // Approval status chart
-            const approvalCtx = document.getElementById('approvalChart').getContext('2d');
-            
-            const approvedCount = bookings.filter(b => b.approval === 'approved').length;
-            const pendingCount = bookings.filter(b => b.approval === 'pending').length;
-            const rejectedCount = bookings.filter(b => b.approval === 'rejected').length;
-            
-            if (approvalChart) {
-                approvalChart.destroy();
-            }
-            
-            approvalChart = new Chart(approvalCtx, {
-                type: 'doughnut',
-                data: {
-                    labels: ['อนุมัติแล้ว', 'รออนุมัติ', 'ปฏิเสธ'],
-                    datasets: [{
-                        data: [approvedCount, pendingCount, rejectedCount],
-                        backgroundColor: [
-                            'rgba(46, 204, 113, 0.8)',
-                            'rgba(243, 156, 18, 0.8)',
-                            'rgba(231, 76, 60, 0.8)'
-                        ],
-                        borderColor: [
-                            'rgba(46, 204, 113, 1)',
-                            'rgba(243, 156, 18, 1)',
-                            'rgba(231, 76, 60, 1)'
-                        ],
-                        borderWidth: 1
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    plugins: {
-                        legend: {
-                            position: 'bottom'
-                        }
-                    }
-                }
-            });
-            
-            // Department chart
-            const departmentCtx = document.getElementById('departmentChart').getContext('2d');
-            
-            // Count bookings by department
-            const departmentCounts = {};
-            bookings.forEach(booking => {
-                const dept = booking.department || 'ไม่ระบุ';
-                departmentCounts[dept] = (departmentCounts[dept] || 0) + 1;
-            });
-            
-            const departments = Object.keys(departmentCounts);
-            const counts = departments.map(dept => departmentCounts[dept]);
-            
-            // Generate colors for each department
-            const colors = departments.map((_, i) => {
-                const hue = (i * 137) % 360; // Golden angle distribution
-                return `hsla(${hue}, 70%, 60%, 0.8)`;
-            });
-            
-            if (departmentChart) {
-                departmentChart.destroy();
-            }
-            
-            departmentChart = new Chart(departmentCtx, {
-                type: 'bar',
-                data: {
-                    labels: departments,
-                    datasets: [{
-                        label: 'จำนวนการจอง',
-                        data: counts,
-                        backgroundColor: colors,
-                        borderColor: colors.map(color => color.replace('0.8', '1')),
-                        borderWidth: 1
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            ticks: {
-                                stepSize: 1
-                            }
-                        }
-                    }
-                }
-            });
         }
         
         // Populate department filter dropdown
@@ -1031,6 +833,57 @@
             });
         }
         
+        // Filter bookings based on search and filters
+        function filterBookings() {
+            const searchTerm = searchInput.value.toLowerCase();
+            const selectedStatus = statusFilter.value;
+            const selectedDept = departmentFilter.value;
+            const selectedDate = dateFilter.value;
+            
+            filteredBookings = allBookings.filter(booking => {
+                // Search filter
+                const matchesSearch = !searchTerm || 
+                    (booking.code && booking.code.toLowerCase().includes(searchTerm)) ||
+                    (booking.name && booking.name.toLowerCase().includes(searchTerm)) ||
+                    (booking.department && booking.department.toLowerCase().includes(searchTerm));
+                
+                // Status filter
+                const matchesStatus = selectedStatus === 'all' || booking.approval === selectedStatus;
+                
+                // Department filter
+                const matchesDept = selectedDept === 'all' || booking.department === selectedDept;
+                
+                // Date filter
+                let matchesDate = true;
+                if (selectedDate !== 'all' && booking.rentStartdate) {
+                    const bookingDate = new Date(booking.rentStartdate);
+                    const today = new Date();
+                    
+                    switch(selectedDate) {
+                        case 'today':
+                            matchesDate = bookingDate.toDateString() === today.toDateString();
+                            break;
+                        case 'week':
+                            const weekAgo = new Date();
+                            weekAgo.setDate(today.getDate() - 7);
+                            matchesDate = bookingDate >= weekAgo;
+                            break;
+                        case 'month':
+                            const monthAgo = new Date();
+                            monthAgo.setMonth(today.getMonth() - 1);
+                            matchesDate = bookingDate >= monthAgo;
+                            break;
+                    }
+                }
+                
+                return matchesSearch && matchesStatus && matchesDept && matchesDate;
+            });
+            
+            // Update display with filtered data
+            displayBookings(filteredBookings);
+            updateSelectedCount();
+        }
+        
         // Display bookings in the table
         function displayBookings(bookings) {
             const tableBody = document.getElementById('bookingsTableBody');
@@ -1038,7 +891,7 @@
             if (bookings.length === 0) {
                 tableBody.innerHTML = `
                     <tr>
-                        <td colspan="8" class="no-data">
+                        <td colspan="7" class="no-data">
                             <i class="fas fa-info-circle"></i> ไม่พบข้อมูลการจอง
                         </td>
                     </tr>
@@ -1049,12 +902,9 @@
             // Sort by date (newest first)
             bookings.sort((a, b) => new Date(b.rentStartdate || b.timestamp) - new Date(a.rentStartdate || a.timestamp));
             
-            // Limit to 50 records for performance
-            const displayBookings = bookings.slice(0, 50);
-            
             let html = '';
-            displayBookings.forEach(booking => {
-                // Determine status class
+            bookings.forEach(booking => {
+                // Determine status class and text
                 let statusClass = 'status-pending';
                 let statusText = 'รออนุมัติ';
                 
@@ -1063,7 +913,7 @@
                     statusText = 'อนุมัติแล้ว';
                 } else if (booking.approval === 'rejected') {
                     statusClass = 'status-rejected';
-                    statusText = 'ปฏิเสธ';
+                    statusText = 'ปฏิเสธแล้ว';
                 }
                 
                 // Format date
@@ -1073,189 +923,477 @@
                 const endDate = booking.rentEnddate ? 
                     new Date(booking.rentEnddate).toLocaleDateString('th-TH') : 'ไม่ระบุ';
                 
+                // Format time
+                const startTime = booking.startTime || 'ไม่ระบุ';
+                const endTime = booking.endTime || 'ไม่ระบุ';
+                
                 html += `
-                    <tr>
-                        <td>${booking.code || 'ไม่มีรหัส'}</td>
-                        <td>${booking.name || 'ไม่ระบุ'}</td>
-                        <td>${booking.department || 'ไม่ระบุ'}</td>
-                        <td>${booking.position || 'ไม่ระบุ'}</td>
-                        <td>${startDate}</td>
-                        <td>${endDate}</td>
-                        <td>${booking.reason || 'ไม่ระบุ'}</td>
-                        <td><span class="status ${statusClass}">${statusText}</span></td>
+                    <tr data-id="${booking.id}">
+                        <td>
+                            <input type="checkbox" class="booking-checkbox" ${booking.approval !== 'pending' ? 'disabled' : ''}>
+                        </td>
+                        <td>
+                            <div class="booking-info">
+                                <span class="booking-code">${booking.code || 'ไม่มีรหัส'}</span>
+                                <span class="booking-name">${booking.name || 'ไม่ระบุ'}</span>
+                                <span class="booking-department">${booking.department || 'ไม่ระบุ'} • ${booking.position || 'ไม่ระบุ'}</span>
+                                <span class="booking-department">ติดต่อ: ${booking.contact || 'ไม่ระบุ'}</span>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="date-info">
+                                <span class="date-range">${startDate} - ${endDate}</span>
+                                <span class="time-range">${startTime} - ${endTime}</span>
+                            </div>
+                        </td>
+                        <td>
+                            <span class="car-type">${booking.choose || 'ไม่ระบุ'}</span>
+                        </td>
+                        <td>
+                            <div class="reason-text" title="${booking.reason || 'ไม่ระบุ'}">
+                                ${booking.reason || 'ไม่ระบุ'}
+                            </div>
+                        </td>
+                        <td>
+                            <span class="status ${statusClass}">${statusText}</span>
+                        </td>
+                        <td>
+                            <div class="action-buttons">
+                                <button class="action-btn view" onclick="viewBookingDetails('${booking.id}')">
+                                    <i class="fas fa-eye"></i> ดูรายละเอียด
+                                </button>
+                                ${booking.approval === 'pending' ? `
+                                <button class="action-btn approve" onclick="approveBookingModal('${booking.id}')">
+                                    <i class="fas fa-check"></i> อนุมัติ
+                                </button>
+                                <button class="action-btn reject" onclick="rejectBookingModal('${booking.id}')">
+                                    <i class="fas fa-times"></i> ปฏิเสธ
+                                </button>
+                                ` : ''}
+                            </div>
+                        </td>
                     </tr>
                 `;
             });
             
             tableBody.innerHTML = html;
-        }
-        
-        // Filter bookings based on search and filters
-        function filterBookings() {
-            const searchTerm = searchInput.value.toLowerCase();
-            const selectedDept = departmentFilter.value;
-            const selectedMonth = monthFilter.value;
-            const selectedApproval = document.querySelector('.approval-btn.active').dataset.filter;
             
-            filteredBookings = allBookings.filter(booking => {
-                // Search filter
-                const matchesSearch = !searchTerm || 
-                    (booking.code && booking.code.toLowerCase().includes(searchTerm)) ||
-                    (booking.name && booking.name.toLowerCase().includes(searchTerm)) ||
-                    (booking.reason && booking.reason.toLowerCase().includes(searchTerm));
-                
-                // Department filter
-                const matchesDept = selectedDept === 'all' || booking.department === selectedDept;
-                
-                // Month filter
-                let matchesMonth = true;
-                if (selectedMonth !== 'all' && booking.rentStartdate) {
-                    const bookingMonth = new Date(booking.rentStartdate).getMonth() + 1;
-                    matchesMonth = bookingMonth === parseInt(selectedMonth);
-                }
-                
-                // Approval filter
-                let matchesApproval = true;
-                if (selectedApproval !== 'all') {
-                    matchesApproval = booking.approval === selectedApproval;
-                }
-                
-                return matchesSearch && matchesDept && matchesMonth && matchesApproval;
+            // Add event listeners to checkboxes
+            document.querySelectorAll('.booking-checkbox').forEach(checkbox => {
+                checkbox.addEventListener('change', function() {
+                    const bookingId = this.closest('tr').dataset.id;
+                    if (this.checked) {
+                        selectedBookings.add(bookingId);
+                    } else {
+                        selectedBookings.delete(bookingId);
+                    }
+                    updateSelectedCount();
+                });
             });
-            
-            // Update display with filtered data
-            updateStats(filteredBookings);
-            displayBookings(filteredBookings);
         }
         
-        // Submit booking form
-        async function submitBookingForm(e) {
-            e.preventDefault();
+        // View booking details
+        function viewBookingDetails(bookingId) {
+            const booking = allBookings.find(b => b.id === bookingId);
+            if (!booking) return;
             
-            // Get form values
-            const formData = {
-                code: document.getElementById('employeeCode').value,
-                name: document.getElementById('employeeName').value,
-                department: document.getElementById('department').value,
-                position: document.getElementById('position').value,
-                contact: document.getElementById('contact').value,
-                choose: document.getElementById('carType').value,
-                rentStartdate: document.getElementById('rentStartDate').value,
-                rentEnddate: document.getElementById('rentEndDate').value,
-                startTime: document.getElementById('startTime').value,
-                endTime: document.getElementById('endTime').value,
-                reason: document.getElementById('reason').value,
-                approval: 'pending' // Default status
-            };
+            currentBookingId = bookingId;
+            
+            // Format dates
+            const startDate = booking.rentStartdate ? 
+                new Date(booking.rentStartdate).toLocaleDateString('th-TH') : 'ไม่ระบุ';
+            
+            const endDate = booking.rentEnddate ? 
+                new Date(booking.rentEnddate).toLocaleDateString('th-TH') : 'ไม่ระบุ';
+            
+            // Determine status text
+            let statusText = 'รออนุมัติ';
+            if (booking.approval === 'approved') {
+                statusText = 'อนุมัติแล้ว';
+            } else if (booking.approval === 'rejected') {
+                statusText = 'ปฏิเสธแล้ว';
+            }
+            
+            // Populate modal details
+            document.getElementById('modalTitle').textContent = `รายละเอียดการจอง: ${booking.code || 'ไม่มีรหัส'}`;
+            
+            const detailsHtml = `
+                <div class="detail-row">
+                    <div class="detail-label">รหัสพนักงาน:</div>
+                    <div class="detail-value">${booking.code || 'ไม่ระบุ'}</div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">ชื่อ-นามสกุล:</div>
+                    <div class="detail-value">${booking.name || 'ไม่ระบุ'}</div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">แผนก/ตำแหน่ง:</div>
+                    <div class="detail-value">${booking.department || 'ไม่ระบุ'} / ${booking.position || 'ไม่ระบุ'}</div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">ติดต่อ:</div>
+                    <div class="detail-value">${booking.contact || 'ไม่ระบุ'}</div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">รถที่จอง:</div>
+                    <div class="detail-value">${booking.choose || 'ไม่ระบุ'}</div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">วันที่จอง:</div>
+                    <div class="detail-value">${startDate} ถึง ${endDate}</div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">เวลา:</div>
+                    <div class="detail-value">${booking.startTime || 'ไม่ระบุ'} ถึง ${booking.endTime || 'ไม่ระบุ'}</div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">สถานะ:</div>
+                    <div class="detail-value"><span class="status status-${booking.approval || 'pending'}">${statusText}</span></div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">เหตุผลการจอง:</div>
+                    <div class="detail-value">${booking.reason || 'ไม่ระบุ'}</div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">วันที่บันทึก:</div>
+                    <div class="detail-value">${booking.timestamp ? new Date(booking.timestamp).toLocaleString('th-TH') : 'ไม่ระบุ'}</div>
+                </div>
+            `;
+            
+            document.getElementById('bookingDetails').innerHTML = detailsHtml;
+            
+            // Show/hide action buttons based on status
+            if (booking.approval === 'pending') {
+                approveBtn.style.display = 'inline-flex';
+                rejectBtn.style.display = 'inline-flex';
+            } else {
+                approveBtn.style.display = 'none';
+                rejectBtn.style.display = 'none';
+            }
+            
+            // Show modal
+            approvalModal.style.display = 'flex';
+        }
+        
+        // Open modal for approval
+        function approveBookingModal(bookingId) {
+            currentBookingId = bookingId;
+            document.getElementById('modalTitle').textContent = 'อนุมัติการจองรถ';
+            document.getElementById('bookingDetails').innerHTML = `
+                <p>คุณต้องการอนุมัติการจองรถนี้ใช่หรือไม่?</p>
+            `;
+            approveBtn.style.display = 'inline-flex';
+            rejectBtn.style.display = 'none';
+            approvalModal.style.display = 'flex';
+        }
+        
+        // Open modal for rejection
+        function rejectBookingModal(bookingId) {
+            currentBookingId = bookingId;
+            document.getElementById('modalTitle').textContent = 'ปฏิเสธการจองรถ';
+            document.getElementById('bookingDetails').innerHTML = `
+                <p>คุณต้องการปฏิเสธการจองรถนี้ใช่หรือไม่?</p>
+            `;
+            approveBtn.style.display = 'none';
+            rejectBtn.style.display = 'inline-flex';
+            approvalModal.style.display = 'flex';
+        }
+        
+        // Approve booking
+        async function approveBooking() {
+            if (!currentBookingId) return;
             
             try {
-                // Show loading state
-                const submitBtn = bookingForm.querySelector('button[type="submit"]');
-                const originalText = submitBtn.innerHTML;
-                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> กำลังส่งข้อมูล...';
-                submitBtn.disabled = true;
-                
-                // Send data to Google Apps Script
-                const response = await fetch(SCRIPT_URL, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify(formData)
-                });
-                
-                const result = await response.json();
-                
-                if (result.status === 'success') {
-                    // Reset form
-                    bookingForm.reset();
-                    
-                    // Close modal
-                    addBookingModal.style.display = 'none';
-                    
-                    // Show success message
-                    alert('ส่งคำขอจองรถสำเร็จ!');
-                    
-                    // Reload data
-                    loadBookingsData();
-                } else {
-                    throw new Error(result.message || 'Failed to submit data');
+                // Update local data
+                const bookingIndex = allBookings.findIndex(b => b.id === currentBookingId);
+                if (bookingIndex !== -1) {
+                    allBookings[bookingIndex].approval = 'approved';
                 }
+                
+                // Update UI
+                updateStats(allBookings);
+                filterBookings();
+                
+                // Show success message
+                alert('อนุมัติการจองรถเรียบร้อยแล้ว');
+                
+                // Close modal
+                approvalModal.style.display = 'none';
+                
+                // Here you would send the update to Google Sheets
+                // await updateBookingStatus(currentBookingId, 'approved');
+                
             } catch (error) {
-                console.error('Error submitting form:', error);
-                alert('เกิดข้อผิดพลาดในการส่งข้อมูล: ' + error.message);
-            } finally {
-                // Reset button state
-                const submitBtn = bookingForm.querySelector('button[type="submit"]');
-                submitBtn.innerHTML = originalText;
-                submitBtn.disabled = false;
+                console.error('Error approving booking:', error);
+                alert('เกิดข้อผิดพลาดในการอนุมัติการจอง');
             }
         }
         
-        // Sample data for testing (remove when connecting to real data)
+        // Reject booking
+        async function rejectBooking() {
+            if (!currentBookingId) return;
+            
+            try {
+                // Update local data
+                const bookingIndex = allBookings.findIndex(b => b.id === currentBookingId);
+                if (bookingIndex !== -1) {
+                    allBookings[bookingIndex].approval = 'rejected';
+                }
+                
+                // Update UI
+                updateStats(allBookings);
+                filterBookings();
+                
+                // Show success message
+                alert('ปฏิเสธการจองรถเรียบร้อยแล้ว');
+                
+                // Close modal
+                approvalModal.style.display = 'none';
+                
+                // Here you would send the update to Google Sheets
+                // await updateBookingStatus(currentBookingId, 'rejected');
+                
+            } catch (error) {
+                console.error('Error rejecting booking:', error);
+                alert('เกิดข้อผิดพลาดในการปฏิเสธการจอง');
+            }
+        }
+        
+        // Update booking status in Google Sheets
+        async function updateBookingStatus(bookingId, status) {
+            // This function would send the update to your Google Apps Script
+            // You need to implement this based on your Google Apps Script setup
+            console.log(`Updating booking ${bookingId} to ${status}`);
+            
+            // Example implementation:
+            /*
+            const response = await fetch(SCRIPT_URL, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    action: 'update',
+                    id: bookingId,
+                    status: status
+                })
+            });
+            
+            return await response.json();
+            */
+        }
+        
+        // Selection functions
+        function toggleSelectAll() {
+            const checkboxes = document.querySelectorAll('.booking-checkbox:not(:disabled)');
+            checkboxes.forEach(checkbox => {
+                checkbox.checked = selectAllCheckbox.checked;
+                const bookingId = checkbox.closest('tr').dataset.id;
+                
+                if (checkbox.checked) {
+                    selectedBookings.add(bookingId);
+                } else {
+                    selectedBookings.delete(bookingId);
+                }
+            });
+            
+            updateSelectedCount();
+        }
+        
+        function updateSelectedCount() {
+            const count = selectedBookings.size;
+            document.getElementById('selectedCount').textContent = `${count} รายการที่เลือก`;
+            
+            // Show/hide bulk actions
+            if (count > 0) {
+                bulkActions.style.display = 'flex';
+            } else {
+                bulkActions.style.display = 'none';
+                selectAllCheckbox.checked = false;
+            }
+        }
+        
+        function clearSelection() {
+            selectedBookings.clear();
+            document.querySelectorAll('.booking-checkbox').forEach(checkbox => {
+                checkbox.checked = false;
+            });
+            selectAllCheckbox.checked = false;
+            updateSelectedCount();
+        }
+        
+        async function bulkApprove() {
+            if (selectedBookings.size === 0) return;
+            
+            if (confirm(`คุณต้องการอนุมัติ ${selectedBookings.size} รายการที่เลือกใช่หรือไม่?`)) {
+                try {
+                    // Update local data
+                    selectedBookings.forEach(bookingId => {
+                        const bookingIndex = allBookings.findIndex(b => b.id === bookingId);
+                        if (bookingIndex !== -1) {
+                            allBookings[bookingIndex].approval = 'approved';
+                        }
+                    });
+                    
+                    // Update UI
+                    updateStats(allBookings);
+                    filterBookings();
+                    clearSelection();
+                    
+                    // Show success message
+                    alert(`อนุมัติ ${selectedBookings.size} รายการเรียบร้อยแล้ว`);
+                    
+                    // Here you would send the updates to Google Sheets
+                    // for (const bookingId of selectedBookings) {
+                    //     await updateBookingStatus(bookingId, 'approved');
+                    // }
+                    
+                } catch (error) {
+                    console.error('Error bulk approving:', error);
+                    alert('เกิดข้อผิดพลาดในการอนุมัติ');
+                }
+            }
+        }
+        
+        async function bulkReject() {
+            if (selectedBookings.size === 0) return;
+            
+            if (confirm(`คุณต้องการปฏิเสธ ${selectedBookings.size} รายการที่เลือกใช่หรือไม่?`)) {
+                try {
+                    // Update local data
+                    selectedBookings.forEach(bookingId => {
+                        const bookingIndex = allBookings.findIndex(b => b.id === bookingId);
+                        if (bookingIndex !== -1) {
+                            allBookings[bookingIndex].approval = 'rejected';
+                        }
+                    });
+                    
+                    // Update UI
+                    updateStats(allBookings);
+                    filterBookings();
+                    clearSelection();
+                    
+                    // Show success message
+                    alert(`ปฏิเสธ ${selectedBookings.size} รายการเรียบร้อยแล้ว`);
+                    
+                    // Here you would send the updates to Google Sheets
+                    // for (const bookingId of selectedBookings) {
+                    //     await updateBookingStatus(bookingId, 'rejected');
+                    // }
+                    
+                } catch (error) {
+                    console.error('Error bulk rejecting:', error);
+                    alert('เกิดข้อผิดพลาดในการปฏิเสธ');
+                }
+            }
+        }
+        
+        // Sample data for testing
         function loadSampleData() {
             const sampleBookings = [
                 {
+                    id: 'booking_1',
                     code: 'EMP001',
                     name: 'สมชาย ใจดี',
                     department: 'การเงิน',
                     position: 'เจ้าหน้าที่',
-                    rentStartdate: '2023-10-15',
-                    rentEnddate: '2023-10-15',
-                    reason: 'เดินทางไปพบลูกค้า',
-                    approval: 'approved'
+                    contact: '081-111-1111',
+                    choose: 'รถเก๋ง',
+                    rentStartdate: '2023-10-28',
+                    rentEnddate: '2023-10-28',
+                    startTime: '09:00',
+                    endTime: '17:00',
+                    reason: 'เดินทางไปพบลูกค้าที่จังหวัดเชียงใหม่',
+                    approval: 'pending',
+                    timestamp: '2023-10-26T09:30:00'
                 },
                 {
+                    id: 'booking_2',
                     code: 'EMP002',
                     name: 'สมหญิง รักงาน',
                     department: 'การตลาด',
                     position: 'ผู้จัดการ',
-                    rentStartdate: '2023-10-18',
-                    rentEnddate: '2023-10-19',
-                    reason: 'นำเสนอโครงการ',
-                    approval: 'pending'
+                    contact: '082-222-2222',
+                    choose: 'รถตู้',
+                    rentStartdate: '2023-10-29',
+                    rentEnddate: '2023-10-30',
+                    startTime: '08:00',
+                    endTime: '18:00',
+                    reason: 'นำทีมไปจัดกิจกรรมส่งเสริมการขาย',
+                    approval: 'pending',
+                    timestamp: '2023-10-26T10:15:00'
                 },
                 {
+                    id: 'booking_3',
                     code: 'EMP003',
                     name: 'สมหมาย ตั้งใจ',
                     department: 'ไอที',
                     position: 'โปรแกรมเมอร์',
-                    rentStartdate: '2023-10-20',
-                    rentEnddate: '2023-10-20',
-                    reason: 'ซ่อมคอมพิวเตอร์ที่สาขา',
-                    approval: 'approved'
+                    contact: '083-333-3333',
+                    choose: 'รถกระบะ',
+                    rentStartdate: '2023-10-27',
+                    rentEnddate: '2023-10-27',
+                    startTime: '13:00',
+                    endTime: '16:00',
+                    reason: 'ขนส่งอุปกรณ์คอมพิวเตอร์ไปยังสาขาใหม่',
+                    approval: 'approved',
+                    timestamp: '2023-10-25T14:20:00'
                 },
                 {
+                    id: 'booking_4',
                     code: 'EMP004',
                     name: 'สมปอง หนักแน่น',
                     department: 'บุคคล',
                     position: 'เจ้าหน้าที่',
-                    rentStartdate: '2023-10-22',
-                    rentEnddate: '2023-10-22',
-                    reason: 'รับพนักงานใหม่',
-                    approval: 'rejected'
+                    contact: '084-444-4444',
+                    choose: 'รถเก๋ง',
+                    rentStartdate: '2023-10-30',
+                    rentEnddate: '2023-10-30',
+                    startTime: '10:00',
+                    endTime: '12:00',
+                    reason: 'ไปรับนักศึกษาฝึกงานจากมหาวิทยาลัย',
+                    approval: 'rejected',
+                    timestamp: '2023-10-24T11:45:00'
                 },
                 {
+                    id: 'booking_5',
                     code: 'EMP005',
                     name: 'สมศรี สวยงาม',
                     department: 'ขาย',
                     position: 'พนักงานขาย',
-                    rentStartdate: '2023-10-25',
-                    rentEnddate: '2023-10-26',
-                    reason: 'นำสินค้าไปแสดง',
-                    approval: 'pending'
+                    contact: '085-555-5555',
+                    choose: 'รถเก๋ง',
+                    rentStartdate: '2023-11-01',
+                    rentEnddate: '2023-11-01',
+                    startTime: '08:30',
+                    endTime: '17:30',
+                    reason: 'นำสินค้าตัวอย่างไปเสนอลูกค้ารายใหญ่',
+                    approval: 'pending',
+                    timestamp: '2023-10-26T15:10:00'
+                },
+                {
+                    id: 'booking_6',
+                    code: 'EMP006',
+                    name: 'สมนึก มั่นใจ',
+                    department: 'บริการ',
+                    position: 'วิศวกร',
+                    contact: '086-666-6666',
+                    choose: 'รถกระบะ',
+                    rentStartdate: '2023-10-31',
+                    rentEnddate: '2023-11-02',
+                    startTime: '07:00',
+                    endTime: '19:00',
+                    reason: 'เดินทางไปซ่อมอุปกรณ์ที่ลูกค้าหลายจังหวัด',
+                    approval: 'pending',
+                    timestamp: '2023-10-25T16:30:00'
                 }
             ];
             
             allBookings = sampleBookings;
             updateStats(allBookings);
-            updateCharts(allBookings);
             populateDepartmentFilter(allBookings);
-            displayBookings(allBookings);
+            filterBookings();
         }
-        
-        // Uncomment the line below to test with sample data
-        // loadSampleData();
     </script>
 </body>
 </html>
