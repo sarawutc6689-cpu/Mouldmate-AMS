@@ -535,7 +535,6 @@
     <script>
         // Google Apps Script URL (ใช้ตัวเดียวกับ Dashboard)
         const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzcMdFcpQkAxIbb0iEJJfZ8fD0YgiGUetRkkw1UyMv7uY3tlza345UoL1uNrNbOUKRx/exec';
-        const SHEET_ID = '1-5izB7N6ldxHAa3ca0RNhGP8Z36vuA0mw9Wi_xR_Lj4';
         
         // Global variables
         let allReservations = [];
@@ -588,46 +587,134 @@
             filterDate.valueAsDate = new Date();
         });
         
-        // Load reservations from Google Sheets
-        async function loadReservations() {
-            try {
-                showLoading();
+        // Load reservations from Google Sheets using JSONP
+        function loadReservations() {
+            showLoading();
+            
+            // สร้าง callback function ชื่อไม่ซ้ำ
+            const callbackName = 'jsonp_callback_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+            
+            // กำหนด function สำหรับรับข้อมูล
+            window[callbackName] = function(data) {
+                // ลบ callback function ออกจาก window object
+                delete window[callbackName];
                 
-                const response = await fetch(`${SCRIPT_URL}?action=getAll`);
-                const result = await response.json();
-                
-                if (result.status === 'success' && result.data) {
-                    allReservations = processReservations(result.data);
+                if (data && data.status === 'success' && data.data) {
+                    allReservations = processReservations(data.data);
                     updateStats();
                     populateFilters();
                     filterReservations();
                     showSuccess('โหลดข้อมูลสำเร็จ');
                 } else {
-                    throw new Error('ไม่สามารถโหลดข้อมูลได้');
+                    const errorMsg = data ? data.message : 'ไม่สามารถโหลดข้อมูลได้';
+                    showError('ไม่สามารถโหลดข้อมูลได้: ' + errorMsg);
+                    
+                    // ลองโหลดจาก Google Sheets API แบบตรง
+                    setTimeout(() => {
+                        loadFromGoogleSheetsDirect();
+                    }, 1000);
                 }
+                
+                // ซ่อน loading
+                loading.style.display = 'none';
+            };
+            
+            // สร้าง script tag
+            const script = document.createElement('script');
+            script.src = `${SCRIPT_URL}?action=getAll&callback=${callbackName}`;
+            
+            // ตั้งค่า timeout
+            script.onerror = function() {
+                delete window[callbackName];
+                showError('ไม่สามารถเชื่อมต่อกับเซิร์ฟเวอร์ได้');
+                loading.style.display = 'none';
+                
+                // ลองโหลดจาก Google Sheets API แบบตรง
+                setTimeout(() => {
+                    loadFromGoogleSheetsDirect();
+                }, 1000);
+            };
+            
+            // เพิ่ม script ไปยังหน้าเว็บ
+            document.head.appendChild(script);
+            
+            // ลบ script หลังจาก 10 วินาที (ป้องกันไม่ลบ)
+            setTimeout(() => {
+                if (script.parentNode) {
+                    script.parentNode.removeChild(script);
+                }
+            }, 10000);
+        }
+        
+        // โหลดจาก Google Sheets API โดยตรง (backup method)
+        async function loadFromGoogleSheetsDirect() {
+            try {
+                const SHEET_ID = '1-5izB7N6ldxHAa3ca0RNhGP8Z36vuA0mw9Wi_xR_Lj4';
+                const csvUrl = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=Sheet1`;
+                
+                const response = await fetch(csvUrl);
+                const csvText = await response.text();
+                
+                // Process CSV
+                const lines = csvText.split('\n');
+                if (lines.length < 2) {
+                    throw new Error('No data in CSV');
+                }
+                
+                const headers = lines[0].split(',').map(h => h.trim().replace(/"/g, ''));
+                const processedData = [];
+                
+                for (let i = 1; i < lines.length; i++) {
+                    if (!lines[i].trim()) continue;
+                    
+                    const values = lines[i].split(',').map(v => v.trim().replace(/"/g, ''));
+                    const obj = { _row: i + 1 };
+                    
+                    headers.forEach((header, idx) => {
+                        obj[header] = values[idx] || '';
+                    });
+                    
+                    processedData.push(obj);
+                }
+                
+                allReservations = processReservations(processedData);
+                updateStats();
+                populateFilters();
+                filterReservations();
+                showSuccess('โหลดข้อมูลสำเร็จ (จาก CSV)');
+                
             } catch (error) {
-                console.error('Error loading reservations:', error);
-                showError('ไม่สามารถโหลดข้อมูลได้: ' + error.message);
+                console.error('Error loading from CSV:', error);
+                showError('ไม่สามารถโหลดข้อมูลได้จากแหล่งใดเลย');
+            } finally {
+                loading.style.display = 'none';
             }
         }
         
         // Process reservations data
         function processReservations(data) {
+            console.log('Processing data:', data.length, 'records');
+            
             return data.map((item, index) => {
                 // Get approval status from column N
                 const approval = (item.approval || item.Approval || '').trim();
                 
                 // Determine status
                 let status = 'pending';
-                if (approval === 'อนุมัติ' || approval === 'approved') {
+                if (approval === 'อนุมัติ' || approval === 'approved' || approval === 'Approved') {
                     status = 'approved';
-                } else if (approval === 'ปฏิเสธ' || approval === 'rejected') {
+                } else if (approval === 'ปฏิเสธ' || approval === 'rejected' || approval === 'Rejected') {
                     status = 'rejected';
+                }
+                
+                // Log for debugging
+                if (index < 3) {
+                    console.log(`Row ${item._row}: approval="${approval}" -> status=${status}`);
                 }
                 
                 return {
                     id: index,
-                    row: index + 2, // Google Sheets row number
+                    row: item._row || index + 2, // Google Sheets row number
                     code: item.Code || item.code || '',
                     name: item.name || item.Name || '',
                     section: item.section || item.Section || '',
@@ -658,6 +745,8 @@
             approvedCount.textContent = approved;
             rejectedCount.textContent = rejected;
             totalCount.textContent = total;
+            
+            console.log(`Stats: Pending=${pending}, Approved=${approved}, Rejected=${rejected}, Total=${total}`);
         }
         
         // Populate filter dropdowns
@@ -705,7 +794,8 @@
                     const reservationDate = new Date(reservation.startDate);
                     const filterDateObj = new Date(date);
                     
-                    if (reservationDate.toDateString() !== filterDateObj.toDateString()) {
+                    if (isNaN(reservationDate.getTime()) || 
+                        reservationDate.toDateString() !== filterDateObj.toDateString()) {
                         return false;
                     }
                 }
@@ -753,7 +843,13 @@
             
             // Sort by timestamp (newest first)
             const sortedReservations = [...filteredReservations].sort((a, b) => {
-                return new Date(b.timestamp) - new Date(a.timestamp);
+                try {
+                    const dateA = new Date(a.timestamp || 0);
+                    const dateB = new Date(b.timestamp || 0);
+                    return dateB - dateA;
+                } catch (e) {
+                    return 0;
+                }
             });
             
             sortedReservations.forEach(reservation => {
@@ -773,10 +869,16 @@
             
             // Format date
             const formatDate = (dateStr) => {
-                if (!dateStr) return 'ไม่ระบุ';
+                if (!dateStr || dateStr.trim() === '') return 'ไม่ระบุ';
                 try {
                     const date = new Date(dateStr);
-                    return date.toLocaleDateString('th-TH');
+                    if (isNaN(date.getTime())) return dateStr;
+                    
+                    const day = date.getDate().toString().padStart(2, '0');
+                    const month = (date.getMonth() + 1).toString().padStart(2, '0');
+                    const year = date.getFullYear() + 543; // Convert to Buddhist year
+                    
+                    return `${day}/${month}/${year}`;
                 } catch (e) {
                     return dateStr;
                 }
@@ -784,7 +886,7 @@
             
             // Format time
             const formatTime = (timeStr) => {
-                if (!timeStr) return 'ไม่ระบุ';
+                if (!timeStr || timeStr.trim() === '') return 'ไม่ระบุ';
                 return timeStr;
             };
             
@@ -812,19 +914,19 @@
                 <div class="item-content">
                     <div class="item-field">
                         <span class="field-label">ชื่อ-สกุล</span>
-                        <span class="field-value">${reservation.name}</span>
+                        <span class="field-value">${reservation.name || '-'}</span>
                     </div>
                     <div class="item-field">
                         <span class="field-label">แผนก</span>
-                        <span class="field-value">${reservation.department}</span>
+                        <span class="field-value">${reservation.department || '-'}</span>
                     </div>
                     <div class="item-field">
                         <span class="field-label">ตำแหน่ง</span>
-                        <span class="field-value">${reservation.position}</span>
+                        <span class="field-value">${reservation.position || '-'}</span>
                     </div>
                     <div class="item-field">
                         <span class="field-label">รถที่จอง</span>
-                        <span class="field-value">${reservation.vehicle}</span>
+                        <span class="field-value">${reservation.vehicle || '-'}</span>
                     </div>
                     <div class="item-field">
                         <span class="field-label">วันที่จอง</span>
@@ -838,7 +940,7 @@
                 
                 <div class="item-field" style="margin-bottom: 15px;">
                     <span class="field-label">เหตุผลการจอง</span>
-                    <span class="field-value">${reservation.reason}</span>
+                    <span class="field-value">${reservation.reason || 'ไม่ระบุ'}</span>
                 </div>
             `;
             
@@ -880,10 +982,10 @@
             modalMessage.innerHTML = `
                 คุณต้องการอนุมัติคำขอนี้หรือไม่?<br><br>
                 <strong>ข้อมูลการจอง:</strong><br>
-                • ชื่อ: ${reservation.name}<br>
-                • รถ: ${reservation.vehicle}<br>
-                • วันที่: ${reservation.startDate}<br>
-                • เหตุผล: ${reservation.reason}
+                • ชื่อ: ${reservation.name || '-'}<br>
+                • รถ: ${reservation.vehicle || '-'}<br>
+                • วันที่: ${reservation.startDate || '-'}<br>
+                • เหตุผล: ${reservation.reason || 'ไม่ระบุ'}
             `;
             
             confirmModal.style.display = 'flex';
@@ -900,10 +1002,10 @@
             modalMessage.innerHTML = `
                 คุณต้องการปฏิเสธคำขอนี้หรือไม่?<br><br>
                 <strong>ข้อมูลการจอง:</strong><br>
-                • ชื่อ: ${reservation.name}<br>
-                • รถ: ${reservation.vehicle}<br>
-                • วันที่: ${reservation.startDate}<br>
-                • เหตุผล: ${reservation.reason}
+                • ชื่อ: ${reservation.name || '-'}<br>
+                • รถ: ${reservation.vehicle || '-'}<br>
+                • วันที่: ${reservation.startDate || '-'}<br>
+                • เหตุผล: ${reservation.reason || 'ไม่ระบุ'}
             `;
             
             confirmModal.style.display = 'flex';
@@ -925,7 +1027,6 @@
                     throw new Error('ไม่พบข้อมูลการจอง');
                 }
                 
-                // Determine new status and Thai text
                 let newStatus, thaiStatus, actionText;
                 
                 if (currentAction === 'approve') {
@@ -938,31 +1039,58 @@
                     actionText = 'ปฏิเสธ';
                 }
                 
-                // Update in Google Sheets via Apps Script
-                const response = await fetch(SCRIPT_URL, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/x-www-form-urlencoded',
-                    },
-                    body: `action=updateApproval&row=${reservation.row}&status=${newStatus}`
-                });
+                // สร้าง form สำหรับส่งข้อมูล (ใช้วิธี POST ผ่าน iframe)
+                const form = document.createElement('form');
+                form.method = 'POST';
+                form.action = SCRIPT_URL;
+                form.target = 'hiddenFrame';
+                form.style.display = 'none';
                 
-                const result = await response.json();
+                const actionInput = document.createElement('input');
+                actionInput.type = 'hidden';
+                actionInput.name = 'action';
+                actionInput.value = 'updateApproval';
                 
-                if (result.status === 'success') {
-                    // Update local data
-                    reservation.approval = newStatus;
-                    reservation.status = currentAction === 'approve' ? 'approved' : 'rejected';
-                    
-                    // Update UI
-                    updateStats();
-                    filterReservations();
-                    
-                    showSuccess(`ดำเนินการ${actionText}สำเร็จ`);
-                    closeModal();
-                } else {
-                    throw new Error(result.message || 'ไม่สามารถอัพเดทข้อมูลได้');
-                }
+                const rowInput = document.createElement('input');
+                rowInput.type = 'hidden';
+                rowInput.name = 'row';
+                rowInput.value = reservation.row;
+                
+                const statusInput = document.createElement('input');
+                statusInput.type = 'hidden';
+                statusInput.name = 'status';
+                statusInput.value = newStatus;
+                
+                form.appendChild(actionInput);
+                form.appendChild(rowInput);
+                form.appendChild(statusInput);
+                document.body.appendChild(form);
+                
+                // สร้าง iframe ซ่อนไว้สำหรับรับ response
+                const iframe = document.createElement('iframe');
+                iframe.name = 'hiddenFrame';
+                iframe.style.display = 'none';
+                document.body.appendChild(iframe);
+                
+                // ส่ง form
+                form.submit();
+                
+                // ลบ form และ iframe หลังจากส่ง
+                setTimeout(() => {
+                    document.body.removeChild(form);
+                    document.body.removeChild(iframe);
+                }, 1000);
+                
+                // Update local data
+                reservation.approval = newStatus;
+                reservation.status = currentAction === 'approve' ? 'approved' : 'rejected';
+                
+                // Update UI
+                updateStats();
+                filterReservations();
+                
+                showSuccess(`ดำเนินการ${actionText}สำเร็จ`);
+                closeModal();
                 
             } catch (error) {
                 console.error('Error updating approval:', error);
@@ -996,6 +1124,12 @@
                 notification.style.display = 'none';
             }, 5000);
         }
+        
+        // ฟังก์ชันช่วยสำหรับการ debug
+        window.debugData = function() {
+            console.log('All reservations:', allReservations);
+            console.log('Filtered reservations:', filteredReservations);
+        };
     </script>
 </body>
 </html>
