@@ -53,6 +53,15 @@
             margin-bottom: 5px;
         }
         
+        .sheet-info {
+            background-color: rgba(255, 255, 255, 0.15);
+            padding: 10px 15px;
+            border-radius: 6px;
+            margin-top: 10px;
+            font-size: 0.9rem;
+            word-break: break-all;
+        }
+        
         .stats {
             display: flex;
             gap: 20px;
@@ -121,6 +130,10 @@
             font-size: 1rem;
             font-weight: 600;
             transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
         }
         
         button:hover {
@@ -298,16 +311,28 @@
         .status-pending {
             color: #f39c12;
             font-weight: bold;
+            background-color: #fef5e7;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.9rem;
         }
         
         .status-approved {
             color: #27ae60;
             font-weight: bold;
+            background-color: #eafaf1;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.9rem;
         }
         
         .status-rejected {
             color: #e74c3c;
             font-weight: bold;
+            background-color: #fdedec;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.9rem;
         }
         
         footer {
@@ -324,6 +349,7 @@
             padding: 40px;
             font-size: 1.2rem;
             color: #7f8c8d;
+            grid-column: 1 / -1;
         }
         
         .no-data {
@@ -339,6 +365,70 @@
             margin-bottom: 15px;
             color: #bdc3c7;
         }
+        
+        .api-status {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 10px;
+            font-size: 0.9rem;
+        }
+        
+        .status-indicator {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            display: inline-block;
+        }
+        
+        .status-connected {
+            background-color: #2ecc71;
+        }
+        
+        .status-disconnected {
+            background-color: #e74c3c;
+        }
+        
+        .status-connecting {
+            background-color: #f39c12;
+            animation: pulse 1.5s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+        
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 25px;
+            border-radius: 8px;
+            color: white;
+            font-weight: 500;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            z-index: 1000;
+            transform: translateX(120%);
+            transition: transform 0.3s ease;
+        }
+        
+        .notification.show {
+            transform: translateX(0);
+        }
+        
+        .notification.success {
+            background-color: #27ae60;
+        }
+        
+        .notification.error {
+            background-color: #e74c3c;
+        }
+        
+        .notification.info {
+            background-color: #3498db;
+        }
     </style>
 </head>
 <body>
@@ -346,7 +436,14 @@
         <header>
             <h1><i class="fas fa-car"></i> ระบบอนุมัติการจองรถ</h1>
             <p class="subtitle">Car Rent Approval System</p>
-            <p class="subtitle">Google Sheets ID: 1-5izB7N6ldxHAa3ca0RNhGP8Z36vuA0mw9Wi_xR_Lj4</p>
+            <div class="sheet-info">
+                <i class="fas fa-link"></i> API URL: https://script.google.com/macros/s/AKfycbzReRwQHdUTdit1HMRCVVNlsGwpdvZMFG4fhsv5yh5nLpOE28NFuV2y_1OXPHU0DPkM/exec
+            </div>
+            
+            <div class="api-status">
+                <span class="status-indicator status-connecting" id="api-status-indicator"></span>
+                <span id="api-status-text">กำลังเชื่อมต่อกับ Google Sheets...</span>
+            </div>
             
             <div class="stats">
                 <div class="stat-box">
@@ -383,11 +480,7 @@
                 <label for="filter-department"><i class="fas fa-building"></i> แผนก</label>
                 <select id="filter-department">
                     <option value="all">ทั้งหมด</option>
-                    <option value="บัญชี">บัญชี</option>
-                    <option value="ขาย">ขาย</option>
-                    <option value="จัดซื้อ">จัดซื้อ</option>
-                    <option value="ไอที">ไอที</option>
-                    <option value="บุคคล">บุคคล</option>
+                    <!-- ตัวเลือกแผนกจะถูกเพิ่มโดย JavaScript -->
                 </select>
             </div>
             
@@ -396,135 +489,132 @@
                 <input type="date" id="filter-date">
             </div>
             
-            <button id="refresh-btn"><i class="fas fa-sync-alt"></i> รีเฟรชข้อมูล</button>
+            <button id="refresh-btn">
+                <i class="fas fa-sync-alt"></i> โหลดข้อมูลใหม่
+            </button>
         </div>
         
         <div class="requests-container" id="requests-container">
-            <!-- ข้อมูลจะถูกเพิ่มที่นี่โดย JavaScript -->
             <div class="loading">
                 <i class="fas fa-spinner fa-spin"></i> กำลังโหลดข้อมูลจาก Google Sheets...
             </div>
         </div>
         
         <footer>
-            <p>ระบบอนุมัติการจองรถ (Car Rent Approval System) | พัฒนาโดยใช้ Google Sheets API</p>
+            <p>ระบบอนุมัติการจองรถ (Car Rent Approval System) | เชื่อมต่อกับ Google Sheets API</p>
             <p>© 2023 ฝ่ายบริหารงานทั่วไป</p>
         </footer>
     </div>
 
-    <script>
-        // ข้อมูลจำลองสำหรับการทดสอบ (ในกรณีจริงจะดึงจาก Google Sheets)
-        const mockData = [
-            {
-                Timestamp: "2023-10-15 09:30:00",
-                Code: "CR-2023-001",
-                name: "สมชาย ใจดี",
-                section: "การเงิน",
-                department: "บัญชี",
-                position: "ผู้จัดการ",
-                contact: "089-123-4567",
-                choose: "รถยนต์ Nissan Almera",
-                rentStartdate: "2023-10-20",
-                rentEnddate: "2023-10-22",
-                startTime: "09:00",
-                endTime: "17:00",
-                reason: "นำทีมงานไปประชุมกับลูกค้าที่จังหวัดชลบุรี",
-                approval: "pending"
-            },
-            {
-                Timestamp: "2023-10-14 14:20:00",
-                Code: "CR-2023-002",
-                name: "สุนิสา ราตรี",
-                section: "ตลาด",
-                department: "ขาย",
-                position: "หัวหน้าแผนก",
-                contact: "082-987-6543",
-                choose: "รถยนต์ Toyota Yaris",
-                rentStartdate: "2023-10-18",
-                rentEnddate: "2023-10-18",
-                startTime: "08:30",
-                endTime: "16:30",
-                reason: "นำสินค้าไปจัดแสดงในงานแสดงสินค้า",
-                approval: "approved"
-            },
-            {
-                Timestamp: "2023-10-13 11:15:00",
-                Code: "CR-2023-003",
-                name: "อนุชา ศรีสุวรรณ",
-                section: "คลังสินค้า",
-                department: "จัดซื้อ",
-                position: "พนักงาน",
-                contact: "086-555-7890",
-                choose: "รถกระบะ Toyota Hilux",
-                rentStartdate: "2023-10-25",
-                rentEnddate: "2023-10-25",
-                startTime: "07:00",
-                endTime: "18:00",
-                reason: "ไปรับสินค้าจากผู้ผลิตที่จังหวัดอยุธยา",
-                approval: "pending"
-            },
-            {
-                Timestamp: "2023-10-12 16:45:00",
-                Code: "CR-2023-004",
-                name: "นภา วิเชียร",
-                section: "พัฒนาระบบ",
-                department: "ไอที",
-                position: "โปรแกรมเมอร์",
-                contact: "081-222-3333",
-                choose: "รถยนต์ Honda City",
-                rentStartdate: "2023-10-30",
-                rentEnddate: "2023-10-31",
-                startTime: "10:00",
-                endTime: "15:00",
-                reason: "ไปติดตั้งระบบที่สาขาพระราม 2",
-                approval: "rejected"
-            },
-            {
-                Timestamp: "2023-10-11 10:05:00",
-                Code: "CR-2023-005",
-                name: "ธนวัฒน์ พูนผล",
-                section: "ฝึกอบรม",
-                department: "บุคคล",
-                position: "ผู้ช่วยผู้จัดการ",
-                contact: "095-777-8888",
-                choose: "รถยนต์ Nissan Almera",
-                rentStartdate: "2023-11-05",
-                rentEnddate: "2023-11-06",
-                startTime: "08:00",
-                endTime: "17:00",
-                reason: "นำพนักงานใหม่ไปฝึกอบรมที่ศูนย์ฝึกอบรม",
-                approval: "pending"
-            }
-        ];
+    <!-- Notification Container -->
+    <div id="notification-container"></div>
 
+    <script>
+        // Google Apps Script URL
+        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzReRwQHdUTdit1HMRCVVNlsGwpdvZMFG4fhsv5yh5nLpOE28NFuV2y_1OXPHU0DPkM/exec';
+        
+        // ตัวแปรเก็บข้อมูลทั้งหมด
+        let allRequests = [];
+        let departments = [];
+        
         // ฟังก์ชันหลักเมื่อโหลดหน้าเว็บ
         document.addEventListener('DOMContentLoaded', function() {
-            loadRequests();
+            loadData();
             setupEventListeners();
         });
-
-        // โหลดข้อมูลคำขอ
-        function loadRequests() {
-            const container = document.getElementById('requests-container');
-            container.innerHTML = '<div class="loading"><i class="fas fa-spinner fa-spin"></i> กำลังโหลดข้อมูลจาก Google Sheets...</div>';
+        
+        // ตั้งค่า Event Listeners
+        function setupEventListeners() {
+            document.getElementById('filter-status').addEventListener('change', () => {
+                displayRequests();
+            });
             
-            // ในกรณีจริงจะดึงข้อมูลจาก Google Sheets API
-            // แต่ในตัวอย่างนี้จะใช้ข้อมูลจำลองก่อน
-            setTimeout(() => {
-                displayRequests(mockData);
-                updateStats(mockData);
-            }, 800);
+            document.getElementById('filter-department').addEventListener('change', () => {
+                displayRequests();
+            });
+            
+            document.getElementById('filter-date').addEventListener('change', () => {
+                displayRequests();
+            });
+            
+            document.getElementById('refresh-btn').addEventListener('click', () => {
+                loadData();
+            });
         }
-
+        
+        // โหลดข้อมูลจาก Google Sheets
+        async function loadData() {
+            showLoading(true);
+            updateApiStatus('กำลังเชื่อมต่อกับ Google Sheets...', 'connecting');
+            
+            try {
+                // เรียก API เพื่อดึงข้อมูล
+                const response = await fetch(SCRIPT_URL);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    allRequests = data.data;
+                    updateApiStatus('เชื่อมต่อกับ Google Sheets สำเร็จ', 'connected');
+                    showNotification('โหลดข้อมูลสำเร็จ', 'success');
+                    
+                    // แยกแผนกที่ไม่ซ้ำกัน
+                    extractDepartments();
+                    
+                    // แสดงข้อมูล
+                    displayRequests();
+                    updateStats();
+                } else {
+                    throw new Error(data.error || 'เกิดข้อผิดพลาดในการดึงข้อมูล');
+                }
+            } catch (error) {
+                console.error('Error loading data:', error);
+                updateApiStatus('ไม่สามารถเชื่อมต่อกับ Google Sheets', 'disconnected');
+                showNotification(`ไม่สามารถโหลดข้อมูล: ${error.message}`, 'error');
+                
+                // แสดงข้อมูลตัวอย่างเพื่อทดสอบ
+                loadSampleData();
+            } finally {
+                showLoading(false);
+            }
+        }
+        
+        // แยกแผนกต่างๆ จากข้อมูล
+        function extractDepartments() {
+            departments = ['all'];
+            allRequests.forEach(request => {
+                if (request.department && !departments.includes(request.department)) {
+                    departments.push(request.department);
+                }
+            });
+            
+            // อัพเดทตัวเลือกแผนก
+            const deptSelect = document.getElementById('filter-department');
+            deptSelect.innerHTML = '<option value="all">ทั้งหมด</option>';
+            
+            departments.forEach(dept => {
+                if (dept !== 'all') {
+                    const option = document.createElement('option');
+                    option.value = dept;
+                    option.textContent = dept;
+                    deptSelect.appendChild(option);
+                }
+            });
+        }
+        
         // แสดงคำขอทั้งหมด
-        function displayRequests(requests) {
+        function displayRequests() {
             const container = document.getElementById('requests-container');
             const statusFilter = document.getElementById('filter-status').value;
             const deptFilter = document.getElementById('filter-department').value;
             const dateFilter = document.getElementById('filter-date').value;
             
             // กรองข้อมูลตามเงื่อนไข
-            let filteredRequests = requests.filter(request => {
+            let filteredRequests = allRequests.filter(request => {
                 // กรองตามสถานะ
                 if (statusFilter !== 'all' && request.approval !== statusFilter) {
                     return false;
@@ -550,6 +640,9 @@
                         <i class="fas fa-clipboard-list"></i>
                         <h3>ไม่พบข้อมูลคำขอจองรถ</h3>
                         <p>ไม่มีคำขอจองรถที่ตรงกับเงื่อนไขการค้นหา</p>
+                        <button onclick="loadData()" style="margin-top: 15px;">
+                            <i class="fas fa-sync-alt"></i> โหลดข้อมูลใหม่
+                        </button>
                     </div>
                 `;
                 return;
@@ -565,11 +658,12 @@
                 container.appendChild(requestCard);
             });
         }
-
+        
         // สร้างการ์ดสำหรับแต่ละคำขอ
         function createRequestCard(request) {
             const card = document.createElement('div');
             card.className = 'request-card';
+            card.id = `request-${request.Code}`;
             
             // กำหนดสีของ border ตามสถานะ
             let statusColor = '#3498db'; // ปกติ (pending)
@@ -595,30 +689,30 @@
             card.innerHTML = `
                 <div class="card-header">
                     <div>
-                        <div class="request-code">${request.Code}</div>
-                        <div class="request-date">ยื่นเมื่อ: ${request.Timestamp}</div>
+                        <div class="request-code">${request.Code || 'ไม่มีรหัส'}</div>
+                        <div class="request-date">ยื่นเมื่อ: ${request.Timestamp || 'ไม่ระบุ'}</div>
                     </div>
                     <div class="${statusClass}">${statusText}</div>
                 </div>
                 
                 <div class="requester-info">
-                    <div class="requester-name">${request.name}</div>
+                    <div class="requester-name">${request.name || 'ไม่ระบุชื่อ'}</div>
                     <div class="requester-details">
                         <div class="detail-item">
                             <i class="fas fa-building"></i>
-                            <span>${request.department} / ${request.section}</span>
+                            <span>${request.department || 'ไม่ระบุ'} / ${request.section || 'ไม่ระบุ'}</span>
                         </div>
                         <div class="detail-item">
                             <i class="fas fa-briefcase"></i>
-                            <span>${request.position}</span>
+                            <span>${request.position || 'ไม่ระบุ'}</span>
                         </div>
                         <div class="detail-item">
                             <i class="fas fa-phone"></i>
-                            <span>${request.contact}</span>
+                            <span>${request.contact || 'ไม่ระบุ'}</span>
                         </div>
                         <div class="detail-item">
                             <i class="fas fa-car"></i>
-                            <span>${request.choose}</span>
+                            <span>${request.choose || 'ไม่ระบุยี่ห้อ'}</span>
                         </div>
                     </div>
                 </div>
@@ -636,25 +730,25 @@
                         </div>
                         <div class="time-item">
                             <div class="time-label">เวลาเริ่มต้น</div>
-                            <div class="time-value">${request.startTime} น.</div>
+                            <div class="time-value">${request.startTime || 'ไม่ระบุ'} น.</div>
                         </div>
                         <div class="time-item">
                             <div class="time-label">เวลาสิ้นสุด</div>
-                            <div class="time-value">${request.endTime} น.</div>
+                            <div class="time-value">${request.endTime || 'ไม่ระบุ'} น.</div>
                         </div>
                     </div>
                 </div>
                 
                 <div class="reason-box">
                     <h4><i class="fas fa-comment-dots"></i> เหตุผลในการจองรถ</h4>
-                    <div class="reason-text">${request.reason}</div>
+                    <div class="reason-text">${request.reason || 'ไม่ระบุเหตุผล'}</div>
                 </div>
                 
                 <div class="approval-actions">
-                    <button class="btn-approve" onclick="approveRequest('${request.Code}')" ${request.approval !== 'pending' ? 'disabled style="opacity:0.6;"' : ''}>
+                    <button class="btn-approve" onclick="updateApproval('${request.Code}', 'approved')" ${request.approval !== 'pending' ? 'disabled style="opacity:0.6; cursor:not-allowed;"' : ''}>
                         <i class="fas fa-check-circle"></i> อนุมัติ
                     </button>
-                    <button class="btn-reject" onclick="rejectRequest('${request.Code}')" ${request.approval !== 'pending' ? 'disabled style="opacity:0.6;"' : ''}>
+                    <button class="btn-reject" onclick="updateApproval('${request.Code}', 'rejected')" ${request.approval !== 'pending' ? 'disabled style="opacity:0.6; cursor:not-allowed;"' : ''}>
                         <i class="fas fa-times-circle"></i> ปฏิเสธ
                     </button>
                 </div>
@@ -662,73 +756,189 @@
             
             return card;
         }
-
+        
+        // อัพเดทสถานะการอนุมัติ
+        async function updateApproval(code, status) {
+            const actionText = status === 'approved' ? 'อนุมัติ' : 'ปฏิเสธ';
+            
+            if (!confirm(`คุณต้องการ${actionText}คำขอจองรถ ${code} ใช่หรือไม่?`)) {
+                return;
+            }
+            
+            showLoading(true);
+            
+            try {
+                // ส่งข้อมูลไปยัง Google Apps Script
+                const response = await fetch(SCRIPT_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        action: 'update',
+                        code: code,
+                        approval: status
+                    })
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    showNotification(`${actionText}คำขอ ${code} สำเร็จ`, 'success');
+                    
+                    // อัพเดทข้อมูลใน allRequests
+                    const requestIndex = allRequests.findIndex(r => r.Code === code);
+                    if (requestIndex !== -1) {
+                        allRequests[requestIndex].approval = status;
+                        
+                        // อัพเดทการแสดงผล
+                        displayRequests();
+                        updateStats();
+                    }
+                } else {
+                    throw new Error(result.error || `ไม่สามารถ${actionText}คำขอได้`);
+                }
+            } catch (error) {
+                console.error('Error updating approval:', error);
+                showNotification(`ไม่สามารถ${actionText}คำขอ: ${error.message}`, 'error');
+            } finally {
+                showLoading(false);
+            }
+        }
+        
         // อัพเดทสถิติ
-        function updateStats(requests) {
-            const total = requests.length;
-            const pending = requests.filter(r => r.approval === 'pending').length;
-            const approved = requests.filter(r => r.approval === 'approved').length;
-            const rejected = requests.filter(r => r.approval === 'rejected').length;
+        function updateStats() {
+            const total = allRequests.length;
+            const pending = allRequests.filter(r => r.approval === 'pending').length;
+            const approved = allRequests.filter(r => r.approval === 'approved').length;
+            const rejected = allRequests.filter(r => r.approval === 'rejected').length;
             
             document.getElementById('total-requests').textContent = total;
             document.getElementById('pending-requests').textContent = pending;
             document.getElementById('approved-requests').textContent = approved;
             document.getElementById('rejected-requests').textContent = rejected;
         }
-
-        // ตั้งค่า Event Listeners
-        function setupEventListeners() {
-            document.getElementById('filter-status').addEventListener('change', () => {
-                displayRequests(mockData);
-            });
+        
+        // อัพเดทสถานะการเชื่อมต่อ API
+        function updateApiStatus(message, status) {
+            const indicator = document.getElementById('api-status-indicator');
+            const text = document.getElementById('api-status-text');
             
-            document.getElementById('filter-department').addEventListener('change', () => {
-                displayRequests(mockData);
-            });
+            text.textContent = message;
             
-            document.getElementById('filter-date').addEventListener('change', () => {
-                displayRequests(mockData);
-            });
+            // ลบคลาสสถานะเก่าทั้งหมด
+            indicator.classList.remove('status-connected', 'status-disconnected', 'status-connecting');
             
-            document.getElementById('refresh-btn').addEventListener('click', () => {
-                loadRequests();
-            });
+            // เพิ่มคลาสสถานะใหม่
+            indicator.classList.add(`status-${status}`);
         }
-
-        // ฟังก์ชันอนุมัติคำขอ
-        function approveRequest(code) {
-            if (confirm(`คุณต้องการอนุมัติคำขอจองรถ ${code} ใช่หรือไม่?`)) {
-                // ในกรณีจริงจะส่งข้อมูลไปที่ Google Sheets API
-                alert(`อนุมัติคำขอ ${code} เรียบร้อยแล้ว`);
-                
-                // อัพเดทสถานะในข้อมูลจำลอง
-                const requestIndex = mockData.findIndex(r => r.Code === code);
-                if (requestIndex !== -1) {
-                    mockData[requestIndex].approval = 'approved';
-                    displayRequests(mockData);
-                    updateStats(mockData);
-                }
+        
+        // แสดง/ซ่อนสถานะ loading
+        function showLoading(show) {
+            const refreshBtn = document.getElementById('refresh-btn');
+            if (show) {
+                refreshBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> กำลังโหลด...';
+                refreshBtn.disabled = true;
+            } else {
+                refreshBtn.innerHTML = '<i class="fas fa-sync-alt"></i> โหลดข้อมูลใหม่';
+                refreshBtn.disabled = false;
             }
         }
-
-        // ฟังก์ชันปฏิเสธคำขอ
-        function rejectRequest(code) {
-            if (confirm(`คุณต้องการปฏิเสธคำขอจองรถ ${code} ใช่หรือไม่?`)) {
-                // ในกรณีจริงจะส่งข้อมูลไปที่ Google Sheets API
-                alert(`ปฏิเสธคำขอ ${code} เรียบร้อยแล้ว`);
+        
+        // แสดงการแจ้งเตือน
+        function showNotification(message, type = 'info') {
+            const container = document.getElementById('notification-container');
+            
+            const notification = document.createElement('div');
+            notification.className = `notification ${type}`;
+            notification.textContent = message;
+            
+            container.appendChild(notification);
+            
+            // แสดงการแจ้งเตือน
+            setTimeout(() => {
+                notification.classList.add('show');
+            }, 10);
+            
+            // ซ่อนการแจ้งเตือนหลังจาก 3 วินาที
+            setTimeout(() => {
+                notification.classList.remove('show');
                 
-                // อัพเดทสถานะในข้อมูลจำลอง
-                const requestIndex = mockData.findIndex(r => r.Code === code);
-                if (requestIndex !== -1) {
-                    mockData[requestIndex].approval = 'rejected';
-                    displayRequests(mockData);
-                    updateStats(mockData);
-                }
-            }
+                // ลบการแจ้งเตือนออกจาก DOM หลังจาก animation
+                setTimeout(() => {
+                    notification.remove();
+                }, 300);
+            }, 3000);
         }
-
+        
+        // โหลดข้อมูลตัวอย่างเมื่อไม่สามารถเชื่อมต่อ API ได้
+        function loadSampleData() {
+            const sampleData = [
+                {
+                    Timestamp: "2023-10-15 09:30:00",
+                    Code: "CR-2023-001",
+                    name: "สมชาย ใจดี",
+                    section: "การเงิน",
+                    department: "บัญชี",
+                    position: "ผู้จัดการ",
+                    contact: "089-123-4567",
+                    choose: "รถยนต์ Nissan Almera",
+                    rentStartdate: "2023-10-20",
+                    rentEnddate: "2023-10-22",
+                    startTime: "09:00",
+                    endTime: "17:00",
+                    reason: "นำทีมงานไปประชุมกับลูกค้าที่จังหวัดชลบุรี",
+                    approval: "pending"
+                },
+                {
+                    Timestamp: "2023-10-14 14:20:00",
+                    Code: "CR-2023-002",
+                    name: "สุนิสา ราตรี",
+                    section: "ตลาด",
+                    department: "ขาย",
+                    position: "หัวหน้าแผนก",
+                    contact: "082-987-6543",
+                    choose: "รถยนต์ Toyota Yaris",
+                    rentStartdate: "2023-10-18",
+                    rentEnddate: "2023-10-18",
+                    startTime: "08:30",
+                    endTime: "16:30",
+                    reason: "นำสินค้าไปจัดแสดงในงานแสดงสินค้า",
+                    approval: "approved"
+                },
+                {
+                    Timestamp: "2023-10-13 11:15:00",
+                    Code: "CR-2023-003",
+                    name: "อนุชา ศรีสุวรรณ",
+                    section: "คลังสินค้า",
+                    department: "จัดซื้อ",
+                    position: "พนักงาน",
+                    contact: "086-555-7890",
+                    choose: "รถกระบะ Toyota Hilux",
+                    rentStartdate: "2023-10-25",
+                    rentEnddate: "2023-10-25",
+                    startTime: "07:00",
+                    endTime: "18:00",
+                    reason: "ไปรับสินค้าจากผู้ผลิตที่จังหวัดอยุธยา",
+                    approval: "pending"
+                }
+            ];
+            
+            allRequests = sampleData;
+            extractDepartments();
+            displayRequests();
+            updateStats();
+            showNotification('กำลังใช้ข้อมูลตัวอย่างสำหรับการทดสอบ', 'info');
+        }
+        
         // จัดรูปแบบวันที่
         function formatDate(dateString) {
+            if (!dateString) return 'ไม่ระบุ';
+            
             const date = new Date(dateString);
             if (isNaN(date.getTime())) return dateString;
             
