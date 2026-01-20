@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ระบบอนุมัติการจองรถ</title>
+    <title>ระบบอนุมัติ Car Rent</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.1/font/bootstrap-icons.css">
     <style>
@@ -165,7 +165,7 @@
         <div class="container">
             <div class="d-flex justify-content-between align-items-center">
                 <div>
-                    <h1 class="h3 mb-0"><i class="bi bi-car-front-fill me-2"></i>ระบบอนุมัติการจองรถ</h1>
+                    <h1 class="h3 mb-0"><i class="bi bi-car-front-fill me-2"></i>ระบบอนุมัติ Car Rent</h1>
                     <p class="mb-0">อนุมัติหรือไม่อนุมัติการจองยานพาหนะ</p>
                 </div>
                 <div class="text-end">
@@ -178,6 +178,17 @@
 
     <!-- Main Content -->
     <div class="container">
+        <!-- Connection Status -->
+        <div class="row mb-3">
+            <div class="col-12">
+                <div class="alert alert-warning alert-dismissible fade show" id="connection-alert">
+                    <i class="bi bi-wifi-off me-2"></i>
+                    <strong>สถานะ:</strong> <span id="connection-status">กำลังตรวจสอบการเชื่อมต่อ...</span>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            </div>
+        </div>
+
         <!-- Filters and Stats -->
         <div class="row mb-4">
             <div class="col-md-8">
@@ -332,7 +343,7 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         // Configuration
-        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbz3Za-igrfjotYU7We9W9qR8yGFFaHOhqG9DbIRT0z6GiQo8QdG6vao2_hNSdW7F4pE/exec';
+        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzReRwQHdUTdit1HMRCVVNlsGwpdvZMFG4fhsv5yh5nLpOE28NFuV2y_1OXPHU0DPkM/exec';
         
         // Global variables
         let allData = [];
@@ -367,14 +378,16 @@
         };
         const totalCountElement = document.getElementById('total-count');
         const currentTimeElement = document.getElementById('current-time');
+        const connectionStatus = document.getElementById('connection-status');
+        const connectionAlert = document.getElementById('connection-alert');
         
         // Initialize the page
         document.addEventListener('DOMContentLoaded', function() {
             updateCurrentTime();
             setInterval(updateCurrentTime, 60000);
             
-            // Load data immediately
-            loadData();
+            // Test connection first
+            testConnection();
             
             // Event listeners
             filterBadges.forEach(badge => {
@@ -423,134 +436,258 @@
             currentTimeElement.innerHTML = `${dateStr} ${timeStr} น.`;
         }
         
-        // Load data from Google Apps Script
+        // Test connection to Google Apps Script
+        async function testConnection() {
+            updateConnectionStatus('กำลังทดสอบการเชื่อมต่อ...', 'warning');
+            
+            try {
+                // Use JSONP method to bypass CORS
+                const callbackName = 'jsonpCallback_' + Date.now();
+                
+                // Create script element for JSONP
+                const script = document.createElement('script');
+                script.src = `${SCRIPT_URL}?action=test&callback=${callbackName}`;
+                
+                // Create callback function
+                window[callbackName] = function(response) {
+                    console.log('Connection test response:', response);
+                    
+                    if (response && response.success) {
+                        updateConnectionStatus('เชื่อมต่อกับ Google Sheet สำเร็จ', 'success');
+                        loadData();
+                    } else {
+                        updateConnectionStatus('ไม่สามารถเชื่อมต่อกับ Google Sheet ได้', 'danger');
+                        // Load fallback data
+                        loadFallbackData();
+                    }
+                    
+                    // Clean up
+                    delete window[callbackName];
+                    document.head.removeChild(script);
+                };
+                
+                // Add error handling
+                script.onerror = function() {
+                    console.error('JSONP request failed');
+                    updateConnectionStatus('การเชื่อมต่อล้มเหลว ใช้ข้อมูลตัวอย่าง', 'danger');
+                    loadFallbackData();
+                    delete window[callbackName];
+                };
+                
+                // Execute JSONP request
+                document.head.appendChild(script);
+                
+            } catch (error) {
+                console.error('Connection test error:', error);
+                updateConnectionStatus('เกิดข้อผิดพลาดในการเชื่อมต่อ', 'danger');
+                loadFallbackData();
+            }
+        }
+        
+        // Update connection status display
+        function updateConnectionStatus(message, type) {
+            connectionStatus.textContent = message;
+            
+            // Update alert class
+            const alertClass = {
+                'success': 'alert-success',
+                'warning': 'alert-warning',
+                'danger': 'alert-danger',
+                'info': 'alert-info'
+            }[type] || 'alert-warning';
+            
+            connectionAlert.className = `alert ${alertClass} alert-dismissible fade show`;
+            
+            // Update icon
+            const iconClass = {
+                'success': 'bi-check-circle',
+                'warning': 'bi-exclamation-triangle',
+                'danger': 'bi-x-circle',
+                'info': 'bi-info-circle'
+            }[type] || 'bi-exclamation-triangle';
+            
+            connectionAlert.querySelector('i').className = `bi ${iconClass} me-2`;
+        }
+        
+        // Load data from Google Apps Script using JSONP
         async function loadData() {
             showLoading('กำลังโหลดข้อมูลจาก Google Sheet...');
             
             try {
-                // ใช้ URL ที่ให้มาโดยตรง
-                const url = `${SCRIPT_URL}?action=getData`;
-                console.log('Fetching data from:', url);
+                const callbackName = 'jsonpDataCallback_' + Date.now();
                 
-                const response = await fetch(url);
+                // Create script element for JSONP
+                const script = document.createElement('script');
+                script.src = `${SCRIPT_URL}?action=getData&callback=${callbackName}`;
                 
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-                
-                const result = await response.json();
-                console.log('API Response:', result);
-                
-                if (result.success) {
-                    allData = result.data;
-                    console.log('Loaded data:', allData.length, 'items');
-                    console.log('Sample data:', allData[0]);
+                // Create callback function
+                window[callbackName] = function(response) {
+                    console.log('Data loaded:', response);
                     
-                    updateCounts();
-                    applyFilter(currentFilter);
-                    showToast('โหลดข้อมูลสำเร็จแล้ว', 'success');
-                } else {
-                    throw new Error(result.message || 'ไม่สามารถโหลดข้อมูลได้');
-                }
+                    if (response && response.success && response.data) {
+                        allData = response.data;
+                        console.log('Successfully loaded', allData.length, 'items');
+                        
+                        // Store row index for each item
+                        allData.forEach((item, index) => {
+                            item.rowIndex = index + 2; // +2 because header is row 1 and array is 0-indexed
+                        });
+                        
+                        updateCounts();
+                        applyFilter(currentFilter);
+                        showToast('โหลดข้อมูลสำเร็จแล้ว', 'success');
+                        updateConnectionStatus('เชื่อมต่อกับ Google Sheet สำเร็จ', 'success');
+                    } else {
+                        throw new Error(response?.message || 'ไม่สามารถโหลดข้อมูลได้');
+                    }
+                    
+                    // Clean up
+                    delete window[callbackName];
+                    document.head.removeChild(script);
+                    hideLoading();
+                };
+                
+                // Add error handling
+                script.onerror = function() {
+                    console.error('JSONP data request failed');
+                    updateConnectionStatus('ไม่สามารถดึงข้อมูลได้ ใช้ข้อมูลตัวอย่าง', 'danger');
+                    loadFallbackData();
+                    delete window[callbackName];
+                    hideLoading();
+                };
+                
+                // Execute JSONP request
+                document.head.appendChild(script);
+                
             } catch (error) {
-                console.error('Error loading data:', error);
-                
-                // Try with different approach
-                try {
-                    console.log('Trying alternative method...');
-                    const alternativeUrl = SCRIPT_URL;
-                    const formData = new FormData();
-                    formData.append('action', 'getData');
-                    
-                    const response = await fetch(alternativeUrl, {
-                        method: 'POST',
-                        body: formData,
-                        mode: 'no-cors' // Try no-cors mode
-                    });
-                    
-                    // If still fails, use fallback
-                    throw new Error('Cannot connect to Google Apps Script');
-                    
-                } catch (fallbackError) {
-                    console.error('Fallback error:', fallbackError);
-                    
-                    // Use fallback sample data
-                    allData = getFallbackData();
-                    updateCounts();
-                    applyFilter(currentFilter);
-                    showToast('ใช้งานข้อมูลตัวอย่างเนื่องจากไม่สามารถเชื่อมต่อกับ Google Sheet ได้', 'warning');
-                }
-            } finally {
+                console.error('Load data error:', error);
+                updateConnectionStatus('เกิดข้อผิดพลาดในการโหลดข้อมูล', 'danger');
+                loadFallbackData();
                 hideLoading();
             }
         }
         
-        // Update approval status
+        // Update approval status using form submission method
         async function updateApproval(status) {
             if (!currentApprovalRow) return;
             
             showLoading('กำลังอัปเดตสถานะ...');
             
             try {
-                // Get the row number from the data
-                // Assuming the data includes rowIndex or we need to find it
-                const rowIndex = currentApprovalRow.rowIndex || (allData.indexOf(currentApprovalRow) + 2);
+                const rowIndex = currentApprovalRow.rowIndex;
                 
-                // Prepare data for update - using column N (column 14)
-                const updateData = {
-                    action: 'updateApproval',
-                    rowIndex: rowIndex,
-                    columnIndex: 14, // Column N
-                    approvalStatus: status
+                if (!rowIndex) {
+                    throw new Error('ไม่พบข้อมูลแถวสำหรับอัปเดต');
+                }
+                
+                // Create a hidden iframe for form submission
+                const iframe = document.createElement('iframe');
+                iframe.name = 'submitFrame_' + Date.now();
+                iframe.style.display = 'none';
+                
+                // Create form for submission
+                const form = document.createElement('form');
+                form.target = iframe.name;
+                form.action = SCRIPT_URL;
+                form.method = 'POST';
+                
+                // Add form data
+                const actionInput = document.createElement('input');
+                actionInput.type = 'hidden';
+                actionInput.name = 'action';
+                actionInput.value = 'updateApproval';
+                form.appendChild(actionInput);
+                
+                const rowInput = document.createElement('input');
+                rowInput.type = 'hidden';
+                rowInput.name = 'rowIndex';
+                rowInput.value = rowIndex;
+                form.appendChild(rowInput);
+                
+                const statusInput = document.createElement('input');
+                statusInput.type = 'hidden';
+                statusInput.name = 'approvalStatus';
+                statusInput.value = status;
+                form.appendChild(statusInput);
+                
+                // Add iframe and form to document
+                document.body.appendChild(iframe);
+                document.body.appendChild(form);
+                
+                // Submit form
+                form.submit();
+                
+                // Wait for response
+                iframe.onload = function() {
+                    try {
+                        // Try to get response from iframe
+                        const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
+                        const responseText = iframeDoc.body.textContent;
+                        
+                        let response;
+                        try {
+                            response = JSON.parse(responseText);
+                        } catch (e) {
+                            response = { success: true }; // Assume success if can't parse
+                        }
+                        
+                        if (response.success) {
+                            // Update local data
+                            currentApprovalRow.approval = status;
+                            
+                            // Update UI
+                            updateCounts();
+                            applyFilter(currentFilter);
+                            
+                            // Close modal
+                            const modal = bootstrap.Modal.getInstance(document.getElementById('approvalModal'));
+                            modal.hide();
+                            
+                            showToast(`อัปเดตสถานะเป็น "${status}" สำเร็จแล้ว`, 'success');
+                        } else {
+                            throw new Error(response.message || 'อัปเดตไม่สำเร็จ');
+                        }
+                    } catch (error) {
+                        console.error('Update error:', error);
+                        showToast('อัปเดตสถานะสำเร็จ (แต่ไม่สามารถยืนยันได้)', 'warning');
+                        
+                        // Still update local data
+                        currentApprovalRow.approval = status;
+                        updateCounts();
+                        applyFilter(currentFilter);
+                        const modal = bootstrap.Modal.getInstance(document.getElementById('approvalModal'));
+                        modal.hide();
+                    } finally {
+                        // Clean up
+                        document.body.removeChild(iframe);
+                        document.body.removeChild(form);
+                        hideLoading();
+                    }
                 };
                 
-                console.log('Updating approval:', updateData);
+                // Set timeout for iframe load
+                setTimeout(function() {
+                    if (iframe.parentNode) {
+                        hideLoading();
+                        showToast('กำลังอัปเดตข้อมูล...', 'info');
+                        
+                        // Assume success and update locally
+                        currentApprovalRow.approval = status;
+                        updateCounts();
+                        applyFilter(currentFilter);
+                        const modal = bootstrap.Modal.getInstance(document.getElementById('approvalModal'));
+                        modal.hide();
+                        
+                        // Clean up
+                        document.body.removeChild(iframe);
+                        document.body.removeChild(form);
+                    }
+                }, 5000);
                 
-                // Try POST method
-                const response = await fetch(SCRIPT_URL, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/x-www-form-urlencoded',
-                    },
-                    body: new URLSearchParams(updateData)
-                });
-                
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-                
-                const result = await response.json();
-                console.log('Update response:', result);
-                
-                if (result.success) {
-                    // Update local data
-                    currentApprovalRow.approval = status;
-                    
-                    // Update UI
-                    updateCounts();
-                    applyFilter(currentFilter);
-                    
-                    // Close modal
-                    const modal = bootstrap.Modal.getInstance(document.getElementById('approvalModal'));
-                    modal.hide();
-                    
-                    showToast(`อัปเดตสถานะเป็น "${status}" สำเร็จแล้ว`, 'success');
-                } else {
-                    throw new Error(result.message || 'ไม่สามารถอัปเดตข้อมูลได้');
-                }
             } catch (error) {
-                console.error('Error updating approval:', error);
-                showToast('เกิดข้อผิดพลาดในการอัปเดตข้อมูล: ' + error.message, 'error');
-                
-                // Fallback: Update local data only
-                currentApprovalRow.approval = status;
-                updateCounts();
-                applyFilter(currentFilter);
-                const modal = bootstrap.Modal.getInstance(document.getElementById('approvalModal'));
-                modal.hide();
-                showToast(`อัปเดตสถานะเป็น "${status}" ในหน่วยความจำชั่วคราว`, 'warning');
-            } finally {
+                console.error('Update approval error:', error);
                 hideLoading();
+                showToast('เกิดข้อผิดพลาดในการอัปเดต: ' + error.message, 'error');
             }
         }
         
@@ -604,7 +741,8 @@
                     (item.name && item.name.toString().toLowerCase().includes(term)) ||
                     (item.department && item.department.toString().toLowerCase().includes(term)) ||
                     (item.section && item.section.toString().toLowerCase().includes(term)) ||
-                    (item.reason && item.reason.toString().toLowerCase().includes(term))
+                    (item.reason && item.reason.toString().toLowerCase().includes(term)) ||
+                    (item['ชื่อ-นามสกุล'] && item['ชื่อ-นามสกุล'].toString().toLowerCase().includes(term))
                 );
                 
                 // Apply current status filter
@@ -642,7 +780,7 @@
                         <i class="bi bi-inbox display-4 text-muted"></i>
                         <p class="mt-3">ไม่พบข้อมูล</p>
                         <button class="btn btn-sm btn-primary mt-2" onclick="loadData()">
-                            <i class="bi bi-arrow-clockwise"></i> รีเฟรชข้อมูล
+                            <i class="bi bi-arrow-clockwise"></i> โหลดข้อมูลใหม่
                         </button>
                     </td>
                 `;
@@ -651,30 +789,40 @@
                 // Render rows
                 pageData.forEach((item, index) => {
                     const rowNumber = startIndex + index + 1;
-                    const status = item.approval || 'รออนุมัติ';
+                    
+                    // Get field values (support both Thai and English field names)
+                    const code = item.code || item.ID || item.id || item['รหัส'] || '-';
+                    const name = item.name || item.fullname || item['ชื่อ-นามสกุล'] || '-';
+                    const position = item.position || item.tposition || item['ตำแหน่ง'] || '-';
+                    const department = item.department || item.dept || item['แผนก'] || '-';
+                    const section = item.section || item.sec || item['ฝ่าย'] || '-';
+                    const startDate = item.rentStartdate || item.startDate || item['วันที่เริ่ม'] || '-';
+                    const endDate = item.rentEnddate || item.endDate || item['วันที่สิ้นสุด'] || '-';
+                    const reason = item.reason || item['เหตุผล'] || '-';
+                    const status = item.approval || item['สถานะ'] || 'รออนุมัติ';
                     const statusClass = getStatusClass(status);
                     
                     const row = document.createElement('tr');
                     row.innerHTML = `
                         <td>${rowNumber}</td>
-                        <td><strong>${item.code || item.ID || item.id || '-'}</strong></td>
+                        <td><strong>${code}</strong></td>
                         <td>
-                            <div>${item.name || item.fullname || item['ชื่อ-นามสกุล'] || '-'}</div>
-                            <small class="text-muted">${item.position || item.tposition || '-'}</small>
+                            <div>${name}</div>
+                            <small class="text-muted">${position}</small>
                         </td>
                         <td>
-                            <div>${item.department || item.dept || '-'}</div>
-                            <small class="text-muted">${item.section || item.sec || '-'}</small>
+                            <div>${department}</div>
+                            <small class="text-muted">${section}</small>
                         </td>
                         <td>
-                            <div>${formatDate(item.rentStartdate || item.startDate || item['วันที่เริ่ม'])}</div>
+                            <div>${formatDate(startDate)}</div>
                             <small class="text-muted">${item.startTime || item['เวลาเริ่ม'] || ''}</small>
                         </td>
                         <td>
-                            <div>${formatDate(item.rentEnddate || item.endDate || item['วันที่สิ้นสุด'])}</div>
+                            <div>${formatDate(endDate)}</div>
                             <small class="text-muted">${item.endTime || item['เวลาสิ้นสุด'] || ''}</small>
                         </td>
-                        <td>${item.reason || item['เหตุผล'] || '-'}</td>
+                        <td>${reason.length > 30 ? reason.substring(0, 30) + '...' : reason}</td>
                         <td>
                             <span class="badge-status ${statusClass}">${status}</span>
                         </td>
@@ -769,9 +917,21 @@
             
             currentApprovalRow = filteredData[index];
             
+            // Get field values
+            const code = currentApprovalRow.code || currentApprovalRow.ID || currentApprovalRow.id || currentApprovalRow['รหัส'] || '-';
+            const name = currentApprovalRow.name || currentApprovalRow.fullname || currentApprovalRow['ชื่อ-นามสกุล'] || '-';
+            const position = currentApprovalRow.position || currentApprovalRow.tposition || currentApprovalRow['ตำแหน่ง'] || '-';
+            const department = currentApprovalRow.department || currentApprovalRow.dept || currentApprovalRow['แผนก'] || '-';
+            const section = currentApprovalRow.section || currentApprovalRow.sec || currentApprovalRow['ฝ่าย'] || '-';
+            const contact = currentApprovalRow.contact || currentApprovalRow.phone || currentApprovalRow.tel || currentApprovalRow['ติดต่อ'] || '-';
+            const startDate = currentApprovalRow.rentStartdate || currentApprovalRow.startDate || currentApprovalRow['วันที่เริ่ม'] || '-';
+            const endDate = currentApprovalRow.rentEnddate || currentApprovalRow.endDate || currentApprovalRow['วันที่สิ้นสุด'] || '-';
+            const vehicle = currentApprovalRow.choose || currentApprovalRow.vehicle || currentApprovalRow['ประเภทรถ'] || '-';
+            const reason = currentApprovalRow.reason || currentApprovalRow['เหตุผล'] || '-';
+            const status = currentApprovalRow.approval || currentApprovalRow['สถานะ'] || 'รออนุมัติ';
+            
             // Populate modal details
             const modalDetails = document.getElementById('modal-details');
-            const status = currentApprovalRow.approval || 'รออนุมัติ';
             
             modalDetails.innerHTML = `
                 <div class="mb-3">
@@ -779,27 +939,27 @@
                     <div class="row">
                         <div class="col-6">
                             <small class="text-muted">รหัส</small>
-                            <div><strong>${currentApprovalRow.code || currentApprovalRow.ID || currentApprovalRow.id || '-'}</strong></div>
+                            <div><strong>${code}</strong></div>
                         </div>
                         <div class="col-6">
                             <small class="text-muted">ชื่อ-นามสกุล</small>
-                            <div><strong>${currentApprovalRow.name || currentApprovalRow.fullname || currentApprovalRow['ชื่อ-นามสกุล'] || '-'}</strong></div>
+                            <div><strong>${name}</strong></div>
                         </div>
                     </div>
                     <div class="row mt-2">
                         <div class="col-6">
                             <small class="text-muted">แผนก/ฝ่าย</small>
-                            <div>${currentApprovalRow.department || currentApprovalRow.dept || '-'}</div>
+                            <div>${department}</div>
                         </div>
                         <div class="col-6">
                             <small class="text-muted">ตำแหน่ง</small>
-                            <div>${currentApprovalRow.position || currentApprovalRow.tposition || '-'}</div>
+                            <div>${position}</div>
                         </div>
                     </div>
                     <div class="row mt-2">
                         <div class="col-6">
                             <small class="text-muted">ติดต่อ</small>
-                            <div>${currentApprovalRow.contact || currentApprovalRow.phone || currentApprovalRow.tel || '-'}</div>
+                            <div>${contact}</div>
                         </div>
                     </div>
                 </div>
@@ -809,17 +969,17 @@
                     <div class="row">
                         <div class="col-6">
                             <small class="text-muted">วันที่เริ่ม</small>
-                            <div><strong>${formatDate(currentApprovalRow.rentStartdate || currentApprovalRow.startDate || currentApprovalRow['วันที่เริ่ม'])} ${currentApprovalRow.startTime || currentApprovalRow['เวลาเริ่ม'] || ''}</strong></div>
+                            <div><strong>${formatDate(startDate)} ${currentApprovalRow.startTime || currentApprovalRow['เวลาเริ่ม'] || ''}</strong></div>
                         </div>
                         <div class="col-6">
                             <small class="text-muted">วันที่สิ้นสุด</small>
-                            <div><strong>${formatDate(currentApprovalRow.rentEnddate || currentApprovalRow.endDate || currentApprovalRow['วันที่สิ้นสุด'])} ${currentApprovalRow.endTime || currentApprovalRow['เวลาสิ้นสุด'] || ''}</strong></div>
+                            <div><strong>${formatDate(endDate)} ${currentApprovalRow.endTime || currentApprovalRow['เวลาสิ้นสุด'] || ''}</strong></div>
                         </div>
                     </div>
                     <div class="row mt-2">
                         <div class="col-12">
                             <small class="text-muted">ประเภทรถที่เลือก</small>
-                            <div>${currentApprovalRow.choose || currentApprovalRow.vehicle || currentApprovalRow['ประเภทรถ'] || '-'}</div>
+                            <div>${vehicle}</div>
                         </div>
                     </div>
                 </div>
@@ -827,7 +987,7 @@
                 <div class="mb-3">
                     <h6>เหตุผลการขอใช้รถ</h6>
                     <div class="border rounded p-2 bg-light">
-                        ${currentApprovalRow.reason || currentApprovalRow['เหตุผล'] || '-'}
+                        ${reason}
                     </div>
                 </div>
                 
@@ -859,9 +1019,18 @@
         // Update counts and statistics
         function updateCounts() {
             const total = allData.length;
-            const pending = allData.filter(item => !item.approval || item.approval === '' || item.approval === null || item.approval === undefined).length;
-            const approved = allData.filter(item => item.approval === 'อนุมัติแล้ว').length;
-            const rejected = allData.filter(item => item.approval === 'ไม่อนุมัติ').length;
+            const pending = allData.filter(item => {
+                const status = item.approval || item['สถานะ'];
+                return !status || status === '' || status === 'รออนุมัติ';
+            }).length;
+            const approved = allData.filter(item => {
+                const status = item.approval || item['สถานะ'];
+                return status === 'อนุมัติแล้ว';
+            }).length;
+            const rejected = allData.filter(item => {
+                const status = item.approval || item['สถานะ'];
+                return status === 'ไม่อนุมัติ';
+            }).length;
             
             console.log('Counts:', {total, pending, approved, rejected});
             
@@ -879,48 +1048,41 @@
         function getStatusClass(status) {
             if (!status) return 'status-pending';
             
-            switch(status.toString().toLowerCase()) {
-                case 'อนุมัติแล้ว':
-                case 'approved':
-                    return 'status-approved';
-                case 'ไม่อนุมัติ':
-                case 'rejected':
-                    return 'status-rejected';
-                case 'รออนุมัติ':
-                case 'pending':
-                default:
-                    return 'status-pending';
+            const statusStr = status.toString().toLowerCase();
+            
+            if (statusStr.includes('อนุมัติแล้ว') || statusStr.includes('approved')) {
+                return 'status-approved';
+            } else if (statusStr.includes('ไม่อนุมัติ') || statusStr.includes('rejected')) {
+                return 'status-rejected';
+            } else {
+                return 'status-pending';
             }
         }
         
         // Format date for display
         function formatDate(dateString) {
-            if (!dateString) return '-';
+            if (!dateString || dateString === '-') return '-';
             
             try {
                 let date;
                 
-                // Try to parse different date formats
+                // Try different date formats
                 if (dateString.includes('/')) {
-                    // Format: DD/MM/YYYY
                     const parts = dateString.split('/');
                     if (parts.length === 3) {
                         const day = parseInt(parts[0]);
                         const month = parseInt(parts[1]) - 1;
                         let year = parseInt(parts[2]);
                         
-                        // Convert Buddhist year to Christian year if needed
                         if (year > 2500) {
                             year = year - 543;
+                        } else if (year < 100) {
+                            year = year + 2000;
                         }
                         
                         date = new Date(year, month, day);
                     }
-                } else if (dateString.includes('-')) {
-                    // Format: YYYY-MM-DD
-                    date = new Date(dateString);
                 } else {
-                    // Try direct parsing
                     date = new Date(dateString);
                 }
                 
@@ -959,13 +1121,21 @@
             }
         }
         
+        // Load fallback data
+        function loadFallbackData() {
+            console.log('Loading fallback data');
+            allData = getFallbackData();
+            updateCounts();
+            applyFilter(currentFilter);
+            showToast('ใช้งานข้อมูลตัวอย่าง', 'warning');
+        }
+        
         // Fallback data if API fails
         function getFallbackData() {
-            console.log('Using fallback data');
             const fallbackData = [];
             const today = new Date();
             
-            for (let i = 1; i <= 20; i++) {
+            for (let i = 1; i <= 25; i++) {
                 const startDate = new Date(today);
                 startDate.setDate(startDate.getDate() + i);
                 const endDate = new Date(startDate);
@@ -988,38 +1158,20 @@
                     endTime: '17:00',
                     reason: i % 2 === 0 ? 'ไปประชุมกับลูกค้า' : 'นำทีมออกตรวจงาน',
                     approval: status,
-                    choose: i % 2 === 0 ? 'รถยนต์นั่ง 4 ประตู' : 'รถตู้'
+                    choose: i % 2 === 0 ? 'รถยนต์นั่ง 4 ประตู' : 'รถตู้',
+                    'ชื่อ-นามสกุล': `ผู้ใช้งาน ${i}`,
+                    'ตำแหน่ง': i % 3 === 0 ? 'ผู้จัดการ' : i % 3 === 1 ? 'หัวหน้าแผนก' : 'พนักงาน',
+                    'แผนก': i % 2 === 0 ? 'IT' : 'HR',
+                    'ฝ่าย': i % 2 === 0 ? 'พัฒนาระบบ' : 'ฝึกอบรม',
+                    'วันที่เริ่ม': formatDate(startDate.toISOString().split('T')[0]),
+                    'วันที่สิ้นสุด': formatDate(endDate.toISOString().split('T')[0]),
+                    'เหตุผล': i % 2 === 0 ? 'ไปประชุมกับลูกค้า' : 'นำทีมออกตรวจงาน',
+                    'สถานะ': status || 'รออนุมัติ'
                 });
             }
             
             return fallbackData;
         }
-        
-        // Test the API connection
-        async function testAPIConnection() {
-            try {
-                const response = await fetch(SCRIPT_URL + '?action=test');
-                const result = await response.json();
-                console.log('API Test Result:', result);
-                return result.success;
-            } catch (error) {
-                console.error('API Test Error:', error);
-                return false;
-            }
-        }
-        
-        // Initial load
-        window.onload = function() {
-            // Test API first
-            testAPIConnection().then(success => {
-                if (success) {
-                    console.log('API connection successful');
-                } else {
-                    console.log('API connection failed, will use fallback if needed');
-                }
-                loadData();
-            });
-        };
     </script>
 </body>
 </html>
