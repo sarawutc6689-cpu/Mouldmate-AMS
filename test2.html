@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ระบบอนุมัติการจองรถt</title>
+    <title>ระบบอนุมัติ Car Rent</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.1/font/bootstrap-icons.css">
     <style>
@@ -146,10 +146,6 @@
             min-width: 300px;
         }
         
-        .modal-backdrop {
-            z-index: 9998;
-        }
-        
         @media (max-width: 768px) {
             .btn-responsive {
                 width: 100%;
@@ -169,7 +165,7 @@
         <div class="container">
             <div class="d-flex justify-content-between align-items-center">
                 <div>
-                    <h1 class="h3 mb-0"><i class="bi bi-car-front-fill me-2"></i>ระบบอนุมัติการจองรถ</h1>
+                    <h1 class="h3 mb-0"><i class="bi bi-car-front-fill me-2"></i>ระบบอนุมัติ Car Rent</h1>
                     <p class="mb-0">อนุมัติหรือไม่อนุมัติการจองยานพาหนะ</p>
                 </div>
                 <div class="text-end">
@@ -241,7 +237,7 @@
                             <i class="bi bi-arrow-clockwise"></i> รีเฟรช
                         </button>
                         <button class="btn btn-sm btn-outline-light" id="add-sample-btn" title="เพิ่มข้อมูลตัวอย่าง">
-                            <i class="bi bi-plus-circle"></i>
+                            <i class="bi bi-plus-circle"></i> เพิ่มตัวอย่าง
                         </button>
                     </div>
                 </div>
@@ -263,7 +259,14 @@
                             </tr>
                         </thead>
                         <tbody id="table-body">
-                            <!-- Data will be populated by JavaScript -->
+                            <tr>
+                                <td colspan="9" class="text-center py-5">
+                                    <div class="spinner-border text-primary" role="status">
+                                        <span class="visually-hidden">กำลังโหลด...</span>
+                                    </div>
+                                    <p class="mt-3">กำลังโหลดข้อมูล...</p>
+                                </td>
+                            </tr>
                         </tbody>
                     </table>
                 </div>
@@ -299,74 +302,6 @@
                 </div>
             </div>
         </div>
-        
-        <!-- Add Data Modal -->
-        <div class="modal fade" id="addDataModal" tabindex="-1" aria-hidden="true">
-            <div class="modal-dialog">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title">เพิ่มรายการจองรถ</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
-                    <form id="add-data-form">
-                        <div class="modal-body">
-                            <div class="mb-3">
-                                <label class="form-label">รหัส</label>
-                                <input type="text" class="form-control" name="code" required>
-                            </div>
-                            <div class="row mb-3">
-                                <div class="col-md-6">
-                                    <label class="form-label">ชื่อ</label>
-                                    <input type="text" class="form-control" name="name" required>
-                                </div>
-                                <div class="col-md-6">
-                                    <label class="form-label">ตำแหน่ง</label>
-                                    <input type="text" class="form-control" name="position" required>
-                                </div>
-                            </div>
-                            <div class="row mb-3">
-                                <div class="col-md-6">
-                                    <label class="form-label">แผนก</label>
-                                    <input type="text" class="form-control" name="department" required>
-                                </div>
-                                <div class="col-md-6">
-                                    <label class="form-label">ฝ่าย</label>
-                                    <input type="text" class="form-control" name="section" required>
-                                </div>
-                            </div>
-                            <div class="row mb-3">
-                                <div class="col-md-6">
-                                    <label class="form-label">วันที่เริ่ม</label>
-                                    <input type="date" class="form-control" name="rentStartdate" required>
-                                </div>
-                                <div class="col-md-6">
-                                    <label class="form-label">วันที่สิ้นสุด</label>
-                                    <input type="date" class="form-control" name="rentEnddate" required>
-                                </div>
-                            </div>
-                            <div class="mb-3">
-                                <label class="form-label">เหตุผลการขอใช้รถ</label>
-                                <textarea class="form-control" name="reason" rows="3" required></textarea>
-                            </div>
-                        </div>
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">ยกเลิก</button>
-                            <button type="submit" class="btn btn-primary">เพิ่มรายการ</button>
-                        </div>
-                    </form>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Loading Overlay -->
-    <div class="loading-overlay d-none" id="loading-overlay">
-        <div class="text-center">
-            <div class="spinner-border text-primary" role="status">
-                <span class="visually-hidden">กำลังโหลด...</span>
-            </div>
-            <div class="mt-3">กำลังโหลดข้อมูล...</div>
-        </div>
     </div>
 
     <!-- Toast Notification -->
@@ -398,7 +333,7 @@
         let currentPage = 1;
         const itemsPerPage = 10;
         let currentApprovalRow = null;
-        const STORAGE_KEY = 'car_rent_approval_data';
+        const STORAGE_KEY = 'car_rent_approval_data_v2';
         
         // DOM elements
         const tableBody = document.getElementById('table-body');
@@ -407,7 +342,6 @@
         const searchInput = document.getElementById('search-input');
         const refreshBtn = document.getElementById('refresh-btn');
         const addSampleBtn = document.getElementById('add-sample-btn');
-        const loadingOverlay = document.getElementById('loading-overlay');
         const successToast = new bootstrap.Toast(document.getElementById('success-toast'));
         const errorToast = new bootstrap.Toast(document.getElementById('error-toast'));
         const toastMessage = document.getElementById('toast-message');
@@ -431,6 +365,7 @@
             updateCurrentTime();
             setInterval(updateCurrentTime, 60000);
             
+            // Load data immediately
             loadData();
             
             // Event listeners
@@ -445,7 +380,9 @@
                 applySearch(this.value);
             });
             
-            refreshBtn.addEventListener('click', loadData);
+            refreshBtn.addEventListener('click', function() {
+                loadData();
+            });
             
             addSampleBtn.addEventListener('click', function() {
                 addSampleData();
@@ -458,12 +395,6 @@
             
             document.getElementById('reject-btn').addEventListener('click', function() {
                 updateApproval('ไม่อนุมัติ');
-            });
-            
-            // Add data form
-            document.getElementById('add-data-form').addEventListener('submit', function(e) {
-                e.preventDefault();
-                addNewData(this);
             });
         });
         
@@ -490,41 +421,51 @@
         
         // Load data from localStorage
         function loadData() {
-            showLoading();
+            // Show loading state in table
+            tableBody.innerHTML = `
+                <tr>
+                    <td colspan="9" class="text-center py-5">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">กำลังโหลด...</span>
+                        </div>
+                        <p class="mt-3">กำลังโหลดข้อมูล...</p>
+                    </td>
+                </tr>
+            `;
             
-            try {
-                const savedData = localStorage.getItem(STORAGE_KEY);
-                
-                if (savedData) {
-                    allData = JSON.parse(savedData);
-                } else {
-                    // If no saved data, create sample data
-                    allData = generateSampleData();
-                    saveData();
-                }
-                
-                updateCounts();
-                applyFilter(currentFilter);
-                
-                setTimeout(() => {
-                    hideLoading();
+            setTimeout(() => {
+                try {
+                    const savedData = localStorage.getItem(STORAGE_KEY);
+                    
+                    if (savedData && JSON.parse(savedData).length > 0) {
+                        allData = JSON.parse(savedData);
+                        console.log('Loaded data from localStorage:', allData.length, 'items');
+                    } else {
+                        // If no saved data, create sample data
+                        console.log('No saved data, generating sample data...');
+                        allData = generateSampleData();
+                        saveData();
+                    }
+                    
+                    updateCounts();
+                    applyFilter(currentFilter);
                     showToast('โหลดข้อมูลสำเร็จแล้ว', 'success');
-                }, 500);
-                
-            } catch (error) {
-                console.error('Error loading data:', error);
-                allData = generateSampleData();
-                updateCounts();
-                applyFilter(currentFilter);
-                hideLoading();
-                showToast('ใช้ข้อมูลตัวอย่างเนื่องจากเกิดข้อผิดพลาด', 'error');
-            }
+                    
+                } catch (error) {
+                    console.error('Error loading data:', error);
+                    allData = generateSampleData();
+                    updateCounts();
+                    applyFilter(currentFilter);
+                    showToast('ใช้ข้อมูลตัวอย่างเนื่องจากเกิดข้อผิดพลาด', 'error');
+                }
+            }, 500);
         }
         
         // Save data to localStorage
         function saveData() {
             try {
                 localStorage.setItem(STORAGE_KEY, JSON.stringify(allData));
+                console.log('Data saved to localStorage:', allData.length, 'items');
                 return true;
             } catch (error) {
                 console.error('Error saving data:', error);
@@ -536,60 +477,13 @@
         function updateApproval(status) {
             if (!currentApprovalRow) return;
             
-            showLoading();
+            // Update local data
+            const rowIndex = allData.findIndex(item => item.id === currentApprovalRow.id);
             
-            setTimeout(() => {
-                // Update local data
-                const rowIndex = allData.findIndex(item => item.id === currentApprovalRow.id);
+            if (rowIndex !== -1) {
+                allData[rowIndex].approval = status;
                 
-                if (rowIndex !== -1) {
-                    allData[rowIndex].approval = status;
-                    
-                    // Save to localStorage
-                    saveData();
-                    
-                    // Update UI
-                    updateCounts();
-                    applyFilter(currentFilter);
-                    
-                    // Close modal
-                    const modal = bootstrap.Modal.getInstance(document.getElementById('approvalModal'));
-                    modal.hide();
-                    
-                    hideLoading();
-                    showToast(`อัปเดตสถานะเป็น "${status}" สำเร็จแล้ว`, 'success');
-                } else {
-                    hideLoading();
-                    showToast('ไม่พบข้อมูลที่ต้องการอัปเดต', 'error');
-                }
-            }, 500);
-        }
-        
-        // Add new data
-        function addNewData(form) {
-            showLoading();
-            
-            setTimeout(() => {
-                const formData = new FormData(form);
-                const newEntry = {
-                    id: Date.now().toString(),
-                    code: formData.get('code'),
-                    name: formData.get('name'),
-                    position: formData.get('position'),
-                    department: formData.get('department'),
-                    section: formData.get('section'),
-                    rentStartdate: formData.get('rentStartdate'),
-                    rentEnddate: formData.get('rentEnddate'),
-                    reason: formData.get('reason'),
-                    approval: '',
-                    startTime: '09:00',
-                    endTime: '17:00',
-                    choose: 'รถยนต์นั่ง 4 ประตู',
-                    contact: '08' + Math.floor(Math.random() * 100000000).toString().padStart(8, '0'),
-                    timestamp: new Date().toISOString()
-                };
-                
-                allData.unshift(newEntry);
+                // Save to localStorage
                 saveData();
                 
                 // Update UI
@@ -597,13 +491,25 @@
                 applyFilter(currentFilter);
                 
                 // Close modal
-                const modal = bootstrap.Modal.getInstance(document.getElementById('addDataModal'));
+                const modal = bootstrap.Modal.getInstance(document.getElementById('approvalModal'));
                 modal.hide();
-                form.reset();
                 
-                hideLoading();
-                showToast('เพิ่มรายการสำเร็จแล้ว', 'success');
-            }, 500);
+                showToast(`อัปเดตสถานะเป็น "${status}" สำเร็จแล้ว`, 'success');
+            } else {
+                showToast('ไม่พบข้อมูลที่ต้องการอัปเดต', 'error');
+            }
+        }
+        
+        // Add sample data
+        function addSampleData() {
+            const sampleData = generateSampleData(5);
+            allData = [...sampleData, ...allData];
+            saveData();
+            
+            updateCounts();
+            applyFilter(currentFilter);
+            
+            showToast('เพิ่มข้อมูลตัวอย่าง 5 รายการสำเร็จ', 'success');
         }
         
         // Apply filter to data
@@ -675,6 +581,8 @@
         
         // Render table with pagination
         function renderTable() {
+            console.log('Rendering table with', filteredData.length, 'items');
+            
             // Calculate pagination
             const totalItems = filteredData.length;
             const totalPages = Math.ceil(totalItems / itemsPerPage);
@@ -691,6 +599,9 @@
                     <td colspan="9" class="text-center py-5">
                         <i class="bi bi-inbox display-4 text-muted"></i>
                         <p class="mt-3">ไม่พบข้อมูล</p>
+                        <button class="btn btn-sm btn-primary mt-2" onclick="addSampleData()">
+                            <i class="bi bi-plus-circle"></i> เพิ่มข้อมูลตัวอย่าง
+                        </button>
                     </td>
                 `;
                 tableBody.appendChild(row);
@@ -727,14 +638,14 @@
                         </td>
                         <td>
                             ${status === 'รออนุมัติ' ? `
-                                <div class="d-flex flex-wrap gap-1">
-                                    <button class="btn btn-sm btn-approve" onclick="showApprovalModal('${item.id}')">
+                                <div class="btn-group btn-group-sm">
+                                    <button class="btn btn-approve" onclick="showApprovalModal('${item.id}')" title="อนุมัติ">
                                         <i class="bi bi-check-circle"></i>
                                     </button>
-                                    <button class="btn btn-sm btn-reject" onclick="showApprovalModal('${item.id}')">
+                                    <button class="btn btn-reject" onclick="showApprovalModal('${item.id}')" title="ไม่อนุมัติ">
                                         <i class="bi bi-x-circle"></i>
                                     </button>
-                                    <button class="btn btn-sm btn-outline-secondary" onclick="showApprovalModal('${item.id}', true)">
+                                    <button class="btn btn-outline-secondary" onclick="showApprovalModal('${item.id}', true)" title="ดูรายละเอียด">
                                         <i class="bi bi-eye"></i>
                                     </button>
                                 </div>
@@ -813,7 +724,10 @@
         // Show approval modal
         function showApprovalModal(id, viewOnly = false) {
             currentApprovalRow = allData.find(item => item.id === id);
-            if (!currentApprovalRow) return;
+            if (!currentApprovalRow) {
+                showToast('ไม่พบข้อมูล', 'error');
+                return;
+            }
             
             // Populate modal details
             const modalDetails = document.getElementById('modal-details');
@@ -825,27 +739,27 @@
                     <div class="row">
                         <div class="col-6">
                             <small class="text-muted">รหัส</small>
-                            <div><strong>${currentApprovalRow.code || '-'}</strong></div>
+                            <div><strong>${currentApprovalRow.code || 'CR001'}</strong></div>
                         </div>
                         <div class="col-6">
                             <small class="text-muted">ชื่อ-นามสกุล</small>
-                            <div><strong>${currentApprovalRow.name || '-'}</strong></div>
+                            <div><strong>${currentApprovalRow.name || 'สมชาย ใจดี'}</strong></div>
                         </div>
                     </div>
                     <div class="row mt-2">
                         <div class="col-6">
                             <small class="text-muted">แผนก/ฝ่าย</small>
-                            <div>${currentApprovalRow.department || '-'}</div>
+                            <div>${currentApprovalRow.department || 'IT'}</div>
                         </div>
                         <div class="col-6">
                             <small class="text-muted">ตำแหน่ง</small>
-                            <div>${currentApprovalRow.position || '-'}</div>
+                            <div>${currentApprovalRow.position || 'พนักงาน'}</div>
                         </div>
                     </div>
                     <div class="row mt-2">
                         <div class="col-6">
                             <small class="text-muted">ติดต่อ</small>
-                            <div>${currentApprovalRow.contact || '-'}</div>
+                            <div>${currentApprovalRow.contact || '0812345678'}</div>
                         </div>
                     </div>
                 </div>
@@ -855,11 +769,11 @@
                     <div class="row">
                         <div class="col-6">
                             <small class="text-muted">วันที่เริ่ม</small>
-                            <div><strong>${formatDate(currentApprovalRow.rentStartdate)} ${currentApprovalRow.startTime || ''}</strong></div>
+                            <div><strong>${formatDate(currentApprovalRow.rentStartdate)} ${currentApprovalRow.startTime || '09:00'}</strong></div>
                         </div>
                         <div class="col-6">
                             <small class="text-muted">วันที่สิ้นสุด</small>
-                            <div><strong>${formatDate(currentApprovalRow.rentEnddate)} ${currentApprovalRow.endTime || ''}</strong></div>
+                            <div><strong>${formatDate(currentApprovalRow.rentEnddate)} ${currentApprovalRow.endTime || '17:00'}</strong></div>
                         </div>
                     </div>
                     <div class="row mt-2">
@@ -873,7 +787,7 @@
                 <div class="mb-3">
                     <h6>เหตุผลการขอใช้รถ</h6>
                     <div class="border rounded p-2 bg-light">
-                        ${currentApprovalRow.reason || '-'}
+                        ${currentApprovalRow.reason || 'ไปประชุมกับลูกค้า'}
                     </div>
                 </div>
                 
@@ -909,6 +823,8 @@
             const approved = allData.filter(item => item.approval === 'อนุมัติแล้ว').length;
             const rejected = allData.filter(item => item.approval === 'ไม่อนุมัติ').length;
             
+            console.log('Counts:', {total, pending, approved, rejected});
+            
             totalCountElement.textContent = total;
             countElements.all.textContent = total;
             countElements.pending.textContent = pending;
@@ -938,7 +854,19 @@
             
             try {
                 const date = new Date(dateString);
-                if (isNaN(date.getTime())) return dateString;
+                if (isNaN(date.getTime())) {
+                    // Try parsing as DD/MM/YYYY
+                    const parts = dateString.split('/');
+                    if (parts.length === 3) {
+                        const day = parseInt(parts[0]);
+                        const month = parseInt(parts[1]) - 1;
+                        const year = parseInt(parts[2]) - 543; // Convert from Buddhist year
+                        const newDate = new Date(year, month, day);
+                        if (!isNaN(newDate.getTime())) {
+                            date = newDate;
+                        }
+                    }
+                }
                 
                 const day = date.getDate().toString().padStart(2, '0');
                 const month = (date.getMonth() + 1).toString().padStart(2, '0');
@@ -948,15 +876,6 @@
             } catch (e) {
                 return dateString;
             }
-        }
-        
-        // Show/hide loading overlay
-        function showLoading() {
-            loadingOverlay.classList.remove('d-none');
-        }
-        
-        function hideLoading() {
-            loadingOverlay.classList.add('d-none');
         }
         
         // Show toast notification
@@ -970,31 +889,16 @@
             }
         }
         
-        // Add sample data
-        function addSampleData() {
-            showLoading();
-            
-            setTimeout(() => {
-                const sampleData = generateSampleData(5);
-                allData = [...sampleData, ...allData];
-                saveData();
-                
-                updateCounts();
-                applyFilter(currentFilter);
-                
-                hideLoading();
-                showToast('เพิ่มข้อมูลตัวอย่าง 5 รายการสำเร็จ', 'success');
-            }, 500);
-        }
-        
         // Generate sample data
         function generateSampleData(count = 15) {
+            console.log('Generating sample data...');
             const sampleData = [];
             const names = [
                 'สมชาย ใจดี', 'สุนิสา ราตรี', 'ประยุทธ์ จันทร์โอชา', 
                 'อรุณี สุขสวัสดิ์', 'วิรัช เกียรติสูง', 'ศิริพร วัฒนา',
                 'ณัฐวุฒิ ธรรมะ', 'เกศริน มาลัย', 'อนุชา ศรีสวัสดิ์',
-                'พรรณราย พิพัฒน์'
+                'พรรณราย พิพัฒน์', 'อานนท์ ศรีเมือง', 'จารุณี เกษมสุข',
+                'ธีรพล วัฒนา', 'สุภาวดี มงคล', 'ฤทธิเกียรติ จันทร์สว่าง'
             ];
             const departments = ['IT', 'HR', 'การเงิน', 'ฝ่ายขาย', 'ฝ่ายการผลิต', 'ฝ่ายจัดซื้อ', 'ฝ่ายบำรุงรักษา'];
             const sections = ['พัฒนาระบบ', 'ฝึกอบรม', 'บัญชี', 'ขายในประเทศ', 'ผลิตภัณฑ์', 'ซัพพลาย', 'ช่างกล'];
@@ -1003,8 +907,11 @@
             const reasons = [
                 'นำผู้บริหารเยี่ยมชมโรงงาน', 'ไปประชุมกับลูกค้า', 'รับของจากซัพพลายเออร์', 
                 'เดินทางไปติดตั้งงาน', 'อบรมพนักงาน', 'ส่งสินค้าให้ลูกค้า',
-                'ไปตรวจงานหน้างาน', 'รับรองลูกค้าจากต่างประเทศ', 'เข้าร่วมสัมมนา'
+                'ไปตรวจงานหน้างาน', 'รับรองลูกค้าจากต่างประเทศ', 'เข้าร่วมสัมมนา',
+                'นำทีมออกภาคสนาม', 'ไปพบแพทย์', 'รับเอกสารสำคัญ'
             ];
+            
+            const today = new Date();
             
             for (let i = 1; i <= count; i++) {
                 const statusIndex = i % 5;
@@ -1014,32 +921,41 @@
                 else if (statusIndex === 1) approvalStatus = 'ไม่อนุมัติ';
                 else approvalStatus = '';
                 
-                const startDate = new Date();
+                const startDate = new Date(today);
                 startDate.setDate(startDate.getDate() + i);
                 const endDate = new Date(startDate);
-                endDate.setDate(endDate.getDate() + (i % 3));
+                endDate.setDate(endDate.getDate() + (i % 3) + 1);
+                
+                const randomName = names[Math.floor(Math.random() * names.length)];
+                const randomDept = departments[Math.floor(Math.random() * departments.length)];
                 
                 sampleData.push({
                     id: `cr_${Date.now()}_${i}`,
                     timestamp: new Date().toISOString(),
                     code: `CR${String(i).padStart(3, '0')}`,
-                    name: names[i % names.length],
-                    section: sections[i % sections.length],
-                    department: departments[i % departments.length],
-                    position: positions[i % positions.length],
+                    name: randomName,
+                    section: sections[Math.floor(Math.random() * sections.length)],
+                    department: randomDept,
+                    position: positions[Math.floor(Math.random() * positions.length)],
                     contact: `08${Math.floor(Math.random() * 100000000).toString().padStart(8, '0')}`,
-                    choose: vehicles[i % vehicles.length],
+                    choose: vehicles[Math.floor(Math.random() * vehicles.length)],
                     rentStartdate: startDate.toISOString().split('T')[0],
                     rentEnddate: endDate.toISOString().split('T')[0],
                     startTime: '09:00',
                     endTime: '17:00',
-                    reason: reasons[i % reasons.length],
+                    reason: reasons[Math.floor(Math.random() * reasons.length)],
                     approval: approvalStatus
                 });
             }
             
+            console.log('Generated', sampleData.length, 'sample items');
             return sampleData;
         }
+        
+        // Initial data load
+        window.onload = function() {
+            loadData();
+        };
     </script>
 </body>
 </html>
