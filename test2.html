@@ -232,14 +232,9 @@
                         <span class="input-group-text"><i class="bi bi-search"></i></span>
                         <input type="text" class="form-control" id="search-input" placeholder="ค้นหาชื่อ, แผนก, รหัส...">
                     </div>
-                    <div class="btn-group">
-                        <button class="btn btn-sm btn-outline-light" id="refresh-btn">
-                            <i class="bi bi-arrow-clockwise"></i> รีเฟรช
-                        </button>
-                        <button class="btn btn-sm btn-outline-light" id="add-sample-btn" title="เพิ่มข้อมูลตัวอย่าง">
-                            <i class="bi bi-plus-circle"></i> เพิ่มตัวอย่าง
-                        </button>
-                    </div>
+                    <button class="btn btn-sm btn-outline-light" id="refresh-btn">
+                        <i class="bi bi-arrow-clockwise"></i> รีเฟรช
+                    </button>
                 </div>
             </div>
             <div class="card-body p-0">
@@ -264,7 +259,7 @@
                                     <div class="spinner-border text-primary" role="status">
                                         <span class="visually-hidden">กำลังโหลด...</span>
                                     </div>
-                                    <p class="mt-3">กำลังโหลดข้อมูล...</p>
+                                    <p class="mt-3">กำลังโหลดข้อมูลจาก Google Sheet...</p>
                                 </td>
                             </tr>
                         </tbody>
@@ -304,6 +299,16 @@
         </div>
     </div>
 
+    <!-- Loading Overlay -->
+    <div class="loading-overlay d-none" id="loading-overlay">
+        <div class="text-center">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">กำลังโหลด...</span>
+            </div>
+            <div class="mt-3" id="loading-message">กำลังโหลดข้อมูล...</div>
+        </div>
+    </div>
+
     <!-- Toast Notification -->
     <div class="toast align-items-center text-white bg-success border-0" id="success-toast" role="alert">
         <div class="d-flex">
@@ -326,6 +331,9 @@
     <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
+        // Configuration
+        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzReRwQHdUTdit1HMRCVVNlsGwpdvZMFG4fhsv5yh5nLpOE28NFuV2y_1OXPHU0DPkM/exec';
+        
         // Global variables
         let allData = [];
         let filteredData = [];
@@ -333,7 +341,6 @@
         let currentPage = 1;
         const itemsPerPage = 10;
         let currentApprovalRow = null;
-        const STORAGE_KEY = 'car_rent_approval_data_v2';
         
         // DOM elements
         const tableBody = document.getElementById('table-body');
@@ -341,7 +348,8 @@
         const pageInfo = document.getElementById('page-info');
         const searchInput = document.getElementById('search-input');
         const refreshBtn = document.getElementById('refresh-btn');
-        const addSampleBtn = document.getElementById('add-sample-btn');
+        const loadingOverlay = document.getElementById('loading-overlay');
+        const loadingMessage = document.getElementById('loading-message');
         const successToast = new bootstrap.Toast(document.getElementById('success-toast'));
         const errorToast = new bootstrap.Toast(document.getElementById('error-toast'));
         const toastMessage = document.getElementById('toast-message');
@@ -384,10 +392,6 @@
                 loadData();
             });
             
-            addSampleBtn.addEventListener('click', function() {
-                addSampleData();
-            });
-            
             // Modal buttons
             document.getElementById('approve-btn').addEventListener('click', function() {
                 updateApproval('อนุมัติแล้ว');
@@ -419,97 +423,135 @@
             currentTimeElement.innerHTML = `${dateStr} ${timeStr} น.`;
         }
         
-        // Load data from localStorage
-        function loadData() {
-            // Show loading state in table
-            tableBody.innerHTML = `
-                <tr>
-                    <td colspan="9" class="text-center py-5">
-                        <div class="spinner-border text-primary" role="status">
-                            <span class="visually-hidden">กำลังโหลด...</span>
-                        </div>
-                        <p class="mt-3">กำลังโหลดข้อมูล...</p>
-                    </td>
-                </tr>
-            `;
+        // Load data from Google Apps Script
+        async function loadData() {
+            showLoading('กำลังโหลดข้อมูลจาก Google Sheet...');
             
-            setTimeout(() => {
-                try {
-                    const savedData = localStorage.getItem(STORAGE_KEY);
-                    
-                    if (savedData && JSON.parse(savedData).length > 0) {
-                        allData = JSON.parse(savedData);
-                        console.log('Loaded data from localStorage:', allData.length, 'items');
-                    } else {
-                        // If no saved data, create sample data
-                        console.log('No saved data, generating sample data...');
-                        allData = generateSampleData();
-                        saveData();
-                    }
+            try {
+                // ใช้ URL ที่ให้มาโดยตรง
+                const url = `${SCRIPT_URL}?action=getData`;
+                console.log('Fetching data from:', url);
+                
+                const response = await fetch(url);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const result = await response.json();
+                console.log('API Response:', result);
+                
+                if (result.success) {
+                    allData = result.data;
+                    console.log('Loaded data:', allData.length, 'items');
+                    console.log('Sample data:', allData[0]);
                     
                     updateCounts();
                     applyFilter(currentFilter);
                     showToast('โหลดข้อมูลสำเร็จแล้ว', 'success');
+                } else {
+                    throw new Error(result.message || 'ไม่สามารถโหลดข้อมูลได้');
+                }
+            } catch (error) {
+                console.error('Error loading data:', error);
+                
+                // Try with different approach
+                try {
+                    console.log('Trying alternative method...');
+                    const alternativeUrl = SCRIPT_URL;
+                    const formData = new FormData();
+                    formData.append('action', 'getData');
                     
-                } catch (error) {
-                    console.error('Error loading data:', error);
-                    allData = generateSampleData();
+                    const response = await fetch(alternativeUrl, {
+                        method: 'POST',
+                        body: formData,
+                        mode: 'no-cors' // Try no-cors mode
+                    });
+                    
+                    // If still fails, use fallback
+                    throw new Error('Cannot connect to Google Apps Script');
+                    
+                } catch (fallbackError) {
+                    console.error('Fallback error:', fallbackError);
+                    
+                    // Use fallback sample data
+                    allData = getFallbackData();
                     updateCounts();
                     applyFilter(currentFilter);
-                    showToast('ใช้ข้อมูลตัวอย่างเนื่องจากเกิดข้อผิดพลาด', 'error');
+                    showToast('ใช้งานข้อมูลตัวอย่างเนื่องจากไม่สามารถเชื่อมต่อกับ Google Sheet ได้', 'warning');
                 }
-            }, 500);
-        }
-        
-        // Save data to localStorage
-        function saveData() {
-            try {
-                localStorage.setItem(STORAGE_KEY, JSON.stringify(allData));
-                console.log('Data saved to localStorage:', allData.length, 'items');
-                return true;
-            } catch (error) {
-                console.error('Error saving data:', error);
-                return false;
+            } finally {
+                hideLoading();
             }
         }
         
         // Update approval status
-        function updateApproval(status) {
+        async function updateApproval(status) {
             if (!currentApprovalRow) return;
             
-            // Update local data
-            const rowIndex = allData.findIndex(item => item.id === currentApprovalRow.id);
+            showLoading('กำลังอัปเดตสถานะ...');
             
-            if (rowIndex !== -1) {
-                allData[rowIndex].approval = status;
+            try {
+                // Get the row number from the data
+                // Assuming the data includes rowIndex or we need to find it
+                const rowIndex = currentApprovalRow.rowIndex || (allData.indexOf(currentApprovalRow) + 2);
                 
-                // Save to localStorage
-                saveData();
+                // Prepare data for update - using column N (column 14)
+                const updateData = {
+                    action: 'updateApproval',
+                    rowIndex: rowIndex,
+                    columnIndex: 14, // Column N
+                    approvalStatus: status
+                };
                 
-                // Update UI
+                console.log('Updating approval:', updateData);
+                
+                // Try POST method
+                const response = await fetch(SCRIPT_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: new URLSearchParams(updateData)
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const result = await response.json();
+                console.log('Update response:', result);
+                
+                if (result.success) {
+                    // Update local data
+                    currentApprovalRow.approval = status;
+                    
+                    // Update UI
+                    updateCounts();
+                    applyFilter(currentFilter);
+                    
+                    // Close modal
+                    const modal = bootstrap.Modal.getInstance(document.getElementById('approvalModal'));
+                    modal.hide();
+                    
+                    showToast(`อัปเดตสถานะเป็น "${status}" สำเร็จแล้ว`, 'success');
+                } else {
+                    throw new Error(result.message || 'ไม่สามารถอัปเดตข้อมูลได้');
+                }
+            } catch (error) {
+                console.error('Error updating approval:', error);
+                showToast('เกิดข้อผิดพลาดในการอัปเดตข้อมูล: ' + error.message, 'error');
+                
+                // Fallback: Update local data only
+                currentApprovalRow.approval = status;
                 updateCounts();
                 applyFilter(currentFilter);
-                
-                // Close modal
                 const modal = bootstrap.Modal.getInstance(document.getElementById('approvalModal'));
                 modal.hide();
-                
-                showToast(`อัปเดตสถานะเป็น "${status}" สำเร็จแล้ว`, 'success');
-            } else {
-                showToast('ไม่พบข้อมูลที่ต้องการอัปเดต', 'error');
+                showToast(`อัปเดตสถานะเป็น "${status}" ในหน่วยความจำชั่วคราว`, 'warning');
+            } finally {
+                hideLoading();
             }
-        }
-        
-        // Add sample data
-        function addSampleData() {
-            const sampleData = generateSampleData(5);
-            allData = [...sampleData, ...allData];
-            saveData();
-            
-            updateCounts();
-            applyFilter(currentFilter);
-            
-            showToast('เพิ่มข้อมูลตัวอย่าง 5 รายการสำเร็จ', 'success');
         }
         
         // Apply filter to data
@@ -530,7 +572,7 @@
             if (filter === 'all') {
                 filteredData = [...allData];
             } else if (filter === 'pending') {
-                filteredData = allData.filter(item => !item.approval || item.approval === '');
+                filteredData = allData.filter(item => !item.approval || item.approval === '' || item.approval === null || item.approval === undefined);
             } else {
                 filteredData = allData.filter(item => item.approval === filter);
             }
@@ -558,11 +600,11 @@
                 // Filter by search term
                 const term = searchTerm.toLowerCase();
                 filteredData = allData.filter(item => 
-                    (item.code && item.code.toLowerCase().includes(term)) ||
-                    (item.name && item.name.toLowerCase().includes(term)) ||
-                    (item.department && item.department.toLowerCase().includes(term)) ||
-                    (item.section && item.section.toLowerCase().includes(term)) ||
-                    (item.reason && item.reason.toLowerCase().includes(term))
+                    (item.code && item.code.toString().toLowerCase().includes(term)) ||
+                    (item.name && item.name.toString().toLowerCase().includes(term)) ||
+                    (item.department && item.department.toString().toLowerCase().includes(term)) ||
+                    (item.section && item.section.toString().toLowerCase().includes(term)) ||
+                    (item.reason && item.reason.toString().toLowerCase().includes(term))
                 );
                 
                 // Apply current status filter
@@ -599,8 +641,8 @@
                     <td colspan="9" class="text-center py-5">
                         <i class="bi bi-inbox display-4 text-muted"></i>
                         <p class="mt-3">ไม่พบข้อมูล</p>
-                        <button class="btn btn-sm btn-primary mt-2" onclick="addSampleData()">
-                            <i class="bi bi-plus-circle"></i> เพิ่มข้อมูลตัวอย่าง
+                        <button class="btn btn-sm btn-primary mt-2" onclick="loadData()">
+                            <i class="bi bi-arrow-clockwise"></i> รีเฟรชข้อมูล
                         </button>
                     </td>
                 `;
@@ -615,42 +657,42 @@
                     const row = document.createElement('tr');
                     row.innerHTML = `
                         <td>${rowNumber}</td>
-                        <td><strong>${item.code || '-'}</strong></td>
+                        <td><strong>${item.code || item.ID || item.id || '-'}</strong></td>
                         <td>
-                            <div>${item.name || '-'}</div>
-                            <small class="text-muted">${item.position || '-'}</small>
+                            <div>${item.name || item.fullname || item['ชื่อ-นามสกุล'] || '-'}</div>
+                            <small class="text-muted">${item.position || item.tposition || '-'}</small>
                         </td>
                         <td>
-                            <div>${item.department || '-'}</div>
-                            <small class="text-muted">${item.section || '-'}</small>
+                            <div>${item.department || item.dept || '-'}</div>
+                            <small class="text-muted">${item.section || item.sec || '-'}</small>
                         </td>
                         <td>
-                            <div>${formatDate(item.rentStartdate)}</div>
-                            <small class="text-muted">${item.startTime || ''}</small>
+                            <div>${formatDate(item.rentStartdate || item.startDate || item['วันที่เริ่ม'])}</div>
+                            <small class="text-muted">${item.startTime || item['เวลาเริ่ม'] || ''}</small>
                         </td>
                         <td>
-                            <div>${formatDate(item.rentEnddate)}</div>
-                            <small class="text-muted">${item.endTime || ''}</small>
+                            <div>${formatDate(item.rentEnddate || item.endDate || item['วันที่สิ้นสุด'])}</div>
+                            <small class="text-muted">${item.endTime || item['เวลาสิ้นสุด'] || ''}</small>
                         </td>
-                        <td>${item.reason ? (item.reason.length > 30 ? item.reason.substring(0, 30) + '...' : item.reason) : '-'}</td>
+                        <td>${item.reason || item['เหตุผล'] || '-'}</td>
                         <td>
                             <span class="badge-status ${statusClass}">${status}</span>
                         </td>
                         <td>
                             ${status === 'รออนุมัติ' ? `
                                 <div class="btn-group btn-group-sm">
-                                    <button class="btn btn-approve" onclick="showApprovalModal('${item.id}')" title="อนุมัติ">
+                                    <button class="btn btn-approve" onclick="showApprovalModal(${startIndex + index})" title="อนุมัติ">
                                         <i class="bi bi-check-circle"></i>
                                     </button>
-                                    <button class="btn btn-reject" onclick="showApprovalModal('${item.id}')" title="ไม่อนุมัติ">
+                                    <button class="btn btn-reject" onclick="showApprovalModal(${startIndex + index})" title="ไม่อนุมัติ">
                                         <i class="bi bi-x-circle"></i>
                                     </button>
-                                    <button class="btn btn-outline-secondary" onclick="showApprovalModal('${item.id}', true)" title="ดูรายละเอียด">
+                                    <button class="btn btn-outline-secondary" onclick="showApprovalModal(${startIndex + index}, true)" title="ดูรายละเอียด">
                                         <i class="bi bi-eye"></i>
                                     </button>
                                 </div>
                             ` : `
-                                <button class="btn btn-sm btn-outline-secondary" onclick="showApprovalModal('${item.id}', true)">
+                                <button class="btn btn-sm btn-outline-secondary" onclick="showApprovalModal(${startIndex + index}, true)">
                                     <i class="bi bi-eye"></i> ดูรายละเอียด
                                 </button>
                             `}
@@ -722,12 +764,10 @@
         }
         
         // Show approval modal
-        function showApprovalModal(id, viewOnly = false) {
-            currentApprovalRow = allData.find(item => item.id === id);
-            if (!currentApprovalRow) {
-                showToast('ไม่พบข้อมูล', 'error');
-                return;
-            }
+        function showApprovalModal(index, viewOnly = false) {
+            if (index >= filteredData.length) return;
+            
+            currentApprovalRow = filteredData[index];
             
             // Populate modal details
             const modalDetails = document.getElementById('modal-details');
@@ -739,27 +779,27 @@
                     <div class="row">
                         <div class="col-6">
                             <small class="text-muted">รหัส</small>
-                            <div><strong>${currentApprovalRow.code || 'CR001'}</strong></div>
+                            <div><strong>${currentApprovalRow.code || currentApprovalRow.ID || currentApprovalRow.id || '-'}</strong></div>
                         </div>
                         <div class="col-6">
                             <small class="text-muted">ชื่อ-นามสกุล</small>
-                            <div><strong>${currentApprovalRow.name || 'สมชาย ใจดี'}</strong></div>
+                            <div><strong>${currentApprovalRow.name || currentApprovalRow.fullname || currentApprovalRow['ชื่อ-นามสกุล'] || '-'}</strong></div>
                         </div>
                     </div>
                     <div class="row mt-2">
                         <div class="col-6">
                             <small class="text-muted">แผนก/ฝ่าย</small>
-                            <div>${currentApprovalRow.department || 'IT'}</div>
+                            <div>${currentApprovalRow.department || currentApprovalRow.dept || '-'}</div>
                         </div>
                         <div class="col-6">
                             <small class="text-muted">ตำแหน่ง</small>
-                            <div>${currentApprovalRow.position || 'พนักงาน'}</div>
+                            <div>${currentApprovalRow.position || currentApprovalRow.tposition || '-'}</div>
                         </div>
                     </div>
                     <div class="row mt-2">
                         <div class="col-6">
                             <small class="text-muted">ติดต่อ</small>
-                            <div>${currentApprovalRow.contact || '0812345678'}</div>
+                            <div>${currentApprovalRow.contact || currentApprovalRow.phone || currentApprovalRow.tel || '-'}</div>
                         </div>
                     </div>
                 </div>
@@ -769,17 +809,17 @@
                     <div class="row">
                         <div class="col-6">
                             <small class="text-muted">วันที่เริ่ม</small>
-                            <div><strong>${formatDate(currentApprovalRow.rentStartdate)} ${currentApprovalRow.startTime || '09:00'}</strong></div>
+                            <div><strong>${formatDate(currentApprovalRow.rentStartdate || currentApprovalRow.startDate || currentApprovalRow['วันที่เริ่ม'])} ${currentApprovalRow.startTime || currentApprovalRow['เวลาเริ่ม'] || ''}</strong></div>
                         </div>
                         <div class="col-6">
                             <small class="text-muted">วันที่สิ้นสุด</small>
-                            <div><strong>${formatDate(currentApprovalRow.rentEnddate)} ${currentApprovalRow.endTime || '17:00'}</strong></div>
+                            <div><strong>${formatDate(currentApprovalRow.rentEnddate || currentApprovalRow.endDate || currentApprovalRow['วันที่สิ้นสุด'])} ${currentApprovalRow.endTime || currentApprovalRow['เวลาสิ้นสุด'] || ''}</strong></div>
                         </div>
                     </div>
                     <div class="row mt-2">
                         <div class="col-12">
                             <small class="text-muted">ประเภทรถที่เลือก</small>
-                            <div>${currentApprovalRow.choose || 'รถยนต์นั่ง 4 ประตู'}</div>
+                            <div>${currentApprovalRow.choose || currentApprovalRow.vehicle || currentApprovalRow['ประเภทรถ'] || '-'}</div>
                         </div>
                     </div>
                 </div>
@@ -787,7 +827,7 @@
                 <div class="mb-3">
                     <h6>เหตุผลการขอใช้รถ</h6>
                     <div class="border rounded p-2 bg-light">
-                        ${currentApprovalRow.reason || 'ไปประชุมกับลูกค้า'}
+                        ${currentApprovalRow.reason || currentApprovalRow['เหตุผล'] || '-'}
                     </div>
                 </div>
                 
@@ -819,7 +859,7 @@
         // Update counts and statistics
         function updateCounts() {
             const total = allData.length;
-            const pending = allData.filter(item => !item.approval || item.approval === '').length;
+            const pending = allData.filter(item => !item.approval || item.approval === '' || item.approval === null || item.approval === undefined).length;
             const approved = allData.filter(item => item.approval === 'อนุมัติแล้ว').length;
             const rejected = allData.filter(item => item.approval === 'ไม่อนุมัติ').length;
             
@@ -837,12 +877,17 @@
         
         // Get status class for styling
         function getStatusClass(status) {
-            switch(status) {
+            if (!status) return 'status-pending';
+            
+            switch(status.toString().toLowerCase()) {
                 case 'อนุมัติแล้ว':
+                case 'approved':
                     return 'status-approved';
                 case 'ไม่อนุมัติ':
+                case 'rejected':
                     return 'status-rejected';
                 case 'รออนุมัติ':
+                case 'pending':
                 default:
                     return 'status-pending';
             }
@@ -853,19 +898,34 @@
             if (!dateString) return '-';
             
             try {
-                const date = new Date(dateString);
-                if (isNaN(date.getTime())) {
-                    // Try parsing as DD/MM/YYYY
+                let date;
+                
+                // Try to parse different date formats
+                if (dateString.includes('/')) {
+                    // Format: DD/MM/YYYY
                     const parts = dateString.split('/');
                     if (parts.length === 3) {
                         const day = parseInt(parts[0]);
                         const month = parseInt(parts[1]) - 1;
-                        const year = parseInt(parts[2]) - 543; // Convert from Buddhist year
-                        const newDate = new Date(year, month, day);
-                        if (!isNaN(newDate.getTime())) {
-                            date = newDate;
+                        let year = parseInt(parts[2]);
+                        
+                        // Convert Buddhist year to Christian year if needed
+                        if (year > 2500) {
+                            year = year - 543;
                         }
+                        
+                        date = new Date(year, month, day);
                     }
+                } else if (dateString.includes('-')) {
+                    // Format: YYYY-MM-DD
+                    date = new Date(dateString);
+                } else {
+                    // Try direct parsing
+                    date = new Date(dateString);
+                }
+                
+                if (!date || isNaN(date.getTime())) {
+                    return dateString;
                 }
                 
                 const day = date.getDate().toString().padStart(2, '0');
@@ -876,6 +936,16 @@
             } catch (e) {
                 return dateString;
             }
+        }
+        
+        // Show/hide loading overlay
+        function showLoading(message = 'กำลังโหลดข้อมูล...') {
+            loadingMessage.textContent = message;
+            loadingOverlay.classList.remove('d-none');
+        }
+        
+        function hideLoading() {
+            loadingOverlay.classList.add('d-none');
         }
         
         // Show toast notification
@@ -889,72 +959,66 @@
             }
         }
         
-        // Generate sample data
-        function generateSampleData(count = 15) {
-            console.log('Generating sample data...');
-            const sampleData = [];
-            const names = [
-                'สมชาย ใจดี', 'สุนิสา ราตรี', 'ประยุทธ์ จันทร์โอชา', 
-                'อรุณี สุขสวัสดิ์', 'วิรัช เกียรติสูง', 'ศิริพร วัฒนา',
-                'ณัฐวุฒิ ธรรมะ', 'เกศริน มาลัย', 'อนุชา ศรีสวัสดิ์',
-                'พรรณราย พิพัฒน์', 'อานนท์ ศรีเมือง', 'จารุณี เกษมสุข',
-                'ธีรพล วัฒนา', 'สุภาวดี มงคล', 'ฤทธิเกียรติ จันทร์สว่าง'
-            ];
-            const departments = ['IT', 'HR', 'การเงิน', 'ฝ่ายขาย', 'ฝ่ายการผลิต', 'ฝ่ายจัดซื้อ', 'ฝ่ายบำรุงรักษา'];
-            const sections = ['พัฒนาระบบ', 'ฝึกอบรม', 'บัญชี', 'ขายในประเทศ', 'ผลิตภัณฑ์', 'ซัพพลาย', 'ช่างกล'];
-            const positions = ['พนักงาน', 'หัวหน้าแผนก', 'ผู้จัดการ', 'วิศวกร', 'นักวิเคราะห์', 'ผู้ช่วย'];
-            const vehicles = ['รถยนต์นั่ง 4 ประตู', 'รถตู้', 'รถกระบะ', 'รถยนต์นั่ง 5 ประตู', 'รถตู้โดยสาร'];
-            const reasons = [
-                'นำผู้บริหารเยี่ยมชมโรงงาน', 'ไปประชุมกับลูกค้า', 'รับของจากซัพพลายเออร์', 
-                'เดินทางไปติดตั้งงาน', 'อบรมพนักงาน', 'ส่งสินค้าให้ลูกค้า',
-                'ไปตรวจงานหน้างาน', 'รับรองลูกค้าจากต่างประเทศ', 'เข้าร่วมสัมมนา',
-                'นำทีมออกภาคสนาม', 'ไปพบแพทย์', 'รับเอกสารสำคัญ'
-            ];
-            
+        // Fallback data if API fails
+        function getFallbackData() {
+            console.log('Using fallback data');
+            const fallbackData = [];
             const today = new Date();
             
-            for (let i = 1; i <= count; i++) {
-                const statusIndex = i % 5;
-                let approvalStatus;
-                
-                if (statusIndex === 0) approvalStatus = 'อนุมัติแล้ว';
-                else if (statusIndex === 1) approvalStatus = 'ไม่อนุมัติ';
-                else approvalStatus = '';
-                
+            for (let i = 1; i <= 20; i++) {
                 const startDate = new Date(today);
                 startDate.setDate(startDate.getDate() + i);
                 const endDate = new Date(startDate);
                 endDate.setDate(endDate.getDate() + (i % 3) + 1);
                 
-                const randomName = names[Math.floor(Math.random() * names.length)];
-                const randomDept = departments[Math.floor(Math.random() * departments.length)];
+                const statuses = ['', 'อนุมัติแล้ว', 'ไม่อนุมัติ'];
+                const status = statuses[i % 3];
                 
-                sampleData.push({
-                    id: `cr_${Date.now()}_${i}`,
-                    timestamp: new Date().toISOString(),
-                    code: `CR${String(i).padStart(3, '0')}`,
-                    name: randomName,
-                    section: sections[Math.floor(Math.random() * sections.length)],
-                    department: randomDept,
-                    position: positions[Math.floor(Math.random() * positions.length)],
+                fallbackData.push({
+                    rowIndex: i + 1,
+                    code: `EMP${String(i).padStart(3, '0')}`,
+                    name: `ผู้ใช้งาน ${i}`,
+                    department: i % 2 === 0 ? 'IT' : 'HR',
+                    section: i % 2 === 0 ? 'พัฒนาระบบ' : 'ฝึกอบรม',
+                    position: i % 3 === 0 ? 'ผู้จัดการ' : i % 3 === 1 ? 'หัวหน้าแผนก' : 'พนักงาน',
                     contact: `08${Math.floor(Math.random() * 100000000).toString().padStart(8, '0')}`,
-                    choose: vehicles[Math.floor(Math.random() * vehicles.length)],
                     rentStartdate: startDate.toISOString().split('T')[0],
                     rentEnddate: endDate.toISOString().split('T')[0],
                     startTime: '09:00',
                     endTime: '17:00',
-                    reason: reasons[Math.floor(Math.random() * reasons.length)],
-                    approval: approvalStatus
+                    reason: i % 2 === 0 ? 'ไปประชุมกับลูกค้า' : 'นำทีมออกตรวจงาน',
+                    approval: status,
+                    choose: i % 2 === 0 ? 'รถยนต์นั่ง 4 ประตู' : 'รถตู้'
                 });
             }
             
-            console.log('Generated', sampleData.length, 'sample items');
-            return sampleData;
+            return fallbackData;
         }
         
-        // Initial data load
+        // Test the API connection
+        async function testAPIConnection() {
+            try {
+                const response = await fetch(SCRIPT_URL + '?action=test');
+                const result = await response.json();
+                console.log('API Test Result:', result);
+                return result.success;
+            } catch (error) {
+                console.error('API Test Error:', error);
+                return false;
+            }
+        }
+        
+        // Initial load
         window.onload = function() {
-            loadData();
+            // Test API first
+            testAPIConnection().then(success => {
+                if (success) {
+                    console.log('API connection successful');
+                } else {
+                    console.log('API connection failed, will use fallback if needed');
+                }
+                loadData();
+            });
         };
     </script>
 </body>
