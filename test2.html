@@ -421,8 +421,8 @@
             showLoading();
             
             try {
-                const response = await fetch(`${SCRIPT_URL}?action=getData&sheetId=${SHEET_ID}`);
-                const result = await response.json();
+                const fullScriptUrl = `https://script.google.com/macros/s/${SCRIPT_URL}/exec`;
+        const response = await fetch(`${fullScriptUrl}?action=getData&sheetId=${SHEET_ID}`);
                 
                 if (result.success) {
                     allData = result.data;
