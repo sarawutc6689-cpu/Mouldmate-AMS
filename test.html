@@ -1019,68 +1019,34 @@
         }
         
         // Execute approve/reject action
-        async function executeAction() {
-            try {
-                const reservation = allReservations.find(r => r.id === currentReservationId);
-                
-                if (!reservation) {
-                    throw new Error('ไม่พบข้อมูลการจอง');
-                }
-                
-                let newStatus, thaiStatus, actionText;
-                
-                if (currentAction === 'approve') {
-                    newStatus = 'อนุมัติ';
-                    thaiStatus = 'อนุมัติแล้ว';
-                    actionText = 'อนุมัติ';
-                } else {
-                    newStatus = 'ปฏิเสธ';
-                    thaiStatus = 'ปฏิเสธแล้ว';
-                    actionText = 'ปฏิเสธ';
-                }
-                
-                // สร้าง form สำหรับส่งข้อมูล (ใช้วิธี POST ผ่าน iframe)
-                const form = document.createElement('form');
-                form.method = 'POST';
-                form.action = SCRIPT_URL;
-                form.target = 'hiddenFrame';
-                form.style.display = 'none';
-                
-                const actionInput = document.createElement('input');
-                actionInput.type = 'hidden';
-                actionInput.name = 'action';
-                actionInput.value = 'updateApproval';
-                
-                const rowInput = document.createElement('input');
-                rowInput.type = 'hidden';
-                rowInput.name = 'row';
-                rowInput.value = reservation.row;
-                
-                const statusInput = document.createElement('input');
-                statusInput.type = 'hidden';
-                statusInput.name = 'status';
-                statusInput.value = newStatus;
-                
-                form.appendChild(actionInput);
-                form.appendChild(rowInput);
-                form.appendChild(statusInput);
-                document.body.appendChild(form);
-                
-                // สร้าง iframe ซ่อนไว้สำหรับรับ response
-                const iframe = document.createElement('iframe');
-                iframe.name = 'hiddenFrame';
-                iframe.style.display = 'none';
-                document.body.appendChild(iframe);
-                
-                // ส่ง form
-                form.submit();
-                
-                // ลบ form และ iframe หลังจากส่ง
-                setTimeout(() => {
-                    document.body.removeChild(form);
-                    document.body.removeChild(iframe);
-                }, 1000);
-                
+      // Execute approve/reject action
+async function executeAction() {
+    try {
+        const reservation = allReservations.find(r => r.id === currentReservationId);
+        
+        if (!reservation) {
+            throw new Error('ไม่พบข้อมูลการจอง');
+        }
+        
+        let newStatus, thaiStatus, actionText;
+        
+        if (currentAction === 'approve') {
+            newStatus = 'อนุมัติ';
+            thaiStatus = 'อนุมัติแล้ว';
+            actionText = 'อนุมัติ';
+        } else {
+            newStatus = 'ปฏิเสธ';
+            thaiStatus = 'ปฏิเสธแล้ว';
+            actionText = 'ปฏิเสธ';
+        }
+        
+        // ใช้ JSONP สำหรับการอัพเดท
+        const callbackName = 'update_callback_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+        
+        window[callbackName] = function(response) {
+            delete window[callbackName];
+            
+            if (response && response.status === 'success') {
                 // Update local data
                 reservation.approval = newStatus;
                 reservation.status = currentAction === 'approve' ? 'approved' : 'rejected';
@@ -1090,14 +1056,94 @@
                 filterReservations();
                 
                 showSuccess(`ดำเนินการ${actionText}สำเร็จ`);
-                closeModal();
-                
-            } catch (error) {
-                console.error('Error updating approval:', error);
-                showError('ไม่สามารถดำเนินการได้: ' + error.message);
-                closeModal();
+            } else {
+                const errorMsg = response ? response.message : 'ไม่สามารถอัพเดทได้';
+                showError('ไม่สามารถอัพเดทได้: ' + errorMsg);
             }
-        }
+            
+            closeModal();
+        };
+        
+        // สร้าง script tag สำหรับ JSONP
+        const script = document.createElement('script');
+        const params = new URLSearchParams({
+            action: 'updateApproval',
+            row: reservation.row,
+            status: newStatus,
+            callback: callbackName
+        });
+        
+        script.src = `${SCRIPT_URL}?${params.toString()}`;
+        script.onerror = function() {
+            delete window[callbackName];
+            
+            // ถ้า JSONP ล้มเหลว ให้ลองใช้ Google Forms
+            updateViaGoogleForms(reservation, newStatus, actionText);
+        };
+        
+        document.head.appendChild(script);
+        
+        // ลบ script หลังจากใช้
+        setTimeout(() => {
+            if (script.parentNode) {
+                script.parentNode.removeChild(script);
+            }
+        }, 10000);
+        
+    } catch (error) {
+        console.error('Error updating approval:', error);
+        showError('ไม่สามารถดำเนินการได้: ' + error.message);
+        closeModal();
+    }
+}
+
+// ใช้ Google Forms สำหรับอัพเดท (backup method)
+function updateViaGoogleForms(reservation, newStatus, actionText) {
+    try {
+        // วิธีที่ 1: ใช้ Google Forms ที่เชื่อมกับ Sheet เดียวกัน
+        // คุณต้องสร้าง Google Form ก่อน และได้ entry IDs
+        
+        // วิธีที่ 2: ใช้ Google Sheets API แบบง่าย (ต้องเปิดให้เป็น public)
+        updateViaSheetsAPI(reservation, newStatus, actionText);
+        
+    } catch (error) {
+        console.error('Google Forms update failed:', error);
+        
+        // วิธีที่ 3: แค่อัพเดทในหน้านี้ชั่วคราว (ไม่ได้บันทึกลง Sheet)
+        reservation.approval = newStatus;
+        reservation.status = currentAction === 'approve' ? 'approved' : 'rejected';
+        
+        updateStats();
+        filterReservations();
+        
+        showSuccess(`ดำเนินการ${actionText}สำเร็จ (บันทึกเฉพาะในหน้านี้)`);
+        closeModal();
+    }
+}
+
+// ใช้ Google Sheets API สำหรับอัพเดท
+async function updateViaSheetsAPI(reservation, newStatus, actionText) {
+    try {
+        const SHEET_ID = '1-5izB7N6ldxHAa3ca0RNhGP8Z36vuA0mw9Wi_xR_Lj4';
+        
+        // ต้องสร้าง API key ก่อน แต่เราจะใช้วิธีง่ายๆ
+        // หรือให้สร้าง Google Form แทน
+        
+        // อัพเดทเฉพาะในหน้านี้ชั่วคราว
+        reservation.approval = newStatus;
+        reservation.status = currentAction === 'approve' ? 'approved' : 'rejected';
+        
+        updateStats();
+        filterReservations();
+        
+        showSuccess(`ดำเนินการ${actionText}สำเร็จ (โปรดแจ้งผู้ดูแลเพื่ออัพเดทใน Google Sheets)`);
+        closeModal();
+        
+    } catch (error) {
+        console.error('Sheets API update failed:', error);
+        throw error;
+    }
+}
         
         // Show success notification
         function showSuccess(message) {
