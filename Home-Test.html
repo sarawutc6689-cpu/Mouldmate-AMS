@@ -128,7 +128,7 @@
         }
 
         .approve-btn {
-            background: var(--danger);
+            background: var(--primary);
             color: white;
             border: none;
             border-radius: 8px;
@@ -139,6 +139,10 @@
             display: none;
             align-items: center;
             gap: 5px;
+        }
+
+        .approve-btn:hover {
+            background: #5EEB62;
         }
 
         .login-btn-header {
@@ -969,7 +973,7 @@
                     <span id="currentRole" style="font-size: 12px; opacity: 0.8;">(<span id="roleText"></span>)</span>
                 </div>
                 <button class="approve-btn" id="approveBtn">
-                    <i class="fas fa-sign-out-alt"></i> การอนุมัติ
+                    <i class="fas fa-clipboard-check"></i> การอนุมัติ 
                 </button>
                 <button class="logout-btn" id="logoutBtn">
                     <i class="fas fa-sign-out-alt"></i> ออกจากระบบ
