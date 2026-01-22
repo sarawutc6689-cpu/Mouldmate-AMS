@@ -419,6 +419,69 @@
             container.innerHTML = html;
         }
         
+        function approveReservationFromCard(docNumber) {
+            updateApprovalStatus(docNumber, 'อนุมัติแล้ว');
+        }
+        
+        function rejectReservationFromCard(docNumber) {
+            updateApprovalStatus(docNumber, 'ไม่อนุมัติ');
+        }
+        
+        function approveReservation() {
+            if (!currentReservation) return;
+            
+            const note = document.getElementById('approvalNote').value;
+            updateApprovalStatus(currentReservation.documentNumber, 'อนุมัติแล้ว', note);
+        }
+        
+        function rejectReservation() {
+            if (!currentReservation) return;
+            
+            const note = document.getElementById('approvalNote').value;
+            updateApprovalStatus(currentReservation.documentNumber, 'ไม่อนุมัติ', note);
+        }
+        
+        function filterReservations() {
+            const departmentFilter = document.getElementById('departmentFilter').value;
+            const dateFilter = document.getElementById('dateFilter').value;
+            const statusFilter = document.querySelector('.status-badge.active').dataset.status;
+            
+            let filtered = reservations;
+            
+            if (departmentFilter) {
+                filtered = filtered.filter(reservation => 
+                    reservation.department === departmentFilter || 
+                    reservation.section === departmentFilter
+                );
+            }
+            
+            if (dateFilter) {
+                filtered = filtered.filter(reservation => {
+                    const startDate = reservation.rentStartdate;
+                    const endDate = reservation.rentEnddate;
+                    
+                    if (!startDate || !endDate) return false;
+                    
+                    return dateFilter >= startDate && dateFilter <= endDate;
+                });
+            }
+            
+            if (statusFilter) {
+                filtered = filtered.filter(reservation => {
+                    const approvalStatus = reservation.approval || 'รออนุมัติ';
+                    // ========== แก้ไขตรงนี้ ==========
+                    var cleanApproval = approvalStatus;
+                    if (approvalStatus && approvalStatus.startsWith('/')) {
+                        cleanApproval = approvalStatus.substring(1);
+                    }
+                    return cleanApproval === statusFilter;
+                    // ===============================
+                });
+            }
+            
+            displayReservations(filtered);
+        }
+        
         function populateDepartmentFilter() {
             const departments = new Set();
             const sections = new Set();
