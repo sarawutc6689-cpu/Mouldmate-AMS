@@ -127,6 +127,24 @@
             background: #dc2626;
         }
 
+        .approve-btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 8px 15px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: none;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .approve-btn:hover {
+            background: #5EEB62;
+        }
+
         .login-btn-header {
             background: var(--primary);
             color: white;
@@ -954,6 +972,9 @@
                     <span id="currentUser"></span> 
                     <span id="currentRole" style="font-size: 12px; opacity: 0.8;">(<span id="roleText"></span>)</span>
                 </div>
+                <button class="approve-btn" id="approveBtn">
+                    <i class="fas fa-clipboard-check"></i> การอนุมัติ 
+                </button>
                 <button class="logout-btn" id="logoutBtn">
                     <i class="fas fa-sign-out-alt"></i> ออกจากระบบ
                 </button>
@@ -2073,6 +2094,7 @@
     // ฟังก์ชันอัพเดท UI ส่วนล็อกอิน/ล็อกเอาต์
     function updateAuthUI() {
         const userInfo = document.getElementById('userInfo');
+        const approvalBtn = document.getElementById('approvalBtn');
         const logoutBtn = document.getElementById('logoutBtn');
         const loginBtn = document.getElementById('showLoginModal');
         
@@ -2081,6 +2103,7 @@
             document.getElementById('currentUser').textContent = currentUser;
             document.getElementById('roleText').textContent = currentRole === 'admin' ? 'ผู้ดูแลระบบ' : 'ผู้ใช้ทั่วไป';
             userInfo.style.display = 'flex';
+            approveBtn.style.display = 'flex';
             logoutBtn.style.display = 'flex';
             loginBtn.style.display = 'none';
             
@@ -2093,6 +2116,7 @@
         } else {
             // แสดงปุ่มล็อกอิน
             userInfo.style.display = 'none';
+            approveBtn.style.display = 'none';
             logoutBtn.style.display = 'none';
             loginBtn.style.display = 'flex';
         }
@@ -2370,6 +2394,14 @@
                 updateSummary();
             }
         });
+
+
+        // เพิ่ม event listener สำหรับปุ่มการอนุมัติ
+        document.getElementById('approveBtn').addEventListener('click', function() {
+        // เปิดลิงก์ไปยังหน้า Approve ในหน้าเดิม
+        window.location.href = 'https://sarawutc6689-cpu.github.io/Mouldmate-AMS/Approve.html';
+        });
+
         
         // จัดการเหตุการณ์ค้นหาพนักงาน
         document.getElementById('searchBtn').addEventListener('click', searchEmployee);
