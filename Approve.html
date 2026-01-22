@@ -253,29 +253,47 @@
             const callbackName = `jsonpCallback_${callbackId}`;
             
             window[callbackName] = function(data) {
-                try {
-                    delete window[callbackName];
-                    document.getElementById('jsonpScript')?.remove();
-                    
-                    if (data.success && data.data) {
-                        reservations = data.data;
-                        reservations.sort((a, b) => new Date(b.Timestamp) - new Date(a.Timestamp));
-                        
-                        showLoading(false);
-                        displayReservations(reservations);
-                        populateDepartmentFilter();
-                        filterReservations();
-                        
-                        showNotification(`โหลดข้อมูลการจองเรียบร้อยแล้ว (${reservations.length} รายการ)`, 'success');
-                    } else {
-                        throw new Error(data.message || 'ข้อมูลไม่ถูกต้อง');
-                    }
-                } catch (error) {
-                    console.error('Error:', error);
-                    showLoading(false, true);
-                    showNotification('เกิดข้อผิดพลาดในการโหลดข้อมูล', 'error');
+    try {
+        delete window[callbackName];
+        document.getElementById('jsonpScript')?.remove();
+        
+        if (data.success && data.data) {
+            reservations = data.data;
+            
+            // ตรวจสอบว่ามีเลขที่เอกสารหรือไม่
+            let hasDocNumbers = true;
+            reservations.forEach(res => {
+                if (!res.documentNumber || res.documentNumber === '') {
+                    hasDocNumbers = false;
                 }
-            };
+            });
+            
+            if (!hasDocNumbers) {
+                // ถ้าไม่มีเลขที่เอกสาร ให้เรียก API เพื่อสร้าง
+                setTimeout(() => {
+                    showNotification('กำลังสร้างเลขที่เอกสาร...', 'success');
+                    loadReservationsFromGoogleSheets(); // โหลดใหม่
+                }, 1000);
+                return;
+            }
+            
+            reservations.sort((a, b) => new Date(b.Timestamp) - new Date(a.Timestamp));
+            
+            showLoading(false);
+            displayReservations(reservations);
+            populateDepartmentFilter();
+            filterReservations();
+            
+            showNotification(`โหลดข้อมูลการจองเรียบร้อยแล้ว (${reservations.length} รายการ)`, 'success');
+        } else {
+            throw new Error(data.message || 'ข้อมูลไม่ถูกต้อง');
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        showLoading(false, true);
+        showNotification('เกิดข้อผิดพลาดในการโหลดข้อมูล: ' + error.message, 'error');
+    }
+};
             
             const script = document.createElement('script');
             script.id = 'jsonpScript';
