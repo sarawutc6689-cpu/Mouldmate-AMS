@@ -566,72 +566,90 @@
         }
         
         async function updateApprovalStatus(docNumber, status, note = '') {
+    try {
+        // ปิดการใช้งานปุ่มชั่วคราว
+        disableActionButtons(docNumber, true);
+        
+        // ลบ / ออกถ้ามี
+        var cleanStatus = status;
+        if (status && status.startsWith('/')) {
+            cleanStatus = status.substring(1);
+        }
+        
+        // ========== ใช้ JSONP แทน form submit ==========
+        callbackId++;
+        const callbackName = `updateCallback_${callbackId}`;
+        
+        window[callbackName] = function(response) {
             try {
-                disableActionButtons(docNumber, true);
+                // ล้าง callback และ script element
+                delete window[callbackName];
+                document.getElementById('updateScript')?.remove();
                 
-                // ========== แก้ไขตรงนี้ ==========
-                // ลบ / ออกถ้ามี
-                var cleanStatus = status;
-                if (status && status.startsWith('/')) {
-                    cleanStatus = status.substring(1);
-                }
-                // ===============================
-                
-                const form = document.createElement('form');
-                form.method = 'POST';
-                form.action = scriptUrl;
-                form.target = '_blank';
-                form.style.display = 'none';
-                
-                const actionInput = document.createElement('input');
-                actionInput.type = 'hidden';
-                actionInput.name = 'action';
-                actionInput.value = 'update';
-                
-                const docInput = document.createElement('input');
-                docInput.type = 'hidden';
-                docInput.name = 'documentNumber';
-                docInput.value = docNumber;
-                
-                const statusInput = document.createElement('input');
-                statusInput.type = 'hidden';
-                statusInput.name = 'status';
-                statusInput.value = cleanStatus;
-                
-                const noteInput = document.createElement('input');
-                noteInput.type = 'hidden';
-                noteInput.name = 'note';
-                noteInput.value = note || '';
-                
-                form.appendChild(actionInput);
-                form.appendChild(docInput);
-                form.appendChild(statusInput);
-                form.appendChild(noteInput);
-                
-                document.body.appendChild(form);
-                form.submit();
-                
-                setTimeout(() => {
-                    document.body.removeChild(form);
-                }, 100);
-                
-                const index = reservations.findIndex(r => r.documentNumber === docNumber);
-                if (index !== -1) {
-                    reservations[index].approval = cleanStatus;
+                if (response && response.success) {
+                    // อัพเดทข้อมูลในหน้านี้ทันที
+                    const index = reservations.findIndex(r => r.documentNumber === docNumber);
+                    if (index !== -1) {
+                        reservations[index].approval = cleanStatus;
+                    }
                     
+                    // แสดง notification
                     showNotification(`อัพเดทสถานะเอกสาร ${docNumber} เป็น "${cleanStatus}" เรียบร้อยแล้ว`, 'success');
                     
+                    // รีเฟรชข้อมูล
                     setTimeout(() => {
                         loadReservationsFromGoogleSheets();
                         closeModal();
                     }, 1000);
+                } else {
+                    showNotification(response?.message || 'เกิดข้อผิดพลาดในการอัพเดทสถานะ', 'error');
+                    disableActionButtons(docNumber, false);
                 }
             } catch (error) {
-                console.error('Error:', error);
-                showNotification('เกิดข้อผิดพลาดในการอัพเดทสถานะ', 'error');
+                console.error('Error in callback:', error);
+                showNotification('เกิดข้อผิดพลาดในการประมวลผล', 'error');
                 disableActionButtons(docNumber, false);
             }
-        }
+        };
+        
+        // สร้าง URL พร้อมพารามิเตอร์
+        const params = new URLSearchParams({
+            callback: callbackName,
+            action: 'update',
+            documentNumber: docNumber,
+            status: cleanStatus,
+            note: note || ''
+        });
+        
+        const script = document.createElement('script');
+        script.id = 'updateScript';
+        script.src = `${scriptUrl}?${params.toString()}`;
+        
+        script.onerror = function() {
+            showNotification('ไม่สามารถเชื่อมต่อกับเซิร์ฟเวอร์ได้', 'error');
+            disableActionButtons(docNumber, false);
+            document.getElementById('updateScript')?.remove();
+            delete window[callbackName];
+        };
+        
+        // เพิ่ม timeout
+        setTimeout(() => {
+            if (document.getElementById('updateScript')) {
+                showNotification('การอัพเดทใช้เวลานานเกินไป', 'error');
+                document.getElementById('updateScript')?.remove();
+                delete window[callbackName];
+                disableActionButtons(docNumber, false);
+            }
+        }, 10000);
+        
+        document.head.appendChild(script);
+        
+    } catch (error) {
+        console.error('Error:', error);
+        showNotification('เกิดข้อผิดพลาดในการอัพเดทสถานะ', 'error');
+        disableActionButtons(docNumber, false);
+    }
+}
         
         function disableActionButtons(docNumber, disabled) {
             const card = document.querySelector(`[data-doc-number="${docNumber}"]`);
