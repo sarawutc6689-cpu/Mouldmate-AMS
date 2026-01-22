@@ -223,7 +223,7 @@
     <div id="notification" class="notification"></div>
     
     <script>
-        const scriptUrl = 'https://script.google.com/macros/s/AKfycbzfeQ3qhhvO6dYpdgIkbLXcsk1i8ytIM_3rDmPcX3UCPpFvc4quAdaqeaXAEPsYkYAs/exec';
+        const scriptUrl = 'https://script.google.com/macros/s/AKfycby7vS4CurNBg0zkf23it59Gp-QeMwTr6z-DPZwGKIPuRfV8fkYxaIjyL1RXH97fnfwQ/exec';
         
         let reservations = [];
         let currentReservation = null;
@@ -335,6 +335,13 @@
                 let statusClass = '';
                 let statusText = reservation.approval || 'รออนุมัติ';
                 
+                // ========== แก้ไขตรงนี้ ==========
+                // ลบ / ออกถ้ามี
+                if (statusText && statusText.startsWith('/')) {
+                    statusText = statusText.substring(1);
+                }
+                // ===============================
+                
                 if (statusText === 'อนุมัติแล้ว') {
                     statusClass = 'approved';
                 } else if (statusText === 'ไม่อนุมัติ') {
@@ -347,7 +354,6 @@
                 const departmentInfo = `${reservation.department || ''}${reservation.section ? ' / ' + reservation.section : ''}`;
                 const docNumber = reservation.documentNumber || 'กำลังสร้าง...';
                 
-                // ตรวจสอบสถานะเพื่อซ่อนปุ่ม
                 const isPending = statusText === 'รออนุมัติ';
                 
                 html += `
@@ -414,17 +420,14 @@
             container.innerHTML = html;
         }
         
-        // ==== ฟังก์ชันอนุมัติจาก Card (ไม่มี confirm) ====
         function approveReservationFromCard(docNumber) {
             updateApprovalStatus(docNumber, 'อนุมัติแล้ว');
         }
         
-        // ==== ฟังก์ชันไม่อนุมัติจาก Card (ไม่มี confirm) ====
         function rejectReservationFromCard(docNumber) {
             updateApprovalStatus(docNumber, 'ไม่อนุมัติ');
         }
         
-        // ==== ฟังก์ชันอนุมัติจาก Modal (ไม่มี confirm) ====
         function approveReservation() {
             if (!currentReservation) return;
             
@@ -432,7 +435,6 @@
             updateApprovalStatus(currentReservation.documentNumber, 'อนุมัติแล้ว', note);
         }
         
-        // ==== ฟังก์ชันไม่อนุมัติจาก Modal (ไม่มี confirm) ====
         function rejectReservation() {
             if (!currentReservation) return;
             
@@ -468,7 +470,13 @@
             if (statusFilter) {
                 filtered = filtered.filter(reservation => {
                     const approvalStatus = reservation.approval || 'รออนุมัติ';
-                    return approvalStatus === statusFilter;
+                    // ========== แก้ไขตรงนี้ ==========
+                    var cleanApproval = approvalStatus;
+                    if (approvalStatus && approvalStatus.startsWith('/')) {
+                        cleanApproval = approvalStatus.substring(1);
+                    }
+                    return cleanApproval === statusFilter;
+                    // ===============================
                 });
             }
             
@@ -516,6 +524,13 @@
             
             const departmentInfo = `${reservation.department || ''}${reservation.section ? ' / ' + reservation.section : ''}`;
             
+            // ========== แก้ไขตรงนี้ ==========
+            var approvalStatus = reservation.approval || 'รออนุมัติ';
+            if (approvalStatus && approvalStatus.startsWith('/')) {
+                approvalStatus = approvalStatus.substring(1);
+            }
+            // ===============================
+            
             document.getElementById('modalDocNumber').textContent = reservation.documentNumber || 'กำลังสร้าง...';
             document.getElementById('modalEmpCode').textContent = reservation.employeeCode || '-';
             document.getElementById('modalName').textContent = reservation.name || '-';
@@ -528,8 +543,6 @@
             document.getElementById('modalEndTime').textContent = reservation.endTime || '-';
             document.getElementById('modalContact').textContent = reservation.contact || '-';
             document.getElementById('modalReason').textContent = reservation.reason || '-';
-            
-            const approvalStatus = reservation.approval || 'รออนุมัติ';
             document.getElementById('modalApproval').textContent = approvalStatus;
             
             const approvalFormSection = document.getElementById('approvalFormSection');
@@ -555,8 +568,15 @@
         
         async function updateApprovalStatus(docNumber, status, note = '') {
             try {
-                // ปิดการใช้งานปุ่มชั่วคราว (optional)
                 disableActionButtons(docNumber, true);
+                
+                // ========== แก้ไขตรงนี้ ==========
+                // ลบ / ออกถ้ามี
+                var cleanStatus = status;
+                if (status && status.startsWith('/')) {
+                    cleanStatus = status.substring(1);
+                }
+                // ===============================
                 
                 const form = document.createElement('form');
                 form.method = 'POST';
@@ -577,7 +597,7 @@
                 const statusInput = document.createElement('input');
                 statusInput.type = 'hidden';
                 statusInput.name = 'status';
-                statusInput.value = status;
+                statusInput.value = cleanStatus;
                 
                 const noteInput = document.createElement('input');
                 noteInput.type = 'hidden';
@@ -596,15 +616,12 @@
                     document.body.removeChild(form);
                 }, 100);
                 
-                // อัพเดทข้อมูลในหน้านี้ทันที (optimistic update)
                 const index = reservations.findIndex(r => r.documentNumber === docNumber);
                 if (index !== -1) {
-                    reservations[index].approval = status;
+                    reservations[index].approval = cleanStatus;
                     
-                    // แสดง notification แจ้งผล
-                    showNotification(`อัพเดทสถานะเอกสาร ${docNumber} เป็น "${status}" เรียบร้อยแล้ว`, 'success');
+                    showNotification(`อัพเดทสถานะเอกสาร ${docNumber} เป็น "${cleanStatus}" เรียบร้อยแล้ว`, 'success');
                     
-                    // รีเฟรชข้อมูล
                     setTimeout(() => {
                         loadReservationsFromGoogleSheets();
                         closeModal();
@@ -617,7 +634,6 @@
             }
         }
         
-        // ฟังก์ชันปิด/เปิดการใช้งานปุ่มชั่วคราว
         function disableActionButtons(docNumber, disabled) {
             const card = document.querySelector(`[data-doc-number="${docNumber}"]`);
             if (card) {
