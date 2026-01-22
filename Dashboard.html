@@ -293,6 +293,11 @@
             gap: 25px;
             margin-bottom: 40px;
         }
+
+        .status.rejected {
+            background-color: rgba(231, 76, 60, 0.2);
+            color: #c0392b;
+        }
         
         .chart-card {
             background-color: white;
@@ -416,6 +421,11 @@
         .status.completed {
             background-color: rgba(52, 152, 219, 0.2);
             color: #2980b9;
+        }
+
+        .status.rejected {
+            background-color: rgba(231, 76, 60, 0.2);
+            color: #c0392b;
         }
         
         /* Footer */
@@ -1154,6 +1164,7 @@ function updateDashboard(data) {
         const approvalStatus = String(item.approval || '').toLowerCase().trim();
         return approvalStatus === 'ปฏิเสธ' || 
                approvalStatus === 'rejected' ||
+               approvalStatus === 'ไม่อนุมัติ' ||
                approvalStatus === 'no' ||
                approvalStatus === 'n';
     }).length;
@@ -1405,16 +1416,16 @@ function updateTable(data) {
             let statusClass = 'pending';
             let statusText = 'รออนุมัติ';
             
-           if (approvalStatus === 'อนุมัติ' || approvalStatus === 'approved' || approvalStatus === 'ยืนยัน') {
-    statusClass = 'active';
-    statusText = 'อนุมัติ';
-} else if (approvalStatus === 'ปฏิเสธ' || approvalStatus === 'rejected') {
-    statusClass = 'rejected';  // ใช้คลาส rejected
-    statusText = 'ปฏิเสธ';
-} else if (approvalStatus === 'เสร็จสิ้น' || approvalStatus === 'completed') {
-    statusClass = 'completed';
-    statusText = 'เสร็จสิ้น';
-}
+          if (approvalStatus === 'อนุมัติ' || approvalStatus === 'approved' || approvalStatus === 'ยืนยัน') {
+           statusClass = 'active';
+           statusText = 'อนุมัติ';
+          } else if (approvalStatus === 'ปฏิเสธ' || approvalStatus === 'rejected' || approvalStatus === 'ไม่อนุมัติ') {
+           statusClass = 'rejected';
+           statusText = 'ไม่อนุมัติ';
+          } else if (approvalStatus === 'เสร็จสิ้น' || approvalStatus === 'completed') {
+           statusClass = 'completed';
+           statusText = 'เสร็จสิ้น';
+          }
             // ถ้าเป็นค่าว่างหรือ 'รออนุมัติ' ให้ใช้ค่า default ข้างต้น
             
             // Format rental period
