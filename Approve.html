@@ -91,7 +91,7 @@
             <div class="logo">
                 <i class="fas fa-car"></i>
                 <div>
-                    <h1>ระบบอนุมัติการจองรถ</h1>
+                    <h1>ระบบการจองรถ</h1>
                     <p class="subtitle">Car Rent Approval System</p>
                 </div>
             </div>
@@ -121,7 +121,7 @@
                     <div class="status-badges">
                         <div class="status-badge pending active" data-status="">ทั้งหมด</div>
                         <div class="status-badge pending" data-status="รออนุมัติ">รออนุมัติ</div>
-                        <div class="status-badge approved" data-status="อนุมัติแล้ว">อนุมัติแล้ว</div>
+                        <div class="status-badge approved" data-status="อนุมัติแล้ว">อนุมัติ</div>
                         <div class="status-badge rejected" data-status="ไม่อนุมัติ">ไม่อนุมัติ</div>
                     </div>
                 </div>
@@ -342,7 +342,7 @@
                 }
                 // ===============================
                 
-                if (statusText === 'อนุมัติแล้ว') {
+                if (statusText === 'อนุมัติ') {
                     statusClass = 'approved';
                 } else if (statusText === 'ไม่อนุมัติ') {
                     statusClass = 'rejected';
@@ -420,7 +420,7 @@
         }
         
         function approveReservationFromCard(docNumber) {
-            updateApprovalStatus(docNumber, 'อนุมัติแล้ว');
+            updateApprovalStatus(docNumber, 'อนุมัติ');
         }
         
         function rejectReservationFromCard(docNumber) {
@@ -431,7 +431,7 @@
             if (!currentReservation) return;
             
             const note = document.getElementById('approvalNote').value;
-            updateApprovalStatus(currentReservation.documentNumber, 'อนุมัติแล้ว', note);
+            updateApprovalStatus(currentReservation.documentNumber, 'อนุมัติ', note);
         }
         
         function rejectReservation() {
