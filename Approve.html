@@ -593,6 +593,7 @@
         // ตัวแปรเก็บข้อมูลการจอง
         let reservations = [];
         let currentReservation = null;
+        let callbackId = 0;
         
         // โหลดข้อมูลจาก Google Sheets เมื่อหน้าเว็บโหลดเสร็จ
         document.addEventListener('DOMContentLoaded', function() {
@@ -618,20 +619,60 @@
             document.getElementById('btnRejectModal').addEventListener('click', rejectReservation);
         });
         
-        // ฟังก์ชันโหลดข้อมูลการจองจาก Google Sheets
-        async function loadReservationsFromGoogleSheets() {
-            try {
-                showLoading(true);
-                
-                // โหลดข้อมูลจาก Google Apps Script
-                const response = await fetch(scriptUrl);
-                
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
+        // ฟังก์ชันโหลดข้อมูลการจองจาก Google Sheets โดยใช้ JSONP
+        function loadReservationsFromGoogleSheets() {
+            showLoading(true);
+            
+            // สร้าง callback function สำหรับ JSONP
+            callbackId++;
+            const callbackName = `jsonpCallback_${callbackId}`;
+            
+            // กำหนด global callback function
+            window[callbackName] = function(data) {
+                try {
+                    // ลบ callback function ออกจาก window object
+                    delete window[callbackName];
+                    
+                    // ลบ script element
+                    document.getElementById('jsonpScript')?.remove();
+                    
+                    // ประมวลผลข้อมูล
+                    processReservationsData(data);
+                } catch (error) {
+                    console.error('Error in JSONP callback:', error);
+                    showLoading(false, true);
+                    showNotification('เกิดข้อผิดพลาดในการประมวลผลข้อมูล', 'error');
                 }
-                
-                const data = await response.json();
-                
+            };
+            
+            // สร้าง script element สำหรับ JSONP
+            const script = document.createElement('script');
+            script.id = 'jsonpScript';
+            script.src = `${scriptUrl}?callback=${callbackName}`;
+            script.onerror = function() {
+                showLoading(false, true);
+                showNotification('ไม่สามารถเชื่อมต่อกับ Google Sheets ได้', 'error');
+                document.getElementById('jsonpScript')?.remove();
+                delete window[callbackName];
+            };
+            
+            // เพิ่ม script ไปยัง document
+            document.head.appendChild(script);
+            
+            // ตั้งค่า timeout
+            setTimeout(() => {
+                if (document.getElementById('jsonpScript')) {
+                    showLoading(false, true);
+                    showNotification('การเชื่อมต่อใช้งานเวลานานเกินไป', 'error');
+                    document.getElementById('jsonpScript')?.remove();
+                    delete window[callbackName];
+                }
+            }, 10000); // timeout 10 วินาที
+        }
+        
+        // ประมวลผลข้อมูลที่ได้จาก JSONP
+        function processReservationsData(data) {
+            try {
                 // ตรวจสอบว่าได้ข้อมูลมาหรือไม่
                 if (!data || !Array.isArray(data)) {
                     throw new Error('รูปแบบข้อมูลไม่ถูกต้อง');
@@ -640,22 +681,45 @@
                 // แปลงข้อมูลให้ตรงกับโครงสร้าง
                 reservations = data.map(item => {
                     // สร้าง object ที่มี property ตามโครงสร้างคอลัมน์
-                    return {
-                        Timestamp: item.A || '',
-                        Code: item.B || '',
-                        name: item.C || '',
-                        section: item.D || '',
-                        department: item.E || '',
-                        position: item.F || '',
-                        contact: item.G || '',
-                        choose: item.H || '',
-                        rentStartdate: item.I || '',
-                        rentEnddate: item.J || '',
-                        startTime: item.K || '',
-                        endTime: item.L || '',
-                        reason: item.M || '',
-                        approval: item.N || 'รออนุมัติ'
-                    };
+                    // ถ้าข้อมูลเป็น array of arrays
+                    if (Array.isArray(item)) {
+                        return {
+                            Timestamp: item[0] || '',
+                            Code: item[1] || '',
+                            name: item[2] || '',
+                            section: item[3] || '',
+                            department: item[4] || '',
+                            position: item[5] || '',
+                            contact: item[6] || '',
+                            choose: item[7] || '',
+                            rentStartdate: item[8] || '',
+                            rentEnddate: item[9] || '',
+                            startTime: item[10] || '',
+                            endTime: item[11] || '',
+                            reason: item[12] || '',
+                            approval: item[13] || 'รออนุมัติ'
+                        };
+                    } 
+                    // ถ้าข้อมูลเป็น array of objects
+                    else if (typeof item === 'object') {
+                        return {
+                            Timestamp: item.Timestamp || item.A || item[0] || '',
+                            Code: item.Code || item.B || item[1] || '',
+                            name: item.name || item.C || item[2] || '',
+                            section: item.section || item.D || item[3] || '',
+                            department: item.department || item.E || item[4] || '',
+                            position: item.position || item.F || item[5] || '',
+                            contact: item.contact || item.G || item[6] || '',
+                            choose: item.choose || item.H || item[7] || '',
+                            rentStartdate: item.rentStartdate || item.I || item[8] || '',
+                            rentEnddate: item.rentEnddate || item.J || item[9] || '',
+                            startTime: item.startTime || item.K || item[10] || '',
+                            endTime: item.endTime || item.L || item[11] || '',
+                            reason: item.reason || item.M || item[12] || '',
+                            approval: item.approval || item.N || item[13] || 'รออนุมัติ'
+                        };
+                    }
+                    return {};
                 }).filter(item => item.Code); // กรองเฉพาะที่มีรหัสการจอง
                 
                 // เรียงลำดับตามวันที่ส่งคำขอ (ใหม่สุดก่อน)
@@ -677,7 +741,7 @@
                 showNotification(`โหลดข้อมูลการจองเรียบร้อยแล้ว (${reservations.length} รายการ)`, 'success');
                 
             } catch (error) {
-                console.error('Error loading reservations:', error);
+                console.error('Error processing data:', error);
                 showLoading(false, true);
                 
                 // แสดงข้อผิดพลาด
@@ -985,22 +1049,50 @@
         // อัพเดทสถานะการอนุมัติ
         async function updateApprovalStatus(code, status, note = '') {
             try {
-                // ส่งข้อมูลไปยัง Google Apps Script
-                const response = await fetch(scriptUrl, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/x-www-form-urlencoded',
-                    },
-                    body: `action=update&code=${encodeURIComponent(code)}&status=${encodeURIComponent(status)}&note=${encodeURIComponent(note)}`
-                });
+                // สร้าง form สำหรับส่งข้อมูล (ใช้วิธีแบบฟอร์มเพื่อหลีกเลี่ยง CORS)
+                const form = document.createElement('form');
+                form.method = 'POST';
+                form.action = scriptUrl;
+                form.target = '_blank'; // เปิดในหน้าต่างใหม่เพื่อหลีกเลี่ยง CORS
+                form.style.display = 'none';
                 
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
+                // สร้าง input fields
+                const actionInput = document.createElement('input');
+                actionInput.type = 'hidden';
+                actionInput.name = 'action';
+                actionInput.value = 'update';
                 
-                const result = await response.text();
+                const codeInput = document.createElement('input');
+                codeInput.type = 'hidden';
+                codeInput.name = 'code';
+                codeInput.value = code;
                 
-                // อัพเดทข้อมูลใน array
+                const statusInput = document.createElement('input');
+                statusInput.type = 'hidden';
+                statusInput.name = 'status';
+                statusInput.value = status;
+                
+                const noteInput = document.createElement('input');
+                noteInput.type = 'hidden';
+                noteInput.name = 'note';
+                noteInput.value = note || '';
+                
+                // เพิ่ม input fields ไปยังฟอร์ม
+                form.appendChild(actionInput);
+                form.appendChild(codeInput);
+                form.appendChild(statusInput);
+                form.appendChild(noteInput);
+                
+                // เพิ่มฟอร์มไปยัง document และ submit
+                document.body.appendChild(form);
+                form.submit();
+                
+                // ลบฟอร์มหลังจาก submit
+                setTimeout(() => {
+                    document.body.removeChild(form);
+                }, 100);
+                
+                // อัพเดทข้อมูลใน array ทันที (optimistic update)
                 const index = reservations.findIndex(r => r.Code === code);
                 if (index !== -1) {
                     reservations[index].approval = status;
@@ -1013,6 +1105,11 @@
                     
                     // แสดง notification
                     showNotification(`อัพเดทสถานะการจอง ${code} เป็น "${status}" เรียบร้อยแล้ว`, 'success');
+                    
+                    // รีเฟรชข้อมูลหลังจากอัพเดท
+                    setTimeout(() => {
+                        loadReservationsFromGoogleSheets();
+                    }, 2000);
                 }
             } catch (error) {
                 console.error('Error updating approval status:', error);
