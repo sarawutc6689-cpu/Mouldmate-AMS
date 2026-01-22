@@ -277,6 +277,15 @@
             background-color: #138496;
         }
         
+        .btn-refresh {
+            background-color: #6c757d;
+            color: white;
+        }
+        
+        .btn-refresh:hover {
+            background-color: #5a6268;
+        }
+        
         .no-data {
             text-align: center;
             padding: 40px;
@@ -402,6 +411,12 @@
             background-color: #dc3545;
         }
         
+        .header-controls {
+            display: flex;
+            justify-content: flex-end;
+            margin-top: 15px;
+        }
+        
         @media (max-width: 768px) {
             .card-content {
                 grid-template-columns: 1fr;
@@ -429,6 +444,10 @@
             .filter-group {
                 width: 100%;
             }
+            
+            .header-controls {
+                justify-content: center;
+            }
         }
     </style>
 </head>
@@ -441,6 +460,11 @@
                     <h1>ระบบอนุมัติการจองรถ</h1>
                     <p class="subtitle">Car Rent Approval System</p>
                 </div>
+            </div>
+            <div class="header-controls">
+                <button class="btn btn-refresh" id="btnRefresh">
+                    <i class="fas fa-sync-alt"></i> โหลดข้อมูลใหม่
+                </button>
             </div>
         </header>
         
@@ -471,7 +495,7 @@
             
             <div id="loading" class="loading">
                 <i class="fas fa-spinner fa-spin"></i>
-                <p>กำลังโหลดข้อมูลการจองรถ...</p>
+                <p>กำลังโหลดข้อมูลการจองรถจาก Google Sheets...</p>
             </div>
             
             <div id="reservationsContainer" class="reservations-container" style="display: none;">
@@ -498,7 +522,7 @@
                         <div id="modalName" class="info-value">-</div>
                     </div>
                     <div class="info-group">
-                        <div class="info-label">ฝ่าย/แผนก</div>
+                        <div class="info-label">ฝ่าย/แผนก/ส่วน</div>
                         <div id="modalDepartment" class="info-value">-</div>
                     </div>
                     <div class="info-group">
@@ -536,6 +560,11 @@
                     <div id="modalReason" class="reason-text">-</div>
                 </div>
                 
+                <div class="info-group">
+                    <div class="info-label">สถานะการอนุมัติ</div>
+                    <div id="modalApproval" class="info-value">-</div>
+                </div>
+                
                 <div class="approval-form" id="approvalFormSection">
                     <div class="form-group">
                         <label for="approvalNote">หมายเหตุ (หากต้องการ)</label>
@@ -558,58 +587,6 @@
     <div id="notification" class="notification"></div>
     
     <script>
-        // ข้อมูลจำลองสำหรับทดสอบ
-        const mockData = [
-            {
-                Timestamp: "2023-10-15 09:30:00",
-                Code: "CAR-001",
-                name: "สมชาย ใจดี",
-                section: "ส่วนปฏิบัติการ",
-                department: "ฝ่ายบัญชี",
-                position: "ผู้จัดการฝ่าย",
-                contact: "081-234-5678",
-                choose: "รถยนต์ส่วนกลาง (Toyota Camry)",
-                rentStartdate: "2023-10-20",
-                rentEnddate: "2023-10-22",
-                startTime: "09:00",
-                endTime: "17:00",
-                reason: "เดินทางไปประชุมกับลูกค้าที่จังหวัดเชียงใหม่",
-                approval: "รออนุมัติ"
-            },
-            {
-                Timestamp: "2023-10-16 14:20:00",
-                Code: "CAR-002",
-                name: "สุภาพร สวยงาม",
-                section: "ส่วนสนับสนุน",
-                department: "ฝ่ายบุคคล",
-                position: "เจ้าหน้าที่ HR",
-                contact: "082-345-6789",
-                choose: "รถตู้ (Toyota Commuter)",
-                rentStartdate: "2023-10-25",
-                rentEnddate: "2023-10-25",
-                startTime: "08:00",
-                endTime: "16:00",
-                reason: "ไปรับพนักงานใหม่ที่สนามบินสุวรรณภูมิ",
-                approval: "อนุมัติแล้ว"
-            },
-            {
-                Timestamp: "2023-10-17 11:15:00",
-                Code: "CAR-003",
-                name: "วิชัย กล้าหาญ",
-                section: "ส่วนเทคนิค",
-                department: "ฝ่ายไอที",
-                position: "วิศวกรระบบ",
-                contact: "083-456-7890",
-                choose: "รถกระบะ (Isuzu D-Max)",
-                rentStartdate: "2023-10-28",
-                rentEnddate: "2023-10-29",
-                startTime: "07:30",
-                endTime: "18:00",
-                reason: "ขนส่งอุปกรณ์คอมพิวเตอร์ไปยังสาขาภูเก็ต",
-                approval: "ไม่อนุมัติ"
-            }
-        ];
-
         // URL ของ Google Apps Script
         const scriptUrl = 'https://script.google.com/macros/s/AKfycby7vS4CurNBg0zkf23it59Gp-QeMwTr6z-DPZwGKIPuRfV8fkYxaIjyL1RXH97fnfwQ/exec';
         
@@ -619,11 +596,12 @@
         
         // โหลดข้อมูลจาก Google Sheets เมื่อหน้าเว็บโหลดเสร็จ
         document.addEventListener('DOMContentLoaded', function() {
-            loadReservations();
+            loadReservationsFromGoogleSheets();
             
             // เพิ่ม event listeners
             document.getElementById('departmentFilter').addEventListener('change', filterReservations);
             document.getElementById('dateFilter').addEventListener('change', filterReservations);
+            document.getElementById('btnRefresh').addEventListener('click', loadReservationsFromGoogleSheets);
             
             // สถานะ filter
             document.querySelectorAll('.status-badge').forEach(badge => {
@@ -638,49 +616,111 @@
             document.querySelector('.close-modal').addEventListener('click', closeModal);
             document.getElementById('btnApproveModal').addEventListener('click', approveReservation);
             document.getElementById('btnRejectModal').addEventListener('click', rejectReservation);
-            
-            // เรียกใช้ฟังก์ชันกรองเมื่อโหลดหน้าเสร็จ
-            setTimeout(() => {
-                populateDepartmentFilter();
-                filterReservations();
-            }, 500);
         });
         
-        // ฟังก์ชันโหลดข้อมูลการจอง
-        async function loadReservations() {
+        // ฟังก์ชันโหลดข้อมูลการจองจาก Google Sheets
+        async function loadReservationsFromGoogleSheets() {
             try {
-                // ในกรณีจริง ให้โหลดข้อมูลจาก Google Apps Script
-                // const response = await fetch(scriptUrl);
-                // const data = await response.json();
-                // reservations = data;
+                showLoading(true);
                 
-                // สำหรับการทดสอบ ใช้ข้อมูลจำลอง
-                reservations = mockData;
+                // โหลดข้อมูลจาก Google Apps Script
+                const response = await fetch(scriptUrl);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                
+                // ตรวจสอบว่าได้ข้อมูลมาหรือไม่
+                if (!data || !Array.isArray(data)) {
+                    throw new Error('รูปแบบข้อมูลไม่ถูกต้อง');
+                }
+                
+                // แปลงข้อมูลให้ตรงกับโครงสร้าง
+                reservations = data.map(item => {
+                    // สร้าง object ที่มี property ตามโครงสร้างคอลัมน์
+                    return {
+                        Timestamp: item.A || '',
+                        Code: item.B || '',
+                        name: item.C || '',
+                        section: item.D || '',
+                        department: item.E || '',
+                        position: item.F || '',
+                        contact: item.G || '',
+                        choose: item.H || '',
+                        rentStartdate: item.I || '',
+                        rentEnddate: item.J || '',
+                        startTime: item.K || '',
+                        endTime: item.L || '',
+                        reason: item.M || '',
+                        approval: item.N || 'รออนุมัติ'
+                    };
+                }).filter(item => item.Code); // กรองเฉพาะที่มีรหัสการจอง
+                
+                // เรียงลำดับตามวันที่ส่งคำขอ (ใหม่สุดก่อน)
+                reservations.sort((a, b) => new Date(b.Timestamp) - new Date(a.Timestamp));
                 
                 // ซ่อน loading และแสดง container
-                document.getElementById('loading').style.display = 'none';
-                document.getElementById('reservationsContainer').style.display = 'block';
+                showLoading(false);
                 
                 // แสดงข้อมูลการจอง
                 displayReservations(reservations);
                 
+                // เติมข้อมูลใน filter
+                populateDepartmentFilter();
+                
+                // กรองข้อมูล
+                filterReservations();
+                
                 // แสดง notification สำเร็จ
-                showNotification('โหลดข้อมูลการจองเรียบร้อยแล้ว', 'success');
+                showNotification(`โหลดข้อมูลการจองเรียบร้อยแล้ว (${reservations.length} รายการ)`, 'success');
+                
             } catch (error) {
                 console.error('Error loading reservations:', error);
-                document.getElementById('loading').innerHTML = `
-                    <i class="fas fa-exclamation-triangle"></i>
-                    <p>เกิดข้อผิดพลาดในการโหลดข้อมูล: ${error.message}</p>
-                    <p>กำลังแสดงข้อมูลตัวอย่าง...</p>
+                showLoading(false, true);
+                
+                // แสดงข้อผิดพลาด
+                document.getElementById('reservationsContainer').innerHTML = `
+                    <div class="no-data">
+                        <i class="fas fa-exclamation-triangle" style="font-size: 3rem; color: #dc3545; margin-bottom: 15px;"></i>
+                        <p>เกิดข้อผิดพลาดในการโหลดข้อมูล</p>
+                        <p>${error.message}</p>
+                        <p style="margin-top: 20px;">
+                            <button class="btn btn-refresh" onclick="loadReservationsFromGoogleSheets()">
+                                <i class="fas fa-redo"></i> ลองใหม่อีกครั้ง
+                            </button>
+                        </p>
+                    </div>
                 `;
                 
-                // ใช้ข้อมูลจำลองถ้าโหลดไม่สำเร็จ
-                setTimeout(() => {
-                    reservations = mockData;
-                    document.getElementById('loading').style.display = 'none';
-                    document.getElementById('reservationsContainer').style.display = 'block';
-                    displayReservations(reservations);
-                }, 1000);
+                showNotification('เกิดข้อผิดพลาดในการโหลดข้อมูล', 'error');
+            }
+        }
+        
+        // แสดงหรือซ่อน loading
+        function showLoading(show, error = false) {
+            const loadingElement = document.getElementById('loading');
+            const containerElement = document.getElementById('reservationsContainer');
+            
+            if (show) {
+                loadingElement.style.display = 'block';
+                containerElement.style.display = 'none';
+                
+                if (error) {
+                    loadingElement.innerHTML = `
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <p>เกิดข้อผิดพลาดในการโหลดข้อมูล</p>
+                    `;
+                } else {
+                    loadingElement.innerHTML = `
+                        <i class="fas fa-spinner fa-spin"></i>
+                        <p>กำลังโหลดข้อมูลการจองรถจาก Google Sheets...</p>
+                    `;
+                }
+            } else {
+                loadingElement.style.display = 'none';
+                containerElement.style.display = 'block';
             }
         }
         
@@ -698,40 +738,41 @@
             reservationsToShow.forEach(reservation => {
                 // กำหนดคลาสสถานะ
                 let statusClass = '';
-                let statusText = '';
+                let statusText = reservation.approval || 'รออนุมัติ';
                 
-                if (reservation.approval === 'อนุมัติแล้ว') {
+                if (statusText === 'อนุมัติแล้ว') {
                     statusClass = 'approved';
-                    statusText = 'อนุมัติแล้ว';
-                } else if (reservation.approval === 'ไม่อนุมัติ') {
+                } else if (statusText === 'ไม่อนุมัติ') {
                     statusClass = 'rejected';
-                    statusText = 'ไม่อนุมัติ';
                 } else {
                     statusClass = 'pending';
                     statusText = 'รออนุมัติ';
                 }
                 
+                // แสดงข้อมูลฝ่าย/แผนก/ส่วน
+                const departmentInfo = `${reservation.department || ''}${reservation.section ? ' / ' + reservation.section : ''}`;
+                
                 html += `
                 <div class="reservation-card ${statusClass}" data-code="${reservation.Code}">
                     <div class="card-header">
-                        <div class="reservation-code">${reservation.Code}</div>
+                        <div class="reservation-code">${reservation.Code || 'ไม่มีรหัส'}</div>
                         <div class="reservation-status ${statusClass}">${statusText}</div>
                     </div>
                     
                     <div class="card-content">
                         <div class="info-group">
                             <div class="info-label">ชื่อ-สกุล</div>
-                            <div class="info-value">${reservation.name}</div>
+                            <div class="info-value">${reservation.name || '-'}</div>
                         </div>
                         
                         <div class="info-group">
-                            <div class="info-label">ฝ่าย/แผนก</div>
-                            <div class="info-value">${reservation.department}</div>
+                            <div class="info-label">ฝ่าย/แผนก/ส่วน</div>
+                            <div class="info-value">${departmentInfo || '-'}</div>
                         </div>
                         
                         <div class="info-group">
                             <div class="info-label">ตำแหน่ง</div>
-                            <div class="info-value">${reservation.position}</div>
+                            <div class="info-value">${reservation.position || '-'}</div>
                         </div>
                         
                         <div class="info-group">
@@ -746,7 +787,7 @@
                         
                         <div class="info-group">
                             <div class="info-label">ประเภทรถ</div>
-                            <div class="info-value">${reservation.choose}</div>
+                            <div class="info-value">${reservation.choose || '-'}</div>
                         </div>
                     </div>
                     
@@ -757,7 +798,7 @@
                                 <i class="fas fa-eye"></i> ดูรายละเอียด
                             </button>
                             
-                            ${reservation.approval === 'รออนุมัติ' ? `
+                            ${statusText === 'รออนุมัติ' ? `
                             <button class="btn btn-approve" onclick="approveReservationFromCard('${reservation.Code}')">
                                 <i class="fas fa-check"></i> อนุมัติ
                             </button>
@@ -785,22 +826,30 @@
             // กรองตามฝ่าย/แผนก
             if (departmentFilter) {
                 filtered = filtered.filter(reservation => 
-                    reservation.department === departmentFilter
+                    reservation.department === departmentFilter || 
+                    reservation.section === departmentFilter
                 );
             }
             
             // กรองตามวันที่
             if (dateFilter) {
-                filtered = filtered.filter(reservation => 
-                    reservation.rentStartdate === dateFilter || 
-                    reservation.rentEnddate === dateFilter ||
-                    (reservation.rentStartdate <= dateFilter && reservation.rentEnddate >= dateFilter)
-                );
+                filtered = filtered.filter(reservation => {
+                    const startDate = reservation.rentStartdate;
+                    const endDate = reservation.rentEnddate;
+                    
+                    if (!startDate || !endDate) return false;
+                    
+                    // ตรวจสอบว่าวันที่กรองอยู่ระหว่างวันที่เริ่มและสิ้นสุดหรือไม่
+                    return dateFilter >= startDate && dateFilter <= endDate;
+                });
             }
             
             // กรองตามสถานะ
             if (statusFilter) {
-                filtered = filtered.filter(reservation => reservation.approval === statusFilter);
+                filtered = filtered.filter(reservation => {
+                    const approvalStatus = reservation.approval || 'รออนุมัติ';
+                    return approvalStatus === statusFilter;
+                });
             }
             
             displayReservations(filtered);
@@ -808,13 +857,34 @@
         
         // เติมข้อมูลใน filter ฝ่าย/แผนก
         function populateDepartmentFilter() {
-            const departments = [...new Set(reservations.map(r => r.department))];
+            const departments = new Set();
+            const sections = new Set();
+            
+            reservations.forEach(reservation => {
+                if (reservation.department) departments.add(reservation.department);
+                if (reservation.section) sections.add(reservation.section);
+            });
+            
             const select = document.getElementById('departmentFilter');
             
+            // ล้าง options เดิม (เหลือแค่ option "ทั้งหมด")
+            while (select.options.length > 1) {
+                select.remove(1);
+            }
+            
+            // เพิ่ม departments
             departments.forEach(dept => {
                 const option = document.createElement('option');
                 option.value = dept;
-                option.textContent = dept;
+                option.textContent = `ฝ่าย/แผนก: ${dept}`;
+                select.appendChild(option);
+            });
+            
+            // เพิ่ม sections
+            sections.forEach(section => {
+                const option = document.createElement('option');
+                option.value = section;
+                option.textContent = `ส่วน: ${section}`;
                 select.appendChild(option);
             });
         }
@@ -822,28 +892,39 @@
         // ดูรายละเอียดการจอง
         function viewReservationDetails(code) {
             const reservation = reservations.find(r => r.Code === code);
-            if (!reservation) return;
+            if (!reservation) {
+                showNotification('ไม่พบข้อมูลการจองนี้', 'error');
+                return;
+            }
             
             currentReservation = reservation;
             
+            // แสดงข้อมูลฝ่าย/แผนก/ส่วน
+            const departmentInfo = `${reservation.department || ''}${reservation.section ? ' / ' + reservation.section : ''}`;
+            
             // เติมข้อมูลใน modal
-            document.getElementById('modalCode').textContent = reservation.Code;
-            document.getElementById('modalName').textContent = reservation.name;
-            document.getElementById('modalDepartment').textContent = `${reservation.department} / ${reservation.section}`;
-            document.getElementById('modalPosition').textContent = reservation.position;
-            document.getElementById('modalVehicle').textContent = reservation.choose;
+            document.getElementById('modalCode').textContent = reservation.Code || '-';
+            document.getElementById('modalName').textContent = reservation.name || '-';
+            document.getElementById('modalDepartment').textContent = departmentInfo || '-';
+            document.getElementById('modalPosition').textContent = reservation.position || '-';
+            document.getElementById('modalVehicle').textContent = reservation.choose || '-';
             document.getElementById('modalStartDate').textContent = formatDate(reservation.rentStartdate);
             document.getElementById('modalEndDate').textContent = formatDate(reservation.rentEnddate);
-            document.getElementById('modalStartTime').textContent = reservation.startTime;
-            document.getElementById('modalEndTime').textContent = reservation.endTime;
-            document.getElementById('modalContact').textContent = reservation.contact;
-            document.getElementById('modalReason').textContent = reservation.reason;
+            document.getElementById('modalStartTime').textContent = reservation.startTime || '-';
+            document.getElementById('modalEndTime').textContent = reservation.endTime || '-';
+            document.getElementById('modalContact').textContent = reservation.contact || '-';
+            document.getElementById('modalReason').textContent = reservation.reason || '-';
+            
+            // แสดงสถานะการอนุมัติ
+            const approvalStatus = reservation.approval || 'รออนุมัติ';
+            document.getElementById('modalApproval').textContent = approvalStatus;
+            document.getElementById('modalApproval').className = `info-value ${getStatusClass(approvalStatus)}`;
             
             // ซ่อน/แสดงปุ่มอนุมัติตามสถานะ
             const approvalFormSection = document.getElementById('approvalFormSection');
             const modalFooter = document.querySelector('.modal-footer');
             
-            if (reservation.approval === 'รออนุมัติ') {
+            if (approvalStatus === 'รออนุมัติ') {
                 approvalFormSection.style.display = 'block';
                 modalFooter.style.display = 'flex';
             } else {
@@ -856,6 +937,13 @@
             
             // แสดง modal
             document.getElementById('detailModal').style.display = 'flex';
+        }
+        
+        // ฟังก์ชันช่วยเหลือ: ได้คลาสสถานะจากข้อความสถานะ
+        function getStatusClass(status) {
+            if (status === 'อนุมัติแล้ว') return 'approved';
+            if (status === 'ไม่อนุมัติ') return 'rejected';
+            return 'pending';
         }
         
         // ปิด modal
@@ -897,21 +985,22 @@
         // อัพเดทสถานะการอนุมัติ
         async function updateApprovalStatus(code, status, note = '') {
             try {
-                // ในกรณีจริง ให้ส่งข้อมูลไปยัง Google Apps Script
-                // const response = await fetch(scriptUrl, {
-                //     method: 'POST',
-                //     headers: {
-                //         'Content-Type': 'application/json',
-                //     },
-                //     body: JSON.stringify({
-                //         action: 'update',
-                //         code: code,
-                //         status: status,
-                //         note: note
-                //     })
-                // });
+                // ส่งข้อมูลไปยัง Google Apps Script
+                const response = await fetch(scriptUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: `action=update&code=${encodeURIComponent(code)}&status=${encodeURIComponent(status)}&note=${encodeURIComponent(note)}`
+                });
                 
-                // สำหรับการทดสอบ อัพเดทข้อมูลใน array
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const result = await response.text();
+                
+                // อัพเดทข้อมูลใน array
                 const index = reservations.findIndex(r => r.Code === code);
                 if (index !== -1) {
                     reservations[index].approval = status;
@@ -945,25 +1034,35 @@
         // จัดรูปแบบวันที่
         function formatDate(dateString) {
             if (!dateString) return '-';
-            const date = new Date(dateString);
-            return date.toLocaleDateString('th-TH', {
-                year: 'numeric',
-                month: 'short',
-                day: 'numeric'
-            });
+            try {
+                // แปลงรูปแบบวันที่จาก YYYY-MM-DD
+                const [year, month, day] = dateString.split('-');
+                const date = new Date(year, month - 1, day);
+                return date.toLocaleDateString('th-TH', {
+                    year: 'numeric',
+                    month: 'short',
+                    day: 'numeric'
+                });
+            } catch (e) {
+                return dateString;
+            }
         }
         
         // จัดรูปแบบวันที่และเวลา
         function formatDateTime(dateTimeString) {
             if (!dateTimeString) return '-';
-            const date = new Date(dateTimeString);
-            return date.toLocaleDateString('th-TH', {
-                year: 'numeric',
-                month: 'short',
-                day: 'numeric',
-                hour: '2-digit',
-                minute: '2-digit'
-            });
+            try {
+                const date = new Date(dateTimeString);
+                return date.toLocaleDateString('th-TH', {
+                    year: 'numeric',
+                    month: 'short',
+                    day: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+            } catch (e) {
+                return dateTimeString;
+            }
         }
         
         // ปิด modal เมื่อคลิกนอกเนื้อหา
