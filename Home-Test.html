@@ -2390,6 +2390,14 @@
                 updateSummary();
             }
         });
+
+
+        // เพิ่ม event listener สำหรับปุ่มการอนุมัติ
+        document.getElementById('approveBtn').addEventListener('click', function() {
+        // เปิดลิงก์ไปยังหน้า Approve ในหน้าเดิม
+        window.location.href = 'https://sarawutc6689-cpu.github.io/Mouldmate-AMS/Approve.html';
+        });
+
         
         // จัดการเหตุการณ์ค้นหาพนักงาน
         document.getElementById('searchBtn').addEventListener('click', searchEmployee);
