@@ -1566,8 +1566,8 @@
             durationText += "น้อยกว่า 1 นาที";
         }
         
-        // ตรวจสอบว่าไม่เกิน 3 วัน (72 ชั่วโมง)
-        const maxDurationHours = 3 * 24; // 72 ชั่วโมง
+        // ตรวจสอบว่าไม่เกิน 7 วัน (72 ชั่วโมง)
+        const maxDurationHours = 7 * 24; // 72 ชั่วโมง
         
         // ตรวจสอบว่าไม่เกิน 3 วันตามปฏิทิน
         const startDateObj = new Date(startDate);
@@ -1994,13 +1994,13 @@
             }
             
             // ตรวจสอบว่าการจองต้องไม่เกิน 3 วัน (72 ชั่วโมง)
-            const maxDurationHours = 3 * 24 * 60 * 60 * 1000; // 3 วันในมิลลิวินาที (72 ชั่วโมง)
+            const maxDurationHours = 7 * 24 * 60 * 60 * 1000; // 3 วันในมิลลิวินาที (72 ชั่วโมง)
             const durationMs = endDateTime - startDateTime;
             
             if (durationMs > maxDurationHours) {
                 const durationHours = Math.floor(durationMs / (1000 * 60 * 60));
                 const durationDays = Math.floor(durationHours / 24);
-                rentEnddateError.textContent = `ระยะเวลาการจอง ${durationDays} วัน ${durationHours % 24} ชั่วโมง เกินกว่า 3 วันที่กำหนด`;
+                rentEnddateError.textContent = `ระยะเวลาการจอง ${durationDays} วัน ${durationHours % 24} ชั่วโมง เกินกว่า 7 วันที่กำหนด`;
                 rentEnddateError.style.display = "block";
                 document.getElementById('rentEnddate').classList.add('input-error');
                 isValid = false;
@@ -2011,7 +2011,7 @@
             const endDateObj = new Date(rentEnddate);
             const diffDaysCalendar = Math.floor((endDateObj - startDateObj) / (1000 * 60 * 60 * 24));
             
-            if (diffDaysCalendar > 2) { // อนุญาตให้จองได้สูงสุด 3 วัน (วันเริ่มต้น + 2 วันถัดไป)
+            if (diffDaysCalendar > 6) { // อนุญาตให้จองได้สูงสุด 7 วัน (วันเริ่มต้น + 2 วันถัดไป)
                 rentEnddateError.textContent = `ระยะเวลาการจอง ${diffDaysCalendar + 1} วัน เกินกว่า 3 วันที่กำหนด`;
                 rentEnddateError.style.display = "block";
                 document.getElementById('rentEnddate').classList.add('input-error');
@@ -2315,7 +2315,7 @@
         // ตั้งค่าวันที่เริ่มต้น (วันนี้) และวันที่สิ้นสุด (3 วันจากนี้)
         const today = new Date().toISOString().split('T')[0];
         const threeDaysLater = new Date();
-        threeDaysLater.setDate(threeDaysLater.getDate() + 3);
+        threeDaysLater.setDate(threeDaysLater.getDate() + 7);
         const threeDaysLaterStr = threeDaysLater.toISOString().split('T')[0];
         
         // ตั้งค่าเวลาเริ่มต้นและสิ้นสุด (เริ่ม 08:00 สิ้นสุด 17:00)
@@ -2335,7 +2335,7 @@
         // อัปเดตข้อมูลสรุปเมื่อโหลดหน้า
         updateSummary();
         
-        // จำกัดวันที่สิ้นสุดการจองไม่เกิน 3 วันจากวันที่เริ่มต้น
+        // จำกัดวันที่สิ้นสุดการจองไม่เกิน 7 วันจากวันที่เริ่มต้น
         document.getElementById('rentStartdate').addEventListener('change', function() {
             const startDateInput = document.getElementById('rentStartdate');
             const endDateInput = document.getElementById('rentEnddate');
@@ -2343,7 +2343,7 @@
             if (startDateInput.value) {
                 const startDate = new Date(startDateInput.value);
                 const maxDate = new Date(startDate);
-                maxDate.setDate(maxDate.getDate() + 2); // เพิ่ม 2 วัน (รวมเป็น 3 วัน)
+                maxDate.setDate(maxDate.getDate() + 6); // เพิ่ม 6 วัน (รวมเป็น 7 วัน)
                 
                 // แปลงวันที่เป็นรูปแบบ YYYY-MM-DD
                 const maxDateStr = maxDate.toISOString().split('T')[0];
@@ -2372,10 +2372,10 @@
                 const endDate = new Date(endDateInput.value);
                 const diffDays = Math.floor((endDate - startDate) / (1000 * 60 * 60 * 24));
                 
-                if (diffDays > 2) {
+                if (diffDays > 6) {
                     // ถ้าเลือกเกิน 3 วัน ให้ปรับเป็นวันที่สูงสุดที่อนุญาต
                     const maxDate = new Date(startDate);
-                    maxDate.setDate(maxDate.getDate() + 2);
+                    maxDate.setDate(maxDate.getDate() + 6);
                     const maxDateStr = maxDate.toISOString().split('T')[0];
                     endDateInput.value = maxDateStr;
                     
@@ -2383,7 +2383,7 @@
                     Swal.fire({
                         icon: 'warning',
                         title: 'จำกัดระยะเวลาการจอง',
-                        text: 'สามารถจองรถได้สูงสุด 3 วันเท่านั้น ระบบได้ปรับวันที่สิ้นสุดให้เหมาะสมแล้ว',
+                        text: 'สามารถจองรถได้สูงสุด 7 วันเท่านั้น ระบบได้ปรับวันที่สิ้นสุดให้เหมาะสมแล้ว',
                         confirmButtonColor: '#1e3a8a',
                         timer: 3000,
                         showConfirmButton: false
