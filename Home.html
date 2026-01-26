@@ -1574,8 +1574,8 @@
         const endDateObj = new Date(endDate);
         const diffDaysCalendar = Math.floor((endDateObj - startDateObj) / (1000 * 60 * 60 * 24));
         
-        if (diffHours > maxDurationHours || diffDaysCalendar > 2) {
-            durationText += " (เกินกำหนด 3 วัน!)";
+        if (diffHours > maxDurationHours || diffDaysCalendar > 6) {
+            durationText += " (เกินกำหนด 7 วัน!)";
             document.getElementById('durationDisplay').className = "duration-display duration-danger";
         } 
         else if (diffHours > 24 || diffDaysCalendar > 0) {
