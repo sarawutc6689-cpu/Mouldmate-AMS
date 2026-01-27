@@ -7,6 +7,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600&family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
     <style>
+        /* CSS เดิมทั้งหมดอยู่ที่นี่ */
         :root {
             --primary: #4361ee;
             --primary-light: #4895ef;
@@ -655,7 +656,6 @@
                 <div class="day-header">พฤหัสบดี</div>
                 <div class="day-header">ศุกร์</div>
                 <div class="day-header">เสาร์</div>
-                
             </div>
             
             <div class="calendar-grid" id="calendarGrid">
@@ -916,34 +916,34 @@
         }
 
         // แปลงวันที่
-       function parseDate(dateStr) {
-    if (!dateStr || dateStr.trim() === '') return '';
-    
-    // ลองแปลงหลายรูปแบบ
-    const date = new Date(dateStr);
-    
-    // ถ้าข้อมูลเป็นรูปแบบ DD/MM/YYYY
-    if (dateStr.includes('/')) {
-        const parts = dateStr.split('/');
-        if (parts.length === 3) {
-            const day = parseInt(parts[0]);
-            const month = parseInt(parts[1]) - 1;
-            const year = parseInt(parts[2]);
+        function parseDate(dateStr) {
+            if (!dateStr || dateStr.trim() === '') return '';
             
-            // ถ้าปีมีแค่ 2 หลัก
-            const fullYear = year < 100 ? year + 2500 : year;
+            // ลองแปลงหลายรูปแบบ
+            const date = new Date(dateStr);
             
-            return new Date(fullYear, month, day).toISOString().split('T')[0];
+            // ถ้าข้อมูลเป็นรูปแบบ DD/MM/YYYY
+            if (dateStr.includes('/')) {
+                const parts = dateStr.split('/');
+                if (parts.length === 3) {
+                    const day = parseInt(parts[0]);
+                    const month = parseInt(parts[1]) - 1;
+                    const year = parseInt(parts[2]);
+                    
+                    // ถ้าปีมีแค่ 2 หลัก
+                    const fullYear = year < 100 ? year + 2500 : year;
+                    
+                    return new Date(fullYear, month, day).toISOString().split('T')[0];
+                }
+            }
+            
+            // ถ้าแปลงด้วย Date() ได้
+            if (!isNaN(date.getTime())) {
+                return date.toISOString().split('T')[0];
+            }
+            
+            return dateStr;
         }
-    }
-    
-    // ถ้าแปลงด้วย Date() ได้
-    if (!isNaN(date.getTime())) {
-        return date.toISOString().split('T')[0];
-    }
-    
-    return dateStr;
-}
 
         // อัพเดทปฏิทิน
         function updateCalendarDisplay() {
@@ -970,20 +970,22 @@
                 return;
             }
             
-            // สร้างปฏิทิน
+            // สร้างปฏิทิน (เริ่มจากวันอาทิตย์)
             const firstDay = new Date(currentYear, currentMonth, 1);
             const lastDay = new Date(currentYear, currentMonth + 1, 0);
             const daysInMonth = lastDay.getDate();
             
+            // วันที่เริ่มต้นของเดือน (0 = อาทิตย์, 1 = จันทร์, ..., 6 = เสาร์)
             let firstDayOfWeek = firstDay.getDay();
-            firstDayOfWeek = firstDayOfWeek === 0 ? 6 : firstDayOfWeek - 0;
+            // ในปฏิทินไทย อาทิตย์ = 0, จันทร์ = 1, ..., เสาร์ = 6
+            // ไม่ต้องปรับเปลี่ยนเพราะเราต้องการให้อาทิตย์เป็นวันแรก
             
             const today = new Date();
             const isTodayMonth = today.getMonth() === currentMonth && today.getFullYear() === currentYear;
             
             let calendarHTML = '';
             
-            // วันว่างก่อนวันที่ 1
+            // วันว่างก่อนวันที่ 1 (วันอาทิตย์ถึงวันก่อนหน้า)
             for (let i = 0; i < firstDayOfWeek; i++) {
                 calendarHTML += '<div class="calendar-day empty"></div>';
             }
