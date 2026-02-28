@@ -2660,6 +2660,163 @@
             });
         });
     }
+
+    // เปลี่ยน URL ให้เป็นของ GAS ที่อัปเดตแล้ว
+const CAR_API_URL = 'https://script.google.com/macros/s/[YOUR_SCRIPT_ID]/exec';
+
+// ฟังก์ชันโหลดข้อมูลรถจาก Google Sheets
+async function loadCarsFromServer() {
+    try {
+        const response = await fetch(`${CAR_API_URL}?action=getCars&t=${Date.now()}`);
+        const result = await response.json();
+        
+        if (result.success && result.data) {
+            cars = result.data;
+            // บันทึก backup ไว้ใน localStorage เผื่อใช้ offline
+            localStorage.setItem('carStatusBackup', JSON.stringify(cars));
+            return true;
+        } else {
+            // ลองใช้ข้อมูล backup
+            const backup = localStorage.getItem('carStatusBackup');
+            if (backup) {
+                cars = JSON.parse(backup);
+                console.log('ใช้ข้อมูลสำรองจาก localStorage');
+                return true;
+            }
+            return false;
+        }
+    } catch (error) {
+        console.error('ไม่สามารถโหลดข้อมูลรถจากเซิร์ฟเวอร์:', error);
+        
+        // ลองใช้ข้อมูล backup
+        const backup = localStorage.getItem('carStatusBackup');
+        if (backup) {
+            cars = JSON.parse(backup);
+            console.log('ใช้ข้อมูลสำรองจาก localStorage (เนื่องจากเชื่อมต่อไม่ได้)');
+            return true;
+        }
+        return false;
+    }
+}
+
+// ฟังก์ชันอัปเดตสถานะรถ (สำหรับแอดมิน)
+async function updateCarStatusOnServer(carId, newStatus) {
+    try {
+        const response = await fetch(CAR_API_URL, {
+            method: 'POST',
+            mode: 'cors',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                action: 'updateCarStatus',
+                carId: carId,
+                status: newStatus,
+                updatedBy: currentUser || 'admin'
+            })
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            // อัปเดตข้อมูลในเครื่อง
+            const carIndex = cars.findIndex(c => c.id == carId);
+            if (carIndex !== -1) {
+                cars[carIndex].status = newStatus;
+                cars[carIndex].statusText = result.statusText;
+                cars[carIndex].lastUpdated = new Date();
+            }
+            
+            // อัปเดต UI
+            renderCarOptions();
+            renderCarList();
+            if (currentRole === 'admin') {
+                renderCarManagement();
+            }
+            
+            return true;
+        } else {
+            console.error('อัปเดตไม่สำเร็จ:', result.message);
+            return false;
+        }
+    } catch (error) {
+        console.error('เกิดข้อผิดพลาดในการอัปเดต:', error);
+        return false;
+    }
+}
+
+// แก้ไขฟังก์ชัน loadCarData เดิม
+async function loadCarData() {
+    // โหลดจากเซิร์ฟเวอร์ก่อน
+    const loaded = await loadCarsFromServer();
+    
+    if (!loaded) {
+        // ถ้าโหลดไม่ได้ ใช้ข้อมูลเริ่มต้น
+        cars = [
+            { id: 1, name: "นาวาร่า", type: "รถกระบะ", icon: "fa-truck-pickup", status: "available", statusText: "พร้อมใช้งาน" },
+            { id: 2, name: "รถกระบะขาว", type: "รถกระบะ", icon: "fa-truck-pickup", status: "available", statusText: "พร้อมใช้งาน" },
+            // ... ข้อมูลที่เหลือ
+        ];
+    }
+}
+
+// แก้ไขฟังก์ชัน updateCarStatus เดิม
+async function updateCarStatus(carId, newStatus) {
+    // แสดง loading
+    Swal.fire({
+        title: 'กำลังอัปเดตสถานะ...',
+        text: 'กรุณารอสักครู่',
+        allowOutsideClick: false,
+        showConfirmButton: false,
+        willOpen: () => {
+            Swal.showLoading();
+        }
+    });
+    
+    const success = await updateCarStatusOnServer(carId, newStatus);
+    
+    Swal.close();
+    
+    if (success) {
+        const car = cars.find(c => c.id == carId);
+        Swal.fire({
+            icon: 'success',
+            title: 'อัปเดตสถานะรถสำเร็จ',
+            text: `${car.name} ถูกเปลี่ยนสถานะเป็น "${car.statusText}"`,
+            confirmButtonColor: '#1e3a8a',
+            timer: 2000,
+            showConfirmButton: false
+        });
+    } else {
+        Swal.fire({
+            icon: 'error',
+            title: 'อัปเดตไม่สำเร็จ',
+            text: 'กรุณาลองใหม่อีกครั้ง หรือติดต่อผู้ดูแลระบบ',
+            confirmButtonColor: '#1e3a8a'
+        });
+    }
+}
+
+// แก้ไขใน DOMContentLoaded
+document.addEventListener('DOMContentLoaded', async function() {
+    // โหลดข้อมูลรถจากเซิร์ฟเวอร์
+    await loadCarData();
+    
+    // โหลดข้อมูลพนักงาน
+    await initializeApp();
+    
+    // ส่วนที่เหลือเหมือนเดิม...
+    
+    // เพิ่มการโหลดข้อมูลรถอัตโนมัติทุก 30 วินาที
+    setInterval(async () => {
+        await loadCarsFromServer();
+        renderCarOptions();
+        renderCarList();
+        if (currentRole === 'admin') {
+            renderCarManagement();
+        }
+    }, 30000);
+});
 </script>
 </body>
 </html>
