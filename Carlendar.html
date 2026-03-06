@@ -1082,7 +1082,7 @@
                     
                     const status = getReservationStatus(reservation, dateStr);
                     const statusClass = `status-${status}`;
-                    const statusText = status === 'active' ? 'กำลังใช้งาน' : 
+                    const statusText = status === 'active' ? 'อนุมัติ' : 
                                      status === 'pending' ? 'รออนุมัติ' : 'เสร็จสิ้น';
                     
                     eventDetail.innerHTML = `
