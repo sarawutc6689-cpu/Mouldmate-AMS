@@ -139,6 +139,19 @@
 
         .staff-only-note { text-align: center; padding: 15px; color: var(--gray); font-size: 13px; background: var(--light); border-radius: 10px; }
 
+        .photo-hint { font-size: 12px; color: var(--gray); margin-top: 4px; }
+        .photo-preview-list { display: flex; gap: 10px; margin-top: 12px; flex-wrap: wrap; }
+        .photo-thumb { position: relative; width: 90px; height: 90px; border-radius: 10px; overflow: hidden; border: 2px solid var(--border); }
+        .photo-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+        .photo-thumb .remove-photo {
+            position: absolute; top: 3px; right: 3px; background: rgba(220,53,69,0.9); color: white;
+            border: none; border-radius: 50%; width: 20px; height: 20px; font-size: 12px; cursor: pointer; line-height: 1;
+        }
+        .job-photos-view { display: flex; gap: 10px; flex-wrap: wrap; }
+        .job-photos-view a img {
+            width: 90px; height: 90px; object-fit: cover; border-radius: 10px; border: 2px solid var(--border); display: block;
+        }
+
         .login-hint { margin-top: 15px; padding: 12px; background: var(--light); border-radius: 10px; font-size: 12px; color: var(--gray); }
 
         .footer { text-align: center; margin-top: 30px; color: white; font-size: 13px; }
@@ -251,7 +264,14 @@
                     <textarea id="detail" placeholder="อธิบายอาการเสีย หรือรายการ PM ที่ต้องทำ"></textarea>
                 </div>
 
-                <button type="submit" class="btn btn-primary"><i class="fas fa-paper-plane"></i> ส่งแจ้งงาน</button>
+                <div class="form-group">
+                    <label>รูปภาพประกอบ (สูงสุด 3 รูป, รูปละไม่เกิน 5MB)</label>
+                    <input type="file" id="jobPhotos" accept="image/*" multiple>
+                    <div class="photo-hint">แนบรูปสภาพรถ/อาการเสีย เพื่อให้ช่างประเมินงานได้ง่ายขึ้น</div>
+                    <div class="photo-preview-list" id="photoPreview"></div>
+                </div>
+
+                <button type="submit" class="btn btn-primary" id="submitJobBtn"><i class="fas fa-paper-plane"></i> ส่งแจ้งงาน</button>
             </form>
         </div>
 
@@ -287,6 +307,91 @@
         let jobs = [];
         let currentUser = null;
         let currentRole = null; // 'admin' | 'technician' | null
+
+        // ==================== รูปภาพประกอบ (แนบตอนแจ้งงาน) ====================
+        const MAX_PHOTOS = 3;
+        const MAX_PHOTO_BYTES = 5 * 1024 * 1024; // 5MB
+        let selectedPhotos = [];
+
+        function setupPhotoInput() {
+            document.getElementById('jobPhotos').addEventListener('change', function (e) {
+                const files = Array.from(e.target.files);
+                for (const file of files) {
+                    if (selectedPhotos.length >= MAX_PHOTOS) {
+                        Swal.fire('เกินจำนวนที่กำหนด', `แนบรูปได้สูงสุด ${MAX_PHOTOS} รูป`, 'warning');
+                        break;
+                    }
+                    if (!file.type.startsWith('image/')) {
+                        Swal.fire('ไฟล์ไม่ถูกต้อง', `${file.name} ไม่ใช่ไฟล์รูปภาพ`, 'warning');
+                        continue;
+                    }
+                    if (file.size > MAX_PHOTO_BYTES) {
+                        Swal.fire('ไฟล์ใหญ่เกินไป', `${file.name} มีขนาดเกิน 5MB`, 'warning');
+                        continue;
+                    }
+                    selectedPhotos.push(file);
+                }
+                this.value = ''; // reset เพื่อให้เลือกไฟล์เดิมซ้ำได้
+                renderPhotoPreview();
+            });
+        }
+
+        function renderPhotoPreview() {
+            const box = document.getElementById('photoPreview');
+            box.innerHTML = selectedPhotos.map((file, idx) => `
+                <div class="photo-thumb">
+                    <img src="${URL.createObjectURL(file)}">
+                    <button type="button" class="remove-photo" onclick="removePhoto(${idx})">&times;</button>
+                </div>
+            `).join('');
+        }
+
+        function removePhoto(idx) {
+            selectedPhotos.splice(idx, 1);
+            renderPhotoPreview();
+        }
+
+        function resetPhotoSelection() {
+            selectedPhotos = [];
+            renderPhotoPreview();
+        }
+
+        function fileToBase64(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = () => resolve(reader.result.split(',')[1]);
+                reader.onerror = reject;
+                reader.readAsDataURL(file);
+            });
+        }
+
+        async function uploadPhotosForJob(jobId) {
+            for (const file of selectedPhotos) {
+                try {
+                    const base64Data = await fileToBase64(file);
+                    const { data, error } = await supabaseClient.functions.invoke('upload-to-drive', {
+                        body: {
+                            fileName: `${jobId}_${Date.now()}_${file.name}`,
+                            mimeType: file.type,
+                            base64Data
+                        }
+                    });
+                    if (error || !data || data.error) {
+                        console.error('upload error', error || data?.error);
+                        Swal.fire('อัปโหลดรูปไม่สำเร็จ', `${file.name}: ไม่สามารถอัปโหลดขึ้น Google Drive ได้`, 'warning');
+                        continue;
+                    }
+                    await supabaseClient.from('job_photos').insert({
+                        job_id: jobId,
+                        drive_file_id: data.id,
+                        url: data.viewUrl || data.webViewLink
+                    });
+                } catch (err) {
+                    console.error(err);
+                    Swal.fire('อัปโหลดรูปไม่สำเร็จ', `${file.name}: ${err.message}`, 'warning');
+                }
+            }
+        }
 
         function showLoading() { document.getElementById('loadingOverlay').style.display = 'flex'; }
         function hideLoading() { document.getElementById('loadingOverlay').style.display = 'none'; }
@@ -393,6 +498,7 @@
 
             showLoading();
             const { data: parts } = await supabaseClient.from('repair_parts').select('*').eq('job_id', jobId).order('created_at');
+            const { data: photos } = await supabaseClient.from('job_photos').select('*').eq('job_id', jobId).order('created_at');
             hideLoading();
 
             const st = jobStatus(job);
@@ -411,6 +517,14 @@
                     <div class="detail-row"><span class="detail-label">สถานะ:</span><span class="detail-value"><span class="status-badge ${st.cls}">${st.text}</span></span></div>
                     <div class="detail-row"><span class="detail-label">ช่างรับผิดชอบ:</span><span class="detail-value">${job.technician?.fullname || '-'}</span></div>
                 </div>
+
+                ${photos && photos.length ? `
+                <div class="detail-section">
+                    <h3>📷 รูปภาพประกอบ</h3>
+                    <div class="job-photos-view">
+                        ${photos.map(p => `<a href="${p.url}" target="_blank" rel="noopener"><img src="${p.url}" alt="รูปประกอบงาน"></a>`).join('')}
+                    </div>
+                </div>` : ''}
 
                 <div class="detail-section">
                     <h3>🔧 อะไหล่/บิล</h3>
@@ -608,6 +722,7 @@
             await loadTechnicians();
             await loadJobs();
             setupEmployeeAutocomplete();
+            setupPhotoInput();
             hideLoading();
         }
 
@@ -676,6 +791,9 @@
                 if (!carId) { Swal.fire('ข้อมูลไม่ครบ', 'กรุณาเลือกรถ', 'warning'); return; }
                 if (!detail) { Swal.fire('ข้อมูลไม่ครบ', 'กรุณากรอกรายละเอียด', 'warning'); return; }
 
+                const submitBtn = document.getElementById('submitJobBtn');
+                submitBtn.disabled = true;
+
                 showLoading();
                 const { data, error } = await supabaseClient.from('repair_jobs').insert({
                     employee_code: employeeCode,
@@ -685,12 +803,19 @@
                     mile_next: mileNext || null,
                     detail
                 }).select().single();
-                hideLoading();
 
                 if (error) {
+                    hideLoading();
+                    submitBtn.disabled = false;
                     Swal.fire('ผิดพลาด', error.message.includes('foreign key') ? 'ไม่พบรหัสพนักงานนี้ในระบบ' : error.message, 'error');
                     return;
                 }
+
+                if (selectedPhotos.length > 0) {
+                    await uploadPhotosForJob(data.id);
+                }
+                hideLoading();
+                submitBtn.disabled = false;
 
                 Swal.fire('สำเร็จ', `แจ้งงานเรียบร้อย เลขที่งาน: ${data.job_no}`, 'success');
                 document.getElementById('jobForm').reset();
@@ -698,6 +823,7 @@
                 document.querySelectorAll('.job-type-btn').forEach(b => b.classList.remove('selected'));
                 document.querySelector('.job-type-btn.fix').classList.add('selected');
                 document.getElementById('jobType').value = 'FIX';
+                resetPhotoSelection();
                 await loadJobs();
             });
 
