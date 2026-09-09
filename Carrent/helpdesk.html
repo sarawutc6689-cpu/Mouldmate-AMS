@@ -139,6 +139,8 @@
 
         .staff-only-note { text-align: center; padding: 15px; color: var(--gray); font-size: 13px; background: var(--light); border-radius: 10px; }
 
+        .reopened-note { text-align: center; padding: 10px; color: #b8860b; font-size: 12px; background: rgba(255,193,7,0.15); border-radius: 10px; margin-bottom: 18px; }
+
         .photo-hint { font-size: 12px; color: var(--gray); margin-top: 4px; }
         .photo-preview-list { display: flex; gap: 10px; margin-top: 12px; flex-wrap: wrap; }
         .photo-thumb { position: relative; width: 90px; height: 90px; border-radius: 10px; overflow: hidden; border: 2px solid var(--border); }
@@ -502,7 +504,8 @@
             hideLoading();
 
             const st = jobStatus(job);
-            const canEdit = isStaff() && !job.closed_at;
+            // staff แก้ไขช่าง/อะไหล่ได้เสมอ แม้งานจะปิดแล้ว
+            const canEdit = isStaff();
 
             let html = `
                 <div class="detail-section">
@@ -534,6 +537,7 @@
                             <span class="part-item-right">
                                 ${Number(p.price).toLocaleString()} บาท${p.shop ? ' — ' + p.shop : ''}
                                 ${canEdit ? `<button class="btn btn-warning btn-icon-sm" onclick="editPart('${p.id}','${job.id}')" title="แก้ไขราคา"><i class="fas fa-edit"></i></button>` : ''}
+                                ${canEdit ? `<button class="btn btn-danger btn-icon-sm" onclick="deletePart('${p.id}','${job.id}')" title="ลบรายการ"><i class="fas fa-trash"></i></button>` : ''}
                             </span>
                         </div>
                     `).join('') : '<div style="color:var(--gray);font-size:13px;">ยังไม่มีรายการอะไหล่</div>'}
@@ -541,6 +545,9 @@
             `;
 
             if (canEdit) {
+                if (job.closed_at) {
+                    html += `<div class="reopened-note"><i class="fas fa-info-circle"></i> งานนี้ปิดแล้ว แต่คุณยังแก้ไขช่าง/อะไหล่ได้ในฐานะ staff</div>`;
+                }
                 html += `
                     <div class="detail-section">
                         <h3>👷 มอบหมายช่าง</h3>
@@ -548,7 +555,7 @@
                             <option value="">-- เลือกช่าง --</option>
                             ${technicians.map(t => `<option value="${t.id}" ${t.id === job.technician_id ? 'selected' : ''}>${t.fullname || t.username}</option>`).join('')}
                         </select>
-                        <button class="btn btn-warning btn-sm" onclick="assignTech('${job.id}')" style="width:100%;"><i class="fas fa-user-check"></i> มอบหมาย</button>
+                        <button class="btn btn-warning btn-sm" onclick="assignTech('${job.id}')" style="width:100%;"><i class="fas fa-user-check"></i> ${job.technician_id ? 'เปลี่ยนช่าง' : 'มอบหมาย'}</button>
                     </div>
 
                     <div class="detail-section">
@@ -564,9 +571,13 @@
                         <input type="text" id="partInv" placeholder="เลขที่บิล (ถ้ามี)" style="margin-bottom:10px;">
                         <button class="btn btn-primary btn-sm" onclick="addPart('${job.id}')" style="width:100%;"><i class="fas fa-plus"></i> เพิ่มรายการ</button>
                     </div>
-
-                    <button class="btn btn-success" onclick="closeJob('${job.id}')" style="width:100%; margin-top:10px;"><i class="fas fa-check-double"></i> ปิดงาน</button>
                 `;
+
+                if (job.closed_at) {
+                    html += `<button class="btn btn-warning" onclick="reopenJob('${job.id}')" style="width:100%; margin-top:10px;"><i class="fas fa-undo"></i> เปิดงานอีกครั้ง</button>`;
+                } else {
+                    html += `<button class="btn btn-success" onclick="closeJob('${job.id}')" style="width:100%; margin-top:10px;"><i class="fas fa-check-double"></i> ปิดงาน</button>`;
+                }
             } else if (!isStaff()) {
                 html += `<div class="staff-only-note"><i class="fas fa-lock"></i> ต้องเข้าสู่ระบบช่างเพื่อมอบหมาย/เพิ่มอะไหล่/ปิดงาน</div>`;
             }
@@ -582,7 +593,7 @@
             const { error } = await supabaseClient.from('repair_jobs').update({ technician_id: techId, assigned_at: new Date().toISOString() }).eq('id', jobId);
             hideLoading();
             if (error) { Swal.fire('ผิดพลาด', error.message, 'error'); return; }
-            Swal.fire('สำเร็จ', 'มอบหมายช่างเรียบร้อย', 'success');
+            Swal.fire('สำเร็จ', 'มอบหมาย/เปลี่ยนช่างเรียบร้อย', 'success');
             document.getElementById('manageModal').style.display = 'none';
             await loadJobs();
         }
@@ -661,6 +672,27 @@
             openManage(jobId);
         }
 
+        // ==================== ลบรายการอะไหล่ ====================
+        async function deletePart(partId, jobId) {
+            const result = await Swal.fire({
+                title: 'ยืนยันลบรายการนี้?',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'ลบ',
+                cancelButtonText: 'ยกเลิก',
+                confirmButtonColor: '#dc3545'
+            });
+            if (!result.isConfirmed) return;
+
+            showLoading();
+            const { error } = await supabaseClient.from('repair_parts').delete().eq('id', partId);
+            hideLoading();
+
+            if (error) { Swal.fire('ผิดพลาด', error.message, 'error'); return; }
+            Swal.fire('สำเร็จ', 'ลบรายการเรียบร้อย', 'success');
+            openManage(jobId);
+        }
+
         async function closeJob(jobId) {
             const result = await Swal.fire({ title: 'ยืนยันปิดงาน?', icon: 'question', showCancelButton: true, confirmButtonText: 'ปิดงาน' });
             if (!result.isConfirmed) return;
@@ -669,6 +701,26 @@
             hideLoading();
             if (error) { Swal.fire('ผิดพลาด', error.message, 'error'); return; }
             Swal.fire('สำเร็จ', 'ปิดงานเรียบร้อย', 'success');
+            document.getElementById('manageModal').style.display = 'none';
+            await loadJobs();
+        }
+
+        // ==================== เปิดงานที่ปิดแล้วกลับมาแก้ไข ====================
+        async function reopenJob(jobId) {
+            const result = await Swal.fire({
+                title: 'เปิดงานนี้อีกครั้ง?',
+                text: 'สถานะจะกลับไปเป็นยังไม่ปิดงาน เพื่อให้แก้ไขช่าง/อะไหล่ต่อได้',
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonText: 'เปิดงานอีกครั้ง',
+                cancelButtonText: 'ยกเลิก'
+            });
+            if (!result.isConfirmed) return;
+            showLoading();
+            const { error } = await supabaseClient.from('repair_jobs').update({ closed_at: null }).eq('id', jobId);
+            hideLoading();
+            if (error) { Swal.fire('ผิดพลาด', error.message, 'error'); return; }
+            Swal.fire('สำเร็จ', 'เปิดงานอีกครั้งเรียบร้อย', 'success');
             document.getElementById('manageModal').style.display = 'none';
             await loadJobs();
         }
