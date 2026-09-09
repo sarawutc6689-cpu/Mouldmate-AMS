@@ -102,6 +102,7 @@
         .btn-warning { background: var(--warning); color: var(--dark); }
         .btn-danger { background: var(--danger); color: white; }
         .btn-sm { padding: 8px 16px; font-size: 12px; }
+        .btn-icon-sm { padding: 4px 9px; font-size: 11px; border-radius: 8px; }
 
         table { width: 100%; border-collapse: collapse; }
         th { background: var(--primary); color: white; padding: 12px; font-weight: 500; text-align: left; font-size: 13px; }
@@ -132,8 +133,9 @@
         .detail-label { width: 110px; color: var(--gray); }
         .detail-value { flex: 1; font-weight: 500; }
 
-        .part-item { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px dashed var(--border); font-size: 13px; }
+        .part-item { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px dashed var(--border); font-size: 13px; gap: 10px; }
         .part-item:last-child { border-bottom: none; }
+        .part-item-right { display: flex; align-items: center; gap: 8px; white-space: nowrap; }
 
         .staff-only-note { text-align: center; padding: 15px; color: var(--gray); font-size: 13px; background: var(--light); border-radius: 10px; }
 
@@ -394,6 +396,7 @@
             hideLoading();
 
             const st = jobStatus(job);
+            const canEdit = isStaff() && !job.closed_at;
 
             let html = `
                 <div class="detail-section">
@@ -414,13 +417,16 @@
                     ${parts && parts.length ? parts.map(p => `
                         <div class="part-item">
                             <span>${p.part_name} (x${p.qty})</span>
-                            <span>${Number(p.price).toLocaleString()} บาท${p.shop ? ' — ' + p.shop : ''}</span>
+                            <span class="part-item-right">
+                                ${Number(p.price).toLocaleString()} บาท${p.shop ? ' — ' + p.shop : ''}
+                                ${canEdit ? `<button class="btn btn-warning btn-icon-sm" onclick="editPart('${p.id}','${job.id}')" title="แก้ไขราคา"><i class="fas fa-edit"></i></button>` : ''}
+                            </span>
                         </div>
                     `).join('') : '<div style="color:var(--gray);font-size:13px;">ยังไม่มีรายการอะไหล่</div>'}
                 </div>
             `;
 
-            if (isStaff() && !job.closed_at) {
+            if (canEdit) {
                 html += `
                     <div class="detail-section">
                         <h3>👷 มอบหมายช่าง</h3>
@@ -484,6 +490,60 @@
             hideLoading();
             if (error) { Swal.fire('ผิดพลาด', error.message, 'error'); return; }
             Swal.fire('สำเร็จ', 'เพิ่มรายการอะไหล่แล้ว', 'success');
+            openManage(jobId);
+        }
+
+        // ==================== แก้ไขรายการอะไหล่ (รวมถึงราคา) ====================
+        async function editPart(partId, jobId) {
+            showLoading();
+            const { data: part, error: fetchError } = await supabaseClient.from('repair_parts').select('*').eq('id', partId).single();
+            hideLoading();
+
+            if (fetchError || !part) { Swal.fire('ผิดพลาด', 'ไม่พบรายการอะไหล่นี้', 'error'); return; }
+
+            const { value: formValues } = await Swal.fire({
+                title: 'แก้ไขรายการอะไหล่',
+                html: `
+                    <input id="swal-part-name" class="swal2-input" placeholder="ชื่ออะไหล่" value="${part.part_name ? part.part_name.replace(/"/g, '&quot;') : ''}">
+                    <input id="swal-part-qty" type="number" class="swal2-input" placeholder="จำนวน" value="${part.qty ?? ''}">
+                    <input id="swal-part-price" type="number" step="0.01" class="swal2-input" placeholder="ราคารวม (บาท)" value="${part.price ?? ''}">
+                    <input id="swal-part-shop" class="swal2-input" placeholder="ร้าน/ผู้ขาย" value="${part.shop ? part.shop.replace(/"/g, '&quot;') : ''}">
+                    <input id="swal-part-inv" class="swal2-input" placeholder="เลขที่บิล (ถ้ามี)" value="${part.inv_no ? part.inv_no.replace(/"/g, '&quot;') : ''}">
+                `,
+                focusConfirm: false,
+                showCancelButton: true,
+                confirmButtonText: 'บันทึก',
+                cancelButtonText: 'ยกเลิก',
+                confirmButtonColor: '#0A2472',
+                preConfirm: () => {
+                    const part_name = document.getElementById('swal-part-name').value.trim();
+                    const qty = parseFloat(document.getElementById('swal-part-qty').value);
+                    const price = parseFloat(document.getElementById('swal-part-price').value);
+                    const shop = document.getElementById('swal-part-shop').value.trim();
+                    const inv_no = document.getElementById('swal-part-inv').value.trim();
+                    if (!part_name || !qty || isNaN(price)) {
+                        Swal.showValidationMessage('กรุณากรอกชื่ออะไหล่ จำนวน และราคาให้ครบถ้วน');
+                        return false;
+                    }
+                    return { part_name, qty, price, shop, inv_no };
+                }
+            });
+
+            if (!formValues) return;
+
+            showLoading();
+            const { error: updateError } = await supabaseClient.from('repair_parts').update({
+                part_name: formValues.part_name,
+                qty: formValues.qty,
+                price: formValues.price,
+                shop: formValues.shop || null,
+                inv_no: formValues.inv_no || null,
+                bill_type: formValues.inv_no ? 'inv' : 'cash'
+            }).eq('id', partId);
+            hideLoading();
+
+            if (updateError) { Swal.fire('ผิดพลาด', updateError.message, 'error'); return; }
+            Swal.fire('สำเร็จ', 'แก้ไขรายการเรียบร้อย', 'success');
             openManage(jobId);
         }
 
