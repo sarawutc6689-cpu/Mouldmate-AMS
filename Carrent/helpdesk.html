@@ -514,7 +514,10 @@ if (insertError) {
 
             showLoading();
             const { data: parts } = await supabaseClient.from('repair_parts').select('*').eq('job_id', jobId).order('created_at');
-            const { data: photos } = await supabaseClient.from('job_photos').select('*').eq('job_id', jobId).order('created_at');
+            const { data: photosData } = await supabaseClient.functions.invoke('upload-to-drive', {
+    body: { action: 'list', jobId: jobId }
+});
+const photos = (photosData && photosData.files) || [];
             hideLoading();
 
             const st = jobStatus(job);
@@ -539,7 +542,7 @@ if (insertError) {
                 <div class="detail-section">
                     <h3>📷 รูปภาพประกอบ</h3>
                     <div class="job-photos-view">
-                        ${photos.map(p => `<a href="${p.photo_url}" target="_blank" rel="noopener"><img src="${p.photo_url}" alt="รูปประกอบงาน"></a>`).join('')}
+                        ${photos.map(p => `<a href="${p.webViewLink || p.viewUrl}" target="_blank" rel="noopener"><img src="${p.viewUrl}" alt="รูปประกอบงาน"></a>`).join('')}
                     </div>
                 </div>` : ''}
 
