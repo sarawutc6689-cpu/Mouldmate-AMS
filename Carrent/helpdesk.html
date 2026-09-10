@@ -8,6 +8,8 @@
     <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Prompt', sans-serif; }
 
@@ -163,6 +165,36 @@
         .loading-spinner { background: white; padding: 30px; border-radius: 20px; text-align: center; }
         .loading-spinner i { font-size: 40px; color: var(--primary); animation: spin 1s linear infinite; }
         @keyframes spin { to { transform: rotate(360deg); } }
+        .pdf-template {
+    width: 794px; min-height: 1123px; background: white; position: relative;
+    padding: 45px 55px; font-family: 'Prompt', sans-serif; color: #222; box-sizing: border-box;
+}
+.pdf-watermark {
+    position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(-35deg);
+    font-size: 85px; font-weight: 700; color: rgba(10, 100, 220, 0.10);
+    white-space: nowrap; z-index: 0; pointer-events: none; letter-spacing: 4px;
+}
+.pdf-content { position: relative; z-index: 1; }
+.pdf-header { text-align: center; border-bottom: 3px solid var(--primary); padding-bottom: 15px; margin-bottom: 25px; }
+.pdf-header h1 { color: var(--primary); font-size: 22px; margin-bottom: 4px; }
+.pdf-header p { color: var(--gray); font-size: 13px; }
+.pdf-row { display: flex; margin-bottom: 9px; font-size: 14px; }
+.pdf-label { width: 140px; color: var(--gray); font-weight: 500; }
+.pdf-value { flex: 1; font-weight: 600; }
+.pdf-section-title {
+    color: var(--primary); font-size: 15px; font-weight: 600; margin: 22px 0 10px;
+    border-left: 4px solid var(--primary); padding-left: 8px;
+}
+.pdf-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.pdf-table th { background: var(--primary); color: white; padding: 8px; text-align: left; }
+.pdf-table td { padding: 8px; border-bottom: 1px solid #ddd; }
+.pdf-footer {
+    position: absolute; bottom: 30px; left: 55px; right: 55px; text-align: center;
+    font-size: 11px; color: #999; border-top: 1px solid #ddd; padding-top: 10px;
+}
+
+.pdf-photos { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 10px; }
+.pdf-photos img { width: 150px; height: 150px; object-fit: cover; border: 1px solid #ccc; border-radius: 8px; }
         
     </style>
 </head>
@@ -599,9 +631,115 @@ const photos = (photosData && photosData.files) || [];
                 html += `<div class="staff-only-note"><i class="fas fa-lock"></i> ต้องเข้าสู่ระบบช่างเพื่อมอบหมาย/เพิ่มอะไหล่/ปิดงาน</div>`;
             }
 
+            html = `<button class="btn btn-primary btn-sm" onclick="exportJobPDF('${job.id}')" style="width:100%; margin-bottom:18px;"><i class="fas fa-file-pdf"></i> ส่งออก PDF</button>` + html;
+
             document.getElementById('manageContent').innerHTML = html;
             document.getElementById('manageModal').style.display = 'flex';
         }
+
+        async function exportJobPDF(jobId) {
+    const job = jobs.find(j => j.id === jobId);
+    if (!job) return;
+
+    showLoading();
+    const { data: parts } = await supabaseClient.from('repair_parts').select('*').eq('job_id', jobId).order('created_at');
+
+    // ดึงรายชื่อไฟล์รูปจาก Drive แล้วโหลดมาเป็น base64 เพื่อฝังใน PDF (เลี่ยงปัญหา CORS)
+    let photoDataUrls = [];
+    try {
+        const { data: photosData } = await supabaseClient.functions.invoke('upload-to-drive', {
+            body: { action: 'list', jobId: jobId }
+        });
+        const files = (photosData && photosData.files) || [];
+        for (const f of files) {
+            const { data: dlData } = await supabaseClient.functions.invoke('upload-to-drive', {
+                body: { action: 'download', fileId: f.id }
+            });
+            if (dlData && dlData.dataUrl) photoDataUrls.push(dlData.dataUrl);
+        }
+    } catch (e) {
+        console.error('load photos for pdf error', e);
+    }
+
+    const st = jobStatus(job);
+    const partsTotal = (parts || []).reduce((sum, p) => sum + (Number(p.price) || 0), 0);
+
+    const container = document.createElement('div');
+    container.className = 'pdf-template';
+    container.style.position = 'fixed';
+    container.style.top = '-9999px';
+    container.style.left = '-9999px';
+    container.innerHTML = `
+        <div class="pdf-watermark">TOKAISOLIDTIRE</div>
+        <div class="pdf-content">
+            <div class="pdf-header">
+                <h1>ใบแจ้งซ่อม / PM</h1>
+                <p>AMS - Automotive Maintenance System</p>
+            </div>
+            <div class="pdf-row"><div class="pdf-label">เลขที่งาน</div><div class="pdf-value">${job.job_no}</div></div>
+            <div class="pdf-row"><div class="pdf-label">ประเภทงาน</div><div class="pdf-value">${job.job_type === 'FIX' ? 'แจ้งซ่อม (FIX)' : 'งาน PM'}</div></div>
+            <div class="pdf-row"><div class="pdf-label">รถ</div><div class="pdf-value">${job.cars?.name || '-'}</div></div>
+            <div class="pdf-row"><div class="pdf-label">ผู้แจ้ง</div><div class="pdf-value">${job.employees?.name || job.employee_code}</div></div>
+            <div class="pdf-row"><div class="pdf-label">ไมล์ปัจจุบัน</div><div class="pdf-value">${job.mile_old || '-'}</div></div>
+            ${job.mile_next ? `<div class="pdf-row"><div class="pdf-label">ไมล์ครั้งถัดไป</div><div class="pdf-value">${job.mile_next}</div></div>` : ''}
+            <div class="pdf-row"><div class="pdf-label">รายละเอียด</div><div class="pdf-value">${job.detail || '-'}</div></div>
+            <div class="pdf-row"><div class="pdf-label">สถานะ</div><div class="pdf-value">${st.text}</div></div>
+            <div class="pdf-row"><div class="pdf-label">ช่างรับผิดชอบ</div><div class="pdf-value">${job.technician?.fullname || '-'}</div></div>
+            <div class="pdf-row"><div class="pdf-label">วันที่แจ้ง</div><div class="pdf-value">${new Date(job.created_at).toLocaleString('th-TH')}</div></div>
+
+            ${photoDataUrls.length ? `
+            <div class="pdf-section-title">รูปภาพประกอบ</div>
+            <div class="pdf-photos">
+                ${photoDataUrls.map(url => `<img src="${url}">`).join('')}
+            </div>
+            ` : ''}
+
+            <div class="pdf-section-title">รายการอะไหล่/บิล</div>
+            ${parts && parts.length ? `
+            <table class="pdf-table">
+                <thead><tr><th>รายการ</th><th>จำนวน</th><th>ร้าน/ผู้ขาย</th><th>เลขที่บิล</th><th style="text-align:right;">ราคา (บาท)</th></tr></thead>
+                <tbody>
+                    ${parts.map(p => `<tr><td>${p.part_name}</td><td>${p.qty}</td><td>${p.shop || '-'}</td><td>${p.inv_no || '-'}</td><td style="text-align:right;">${Number(p.price).toLocaleString()}</td></tr>`).join('')}
+                </tbody>
+                <tfoot><tr><td colspan="4" style="text-align:right;font-weight:600;">รวม</td><td style="text-align:right;font-weight:600;">${partsTotal.toLocaleString()}</td></tr></tfoot>
+            </table>
+            ` : '<div style="color:#999;font-size:13px;">ยังไม่มีรายการอะไหล่</div>'}
+        </div>
+        <div class="pdf-footer">ระบบงานซ่อม แผนกยานยนต์ | ใช้ภายในองค์กรเท่านั้น | พัฒนาโดย Sarawut.C</div>
+    `;
+    document.body.appendChild(container);
+
+    try {
+        const canvas = await html2canvas(container, { scale: 2, useCORS: true });
+        const imgData = canvas.toDataURL('image/jpeg', 0.95);
+
+        const { jsPDF } = window.jspdf;
+        const pdf = new jsPDF('p', 'mm', 'a4');
+        const pageWidth = pdf.internal.pageSize.getWidth();
+        const pageHeight = pdf.internal.pageSize.getHeight();
+        const imgWidth = pageWidth;
+        const imgHeight = (canvas.height * imgWidth) / canvas.width;
+
+        let heightLeft = imgHeight;
+        let position = 0;
+        pdf.addImage(imgData, 'JPEG', 0, position, imgWidth, imgHeight);
+        heightLeft -= pageHeight;
+        while (heightLeft > 0) {
+            position -= pageHeight;
+            pdf.addPage();
+            pdf.addImage(imgData, 'JPEG', 0, position, imgWidth, imgHeight);
+            heightLeft -= pageHeight;
+        }
+
+        pdf.save(`${job.job_no}.pdf`);
+    } catch (err) {
+        console.error(err);
+        Swal.fire('ผิดพลาด', 'สร้าง PDF ไม่สำเร็จ: ' + err.message, 'error');
+    } finally {
+        document.body.removeChild(container);
+        hideLoading();
+    }
+}
 
         async function assignTech(jobId) {
             const techId = document.getElementById('assignTechSelect').value;
