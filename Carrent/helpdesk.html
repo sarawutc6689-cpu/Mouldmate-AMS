@@ -721,15 +721,15 @@ try {
         const imgHeight = (canvas.height * imgWidth) / canvas.width;
 
         let heightLeft = imgHeight;
-        let position = 0;
-        pdf.addImage(imgData, 'JPEG', 0, position, imgWidth, imgHeight);
-        heightLeft -= pageHeight;
-        while (heightLeft > 0) {
-            position -= pageHeight;
-            pdf.addPage();
-            pdf.addImage(imgData, 'JPEG', 0, position, imgWidth, imgHeight);
-            heightLeft -= pageHeight;
-        }
+let position = 0;
+pdf.addImage(imgData, 'JPEG', 0, position, imgWidth, imgHeight);
+heightLeft -= pageHeight;
+while (heightLeft > 2) {
+    position -= pageHeight;
+    pdf.addPage();
+    pdf.addImage(imgData, 'JPEG', 0, position, imgWidth, imgHeight);
+    heightLeft -= pageHeight;
+}
 
         pdf.save(`${job.job_no}.pdf`);
     } catch (err) {
