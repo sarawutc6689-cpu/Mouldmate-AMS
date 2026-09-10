@@ -645,34 +645,20 @@ const photos = (photosData && photosData.files) || [];
     const { data: parts } = await supabaseClient.from('repair_parts').select('*').eq('job_id', jobId).order('created_at');
 
     // ดึงรายชื่อไฟล์รูปจาก Drive แล้วโหลดมาเป็น base64 เพื่อฝังใน PDF (เลี่ยงปัญหา CORS)
-    let photoDataUrls = [];
-    try {
-    const { data: photosData, error: listErr } = await supabaseClient.functions.invoke('upload-to-drive', {
+   let photoDataUrls = [];
+try {
+    const { data: photosData } = await supabaseClient.functions.invoke('upload-to-drive', {
         body: { action: 'list', jobId: jobId }
     });
-    if (listErr) {
-        let msg = listErr.message || 'unknown';
-        try { msg = await listErr.context.text(); } catch (e2) {}
-        console.error('list photos error', msg);
-        alert('LIST ERROR: ' + msg);
-    }
     const files = (photosData && photosData.files) || [];
-    alert('พบไฟล์ทั้งหมด: ' + files.length + ' ไฟล์');
     for (const f of files) {
-        const { data: dlData, error: dlErr } = await supabaseClient.functions.invoke('upload-to-drive', {
+        const { data: dlData } = await supabaseClient.functions.invoke('upload-to-drive', {
             body: { action: 'download', fileId: f.id }
         });
-        if (dlErr) {
-            let msg = dlErr.message || 'unknown';
-            try { msg = await dlErr.context.text(); } catch (e2) {}
-            console.error('download photo error', msg);
-            alert('DOWNLOAD ERROR: ' + msg);
-        }
         if (dlData && dlData.dataUrl) photoDataUrls.push(dlData.dataUrl);
     }
 } catch (e) {
     console.error('load photos for pdf error', e);
-    alert('CATCH ERROR: ' + e.message);
 }
 
     const st = jobStatus(job);
