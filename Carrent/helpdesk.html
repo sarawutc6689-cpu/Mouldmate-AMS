@@ -801,18 +801,10 @@ try {
                 ${photoDataUrls.map(url => `<img src="${url}">`).join('')}
             </div>
             ` : ''}
-
-            <div class="pdf-section-title">รายการอะไหล่/บิล</div>
+                       <div class="pdf-section-title">รายการอะไหล่/บิล</div>
             ${buildPdfPartsTable(parts)}
-            <table class="pdf-table">
-                <thead><tr><th>รายการ</th><th>จำนวน</th><th>ร้าน/ผู้ขาย</th><th>เลขที่บิล</th><th style="text-align:right;">ราคา (บาท)</th></tr></thead>
-                <tbody>
-                    ${parts.map(p => `<tr><td>${p.part_name}</td><td>${p.qty}</td><td>${p.shop || '-'}</td><td>${p.inv_no || '-'}</td><td style="text-align:right;">${Number(p.price).toLocaleString()}</td></tr>`).join('')}
-                </tbody>
-                <tfoot><tr><td colspan="4" style="text-align:right;font-weight:600;">รวม</td><td style="text-align:right;font-weight:600;">${partsTotal.toLocaleString()}</td></tr></tfoot>
-            </table>
-            ` : '<div style="color:#999;font-size:13px;">ยังไม่มีรายการอะไหล่</div>'}
         </div>
+            
         <div class="pdf-footer">ระบบงานซ่อม แผนกยานยนต์ | ใช้ภายในองค์กรเท่านั้น | พัฒนาโดย Sarawut.C</div>
     `;
     document.body.appendChild(container);
