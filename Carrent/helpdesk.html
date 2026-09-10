@@ -379,10 +379,21 @@
                         }
                     });
                     if (error || !data || data.error) {
-                        console.error('upload error', error || data?.error);
-                        Swal.fire('อัปโหลดรูปไม่สำเร็จ', `${file.name}: ไม่สามารถอัปโหลดขึ้น Google Drive ได้`, 'warning');
-                        continue;
-                    }
+    let realMessage = 'ไม่สามารถอัปโหลดขึ้น Google Drive ได้';
+    try {
+        if (error && error.context && typeof error.context.text === 'function') {
+            const bodyText = await error.context.text();
+            realMessage = bodyText;
+        } else if (data?.error) {
+            realMessage = JSON.stringify(data.error);
+        }
+    } catch (e) {
+        realMessage = 'อ่านรายละเอียด error ไม่ได้: ' + e.message;
+    }
+    console.error('upload error', realMessage);
+    Swal.fire('อัปโหลดรูปไม่สำเร็จ', `${file.name}: ${realMessage}`, 'warning');
+    continue;
+}
                     await supabaseClient.from('job_photos').insert({
                         job_id: jobId,
                         drive_file_id: data.id,
