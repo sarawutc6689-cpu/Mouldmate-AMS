@@ -539,6 +539,118 @@ if (insertError) {
             }).join('');
         }
 
+        // ==================== ตารางอะไหล่/บิล พร้อมคำนวณ VAT และเส้นแบ่งระหว่างบิล ====================
+function calcVat(price, billType) {
+    const base = Number(price) || 0;
+    if (billType === 'cash') {
+        return { exc: base, vat: 0, inc: base };
+    }
+    const vat = base * 0.07;
+    return { exc: base, vat, inc: base + vat };
+}
+function fmtMoney(n) {
+    return n.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+
+function renderPartsTableHTML(parts, canEdit, jobId) {
+    if (!parts || !parts.length) return '<div style="color:var(--gray);font-size:13px;">ยังไม่มีรายการอะไหล่</div>';
+
+    const sorted = [...parts].sort((a, b) => (a.inv_no || '').localeCompare(b.inv_no || ''));
+    let lastInv, totalExc = 0, totalVat = 0, totalInc = 0;
+
+    const rows = sorted.map(p => {
+        const { exc, vat, inc } = calcVat(p.price, p.bill_type);
+        totalExc += exc; totalVat += vat; totalInc += inc;
+        const inv = p.inv_no || '-';
+        const border = inv !== lastInv ? 'border-top:2px solid var(--primary);' : '';
+        lastInv = inv;
+        return `
+            <tr>
+                <td style="${border}">${inv}</td>
+                <td style="${border}">${p.shop || '-'}</td>
+                <td style="${border}">${p.part_name}</td>
+                <td style="${border}">${p.qty}</td>
+                <td style="${border}text-align:right;">${fmtMoney(exc)}</td>
+                <td style="${border}text-align:right;">${fmtMoney(vat)}</td>
+                <td style="${border}text-align:right;">${fmtMoney(inc)}</td>
+                ${canEdit ? `<td style="${border}white-space:nowrap;">
+                    <button class="btn btn-warning btn-icon-sm" onclick="editPart('${p.id}','${jobId}')" title="แก้ไข"><i class="fas fa-edit"></i></button>
+                    <button class="btn btn-danger btn-icon-sm" onclick="deletePart('${p.id}','${jobId}')" title="ลบ"><i class="fas fa-trash"></i></button>
+                </td>` : ''}
+            </tr>
+        `;
+    }).join('');
+
+    return `
+        <div class="table-container">
+            <table style="font-size:12px;">
+                <thead>
+                    <tr>
+                        <th>เลขที่บิล</th><th>ร้าน/ผู้ขาย</th><th>รายการ</th><th>จำนวน</th>
+                        <th style="text-align:right;">ราคา(บาท)<br>Exc.Vat</th>
+                        <th style="text-align:right;">Vat(+7%)</th>
+                        <th style="text-align:right;">ราคา(บาท)<br>Inc.Vat</th>
+                        ${canEdit ? '<th></th>' : ''}
+                    </tr>
+                </thead>
+                <tbody>${rows}</tbody>
+                <tfoot>
+                    <tr>
+                        <td colspan="4" style="text-align:right;font-weight:600;border-top:2px solid var(--primary);">รวม</td>
+                        <td style="text-align:right;font-weight:600;border-top:2px solid var(--primary);">${fmtMoney(totalExc)}</td>
+                        <td style="text-align:right;font-weight:600;border-top:2px solid var(--primary);">${fmtMoney(totalVat)}</td>
+                        <td style="text-align:right;font-weight:600;border-top:2px solid var(--primary);">${fmtMoney(totalInc)}</td>
+                        ${canEdit ? '<td style="border-top:2px solid var(--primary);"></td>' : ''}
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+    `;
+}
+
+function buildPdfPartsTable(parts) {
+    if (!parts || !parts.length) return '<div style="color:#999;font-size:13px;">ยังไม่มีรายการอะไหล่</div>';
+
+    const sorted = [...parts].sort((a, b) => (a.inv_no || '').localeCompare(b.inv_no || ''));
+    let lastInv, totalExc = 0, totalVat = 0, totalInc = 0;
+
+    const rows = sorted.map(p => {
+        const { exc, vat, inc } = calcVat(p.price, p.bill_type);
+        totalExc += exc; totalVat += vat; totalInc += inc;
+        const inv = p.inv_no || '-';
+        const border = inv !== lastInv ? 'border-top:2px solid var(--primary);' : '';
+        lastInv = inv;
+        return `<tr>
+            <td style="${border}">${inv}</td>
+            <td style="${border}">${p.shop || '-'}</td>
+            <td style="${border}">${p.part_name}</td>
+            <td style="${border}">${p.qty}</td>
+            <td style="${border}text-align:right;">${fmtMoney(exc)}</td>
+            <td style="${border}text-align:right;">${fmtMoney(vat)}</td>
+            <td style="${border}text-align:right;">${fmtMoney(inc)}</td>
+        </tr>`;
+    }).join('');
+
+    return `
+        <table class="pdf-table">
+            <thead><tr>
+                <th>เลขที่บิล</th><th>ร้าน/ผู้ขาย</th><th>รายการ</th><th>จำนวน</th>
+                <th style="text-align:right;">ราคา(บาท)Exc.Vat</th>
+                <th style="text-align:right;">Vat(+7%)</th>
+                <th style="text-align:right;">ราคา(บาท)Inc.Vat</th>
+            </tr></thead>
+            <tbody>${rows}</tbody>
+            <tfoot><tr>
+                <td colspan="4" style="text-align:right;font-weight:600;border-top:2px solid var(--primary);">รวม</td>
+                <td style="text-align:right;font-weight:600;border-top:2px solid var(--primary);">${fmtMoney(totalExc)}</td>
+                <td style="text-align:right;font-weight:600;border-top:2px solid var(--primary);">${fmtMoney(totalVat)}</td>
+                <td style="text-align:right;font-weight:600;border-top:2px solid var(--primary);">${fmtMoney(totalInc)}</td>
+            </tr></tfoot>
+        </table>
+    `;
+}
+
+
         // ==================== รายละเอียด/จัดการงาน ====================
         async function openManage(jobId) {
             const job = jobs.find(j => j.id === jobId);
@@ -579,18 +691,9 @@ const photos = (photosData && photosData.files) || [];
                 </div>` : ''}
 
                 <div class="detail-section">
-                    <h3>🔧 อะไหล่/บิล</h3>
-                    ${parts && parts.length ? parts.map(p => `
-                        <div class="part-item">
-                            <span>${p.part_name} (x${p.qty})</span>
-                            <span class="part-item-right">
-                                ${Number(p.price).toLocaleString()} บาท${p.shop ? ' — ' + p.shop : ''}
-                                ${canEdit ? `<button class="btn btn-warning btn-icon-sm" onclick="editPart('${p.id}','${job.id}')" title="แก้ไขราคา"><i class="fas fa-edit"></i></button>` : ''}
-                                ${canEdit ? `<button class="btn btn-danger btn-icon-sm" onclick="deletePart('${p.id}','${job.id}')" title="ลบรายการ"><i class="fas fa-trash"></i></button>` : ''}
-                            </span>
-                        </div>
-                    `).join('') : '<div style="color:var(--gray);font-size:13px;">ยังไม่มีรายการอะไหล่</div>'}
-                </div>
+    <h3>🔧 อะไหล่/บิล</h3>
+    ${renderPartsTableHTML(parts, canEdit, job.id)}
+</div>
             `;
 
             if (canEdit) {
@@ -618,6 +721,11 @@ const photos = (photosData && photosData.files) || [];
                             <input type="text" id="partShop" placeholder="ร้าน/ผู้ขาย" style="margin-bottom:8px;">
                         </div>
                         <input type="text" id="partInv" placeholder="เลขที่บิล (ถ้ามี)" style="margin-bottom:10px;">
+                        <select id="partBillType" style="margin-bottom:10px;">
+                          <option value="cash">บิลเงินสด (ไม่มี Vat)</option>
+                          <option value="inv">ใบกำกับภาษี (มี Vat 7%)</option>
+                        </select>
+
                         <button class="btn btn-primary btn-sm" onclick="addPart('${job.id}')" style="width:100%;"><i class="fas fa-plus"></i> เพิ่มรายการ</button>
                     </div>
                 `;
@@ -662,7 +770,7 @@ try {
 }
 
     const st = jobStatus(job);
-    const partsTotal = (parts || []).reduce((sum, p) => sum + (Number(p.price) || 0), 0);
+   
 
     const container = document.createElement('div');
     container.className = 'pdf-template';
@@ -695,7 +803,7 @@ try {
             ` : ''}
 
             <div class="pdf-section-title">รายการอะไหล่/บิล</div>
-            ${parts && parts.length ? `
+            ${buildPdfPartsTable(parts)}
             <table class="pdf-table">
                 <thead><tr><th>รายการ</th><th>จำนวน</th><th>ร้าน/ผู้ขาย</th><th>เลขที่บิล</th><th style="text-align:right;">ราคา (บาท)</th></tr></thead>
                 <tbody>
@@ -754,19 +862,20 @@ while (heightLeft > 2) {
         }
 
         async function addPart(jobId) {
-            const part_name = document.getElementById('partName').value.trim();
-            const qty = parseFloat(document.getElementById('partQty').value);
-            const price = parseFloat(document.getElementById('partPrice').value);
-            const shop = document.getElementById('partShop').value.trim();
-            const inv_no = document.getElementById('partInv').value.trim();
+    const part_name = document.getElementById('partName').value.trim();
+    const qty = parseFloat(document.getElementById('partQty').value);
+    const price = parseFloat(document.getElementById('partPrice').value);
+    const shop = document.getElementById('partShop').value.trim();
+    const inv_no = document.getElementById('partInv').value.trim();
+    const bill_type = document.getElementById('partBillType').value;
 
-            if (!part_name || !qty || !price) { Swal.fire('ข้อมูลไม่ครบ', 'กรุณากรอกชื่ออะไหล่ จำนวน และราคา', 'warning'); return; }
+    if (!part_name || !qty || !price) { Swal.fire('ข้อมูลไม่ครบ', 'กรุณากรอกชื่ออะไหล่ จำนวน และราคา', 'warning'); return; }
 
-            showLoading();
-            const { error } = await supabaseClient.from('repair_parts').insert({
-                job_id: jobId, part_name, qty, price, shop: shop || null, inv_no: inv_no || null,
-                bill_type: inv_no ? 'inv' : 'cash'
-            });
+    showLoading();
+    const { error } = await supabaseClient.from('repair_parts').insert({
+        job_id: jobId, part_name, qty, price, shop: shop || null, inv_no: inv_no || null,
+        bill_type
+    });
             hideLoading();
             if (error) { Swal.fire('ผิดพลาด', error.message, 'error'); return; }
             Swal.fire('สำเร็จ', 'เพิ่มรายการอะไหล่แล้ว', 'success');
@@ -780,46 +889,52 @@ while (heightLeft > 2) {
             hideLoading();
 
             if (fetchError || !part) { Swal.fire('ผิดพลาด', 'ไม่พบรายการอะไหล่นี้', 'error'); return; }
-
+            
             const { value: formValues } = await Swal.fire({
-                title: 'แก้ไขรายการอะไหล่',
-                html: `
-                    <input id="swal-part-name" class="swal2-input" placeholder="ชื่ออะไหล่" value="${part.part_name ? part.part_name.replace(/"/g, '&quot;') : ''}">
-                    <input id="swal-part-qty" type="number" class="swal2-input" placeholder="จำนวน" value="${part.qty ?? ''}">
-                    <input id="swal-part-price" type="number" step="0.01" class="swal2-input" placeholder="ราคารวม (บาท)" value="${part.price ?? ''}">
-                    <input id="swal-part-shop" class="swal2-input" placeholder="ร้าน/ผู้ขาย" value="${part.shop ? part.shop.replace(/"/g, '&quot;') : ''}">
-                    <input id="swal-part-inv" class="swal2-input" placeholder="เลขที่บิล (ถ้ามี)" value="${part.inv_no ? part.inv_no.replace(/"/g, '&quot;') : ''}">
-                `,
-                focusConfirm: false,
-                showCancelButton: true,
-                confirmButtonText: 'บันทึก',
-                cancelButtonText: 'ยกเลิก',
-                confirmButtonColor: '#0A2472',
-                preConfirm: () => {
-                    const part_name = document.getElementById('swal-part-name').value.trim();
-                    const qty = parseFloat(document.getElementById('swal-part-qty').value);
-                    const price = parseFloat(document.getElementById('swal-part-price').value);
-                    const shop = document.getElementById('swal-part-shop').value.trim();
-                    const inv_no = document.getElementById('swal-part-inv').value.trim();
-                    if (!part_name || !qty || isNaN(price)) {
-                        Swal.showValidationMessage('กรุณากรอกชื่ออะไหล่ จำนวน และราคาให้ครบถ้วน');
-                        return false;
-                    }
-                    return { part_name, qty, price, shop, inv_no };
-                }
-            });
+    title: 'แก้ไขรายการอะไหล่',
+    html: `
+        <input id="swal-part-name" class="swal2-input" placeholder="ชื่ออะไหล่" value="${part.part_name ? part.part_name.replace(/"/g, '&quot;') : ''}">
+        <input id="swal-part-qty" type="number" class="swal2-input" placeholder="จำนวน" value="${part.qty ?? ''}">
+        <input id="swal-part-price" type="number" step="0.01" class="swal2-input" placeholder="ราคารวม (บาท)" value="${part.price ?? ''}">
+        <input id="swal-part-shop" class="swal2-input" placeholder="ร้าน/ผู้ขาย" value="${part.shop ? part.shop.replace(/"/g, '&quot;') : ''}">
+        <input id="swal-part-inv" class="swal2-input" placeholder="เลขที่บิล (ถ้ามี)" value="${part.inv_no ? part.inv_no.replace(/"/g, '&quot;') : ''}">
+        <select id="swal-part-billtype" class="swal2-select" style="display:block;width:100%;padding:10px;margin:6px auto;border-radius:5px;border:1px solid #d9d9d9;">
+            <option value="cash" ${part.bill_type === 'cash' ? 'selected' : ''}>บิลเงินสด (ไม่มี Vat)</option>
+            <option value="inv" ${part.bill_type === 'inv' ? 'selected' : ''}>ใบกำกับภาษี (มี Vat 7%)</option>
+        </select>
+    `,
+    focusConfirm: false,
+    showCancelButton: true,
+    confirmButtonText: 'บันทึก',
+    cancelButtonText: 'ยกเลิก',
+    confirmButtonColor: '#0A2472',
+    preConfirm: () => {
+        const part_name = document.getElementById('swal-part-name').value.trim();
+        const qty = parseFloat(document.getElementById('swal-part-qty').value);
+        const price = parseFloat(document.getElementById('swal-part-price').value);
+        const shop = document.getElementById('swal-part-shop').value.trim();
+        const inv_no = document.getElementById('swal-part-inv').value.trim();
+        const bill_type = document.getElementById('swal-part-billtype').value;
+        if (!part_name || !qty || isNaN(price)) {
+            Swal.showValidationMessage('กรุณากรอกชื่ออะไหล่ จำนวน และราคาให้ครบถ้วน');
+            return false;
+        }
+        return { part_name, qty, price, shop, inv_no, bill_type };
+    }
+});
+            
 
             if (!formValues) return;
 
             showLoading();
             const { error: updateError } = await supabaseClient.from('repair_parts').update({
-                part_name: formValues.part_name,
-                qty: formValues.qty,
-                price: formValues.price,
-                shop: formValues.shop || null,
-                inv_no: formValues.inv_no || null,
-                bill_type: formValues.inv_no ? 'inv' : 'cash'
-            }).eq('id', partId);
+    part_name: formValues.part_name,
+    qty: formValues.qty,
+    price: formValues.price,
+    shop: formValues.shop || null,
+    inv_no: formValues.inv_no || null,
+    bill_type: formValues.bill_type
+}).eq('id', partId);
             hideLoading();
 
             if (updateError) { Swal.fire('ผิดพลาด', updateError.message, 'error'); return; }
