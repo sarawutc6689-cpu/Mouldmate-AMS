@@ -394,11 +394,14 @@
     Swal.fire('อัปโหลดรูปไม่สำเร็จ', `${file.name}: ${realMessage}`, 'warning');
     continue;
 }
-                    await supabaseClient.from('job_photos').insert({
-                        job_id: jobId,
-                        drive_file_id: data.id,
-                        url: data.viewUrl || data.webViewLink
-                    });
+                    const { error: insertError } = await supabaseClient.from('job_photos').insert({
+    job_id: jobId,
+    photo_url: data.viewUrl || data.webViewLink
+});
+if (insertError) {
+    console.error('insert job_photos error', insertError);
+    Swal.fire('บันทึกรูปไม่สำเร็จ', insertError.message, 'warning');
+}
                 } catch (err) {
                     console.error(err);
                     Swal.fire('อัปโหลดรูปไม่สำเร็จ', `${file.name}: ${err.message}`, 'warning');
@@ -536,7 +539,7 @@
                 <div class="detail-section">
                     <h3>📷 รูปภาพประกอบ</h3>
                     <div class="job-photos-view">
-                        ${photos.map(p => `<a href="${p.url}" target="_blank" rel="noopener"><img src="${p.url}" alt="รูปประกอบงาน"></a>`).join('')}
+                        ${photos.map(p => `<a href="${p.photo_url}" target="_blank" rel="noopener"><img src="${p.photo_url}" alt="รูปประกอบงาน"></a>`).join('')}
                     </div>
                 </div>` : ''}
 
